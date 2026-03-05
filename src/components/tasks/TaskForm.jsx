@@ -280,21 +280,29 @@ export default function TaskForm({ task = null, onClose, defaultStatus = 'backlo
       {/* Assignés */}
 
       {/* S39 — Pondération tâche */}
-      <div>
+      <div
+        className="rounded-xl overflow-hidden"
+        style={{ border: '1px solid rgba(99,102,241,0.25)' }}
+      >
         <button
           type="button"
           onClick={() => setShowWeight(p => !p)}
-          className="flex items-center gap-2 text-xs font-medium text-indigo-400 hover:text-indigo-300 transition-colors mb-2"
+          className="w-full flex items-center justify-between gap-2 px-3 py-2.5 text-sm font-medium text-indigo-400 hover:text-indigo-300 transition-colors"
+          style={{ background: 'rgba(99,102,241,0.08)' }}
         >
-          <span className="text-base">⚖️</span>
-          Pondération de la tâche
-          <span className="text-white/30">{showWeight ? "▲" : "▼"}</span>
+          <div className="flex items-center gap-2">
+            <span>⚖️</span>
+            <span>Pondération de la tâche</span>
+          </div>
+          <span className="text-white/40 text-xs">{showWeight ? "▲ Réduire" : "▼ Configurer"}</span>
         </button>
         {showWeight && (
-          <TaskWeightForm
-            weights={weights}
-            onChange={setWeights}
-          />
+          <div className="p-3">
+            <TaskWeightForm
+              weights={weights}
+              onChange={setWeights}
+            />
+          </div>
         )}
       </div>
       <div>
