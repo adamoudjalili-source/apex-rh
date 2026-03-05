@@ -14,6 +14,10 @@ import {
   Target, FolderKanban, CheckSquare, Info, Globe, Coins, Timer
 } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
+import {
+  useNotificationSettings,
+  useUpdateNotificationSettings,
+} from '../../hooks/useNotificationSettings'
 import { useTheme } from '../../contexts/ThemeContext'
 import {
   useAppSettings,
@@ -1250,10 +1254,174 @@ function PulseSettingsSection() {
   )
 }
 
+// ─── SECTION : NOTIFICATIONS PULSE ──────────────────────────
+
+const MANAGER_ROLES = ['chef_service', 'chef_division', 'directeur', 'administrateur']
+
+function PulseNotificationsSection() {
+  const { profile } = useAuth()
+  const isManager = MANAGER_ROLES.includes(profile?.role)
+
+  const { data: settings, isLoading } = useNotificationSettings()
+  const updateSettings = useUpdateNotificationSettings()
+  const [form, setForm] = useState(null)
+  const [saved, setSaved] = useState(false)
+
+  useEffect(() => {
+    if (settings) setForm({ ...settings })
+  }, [settings])
+
+  const handleToggle = (key) => setForm(prev => ({ ...prev, [key]: !prev[key] }))
+
+  const handleSave = async () => {
+    if (!form) return
+    const { id, user_id, created_at, updated_at, ...cleanForm } = form
+    await updateSettings.mutateAsync(cleanForm)
+    setSaved(true)
+    setTimeout(() => setSaved(false), 2000)
+  }
+
+  if (isLoading || !form) return <SettingsSkeleton />
+
+  return (
+    <div className="space-y-5">
+
+      {/* Section "Mes préférences" — tous les utilisateurs */}
+      <SectionCard
+        title="Mes préférences"
+        description="Choisissez les emails automatiques que vous souhaitez recevoir"
+        icon={Bell}
+      >
+        <SettingRow
+          label="Rappel brief matinal"
+          description="Email chaque matin pour vous rappeler de soumettre votre brief"
+        >
+          <Toggle checked={form.notif_brief_enabled} onChange={() => handleToggle('notif_brief_enabled')} />
+        </SettingRow>
+
+        <SettingRow
+          label="Rappel journal du soir"
+          description="Email chaque soir si vous n'avez pas encore soumis votre journal"
+        >
+          <Toggle checked={form.notif_journal_enabled} onChange={() => handleToggle('notif_journal_enabled')} />
+        </SettingRow>
+
+        <SettingRow
+          label="Notification award reçu"
+          description="Email quand votre manager vous attribue un award"
+        >
+          <Toggle checked={form.notif_award_enabled} onChange={() => handleToggle('notif_award_enabled')} />
+        </SettingRow>
+
+        {/* Horaires personnalisés */}
+        <div className="mt-5 pt-4 border-t border-white/[0.04]">
+          <p className="text-white/40 text-xs font-semibold uppercase tracking-wider mb-4">
+            Horaires de rappel
+          </p>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-white/60 text-xs font-medium mb-1.5">Brief matinal</label>
+              <input
+                type="time"
+                value={form.brief_reminder_time || '07:30'}
+                onChange={(e) => setForm(prev => ({ ...prev, brief_reminder_time: e.target.value }))}
+                disabled={!form.notif_brief_enabled}
+                className={`w-full px-3 py-2 bg-white/[0.05] border border-white/[0.08] rounded-lg text-white text-sm focus:outline-none focus:border-indigo-500/50 transition-colors ${!form.notif_brief_enabled ? 'opacity-40 cursor-not-allowed' : ''}`}
+              />
+            </div>
+            <div>
+              <label className="block text-white/60 text-xs font-medium mb-1.5">Journal du soir</label>
+              <input
+                type="time"
+                value={form.journal_reminder_time || '16:30'}
+                onChange={(e) => setForm(prev => ({ ...prev, journal_reminder_time: e.target.value }))}
+                disabled={!form.notif_journal_enabled}
+                className={`w-full px-3 py-2 bg-white/[0.05] border border-white/[0.08] rounded-lg text-white text-sm focus:outline-none focus:border-indigo-500/50 transition-colors ${!form.notif_journal_enabled ? 'opacity-40 cursor-not-allowed' : ''}`}
+              />
+            </div>
+          </div>
+          <p className="text-white/25 text-xs mt-2 flex items-center gap-1.5">
+            <Info size={11} />
+            Ces horaires sont indicatifs — les cron jobs s'exécutent à heures fixes côté serveur.
+          </p>
+        </div>
+      </SectionCard>
+
+      {/* Section manager — visible uniquement pour les managers */}
+      {isManager && (
+        <SectionCard
+          title="Préférences manager"
+          description="Paramètres des alertes et résumés d'équipe"
+          icon={Activity}
+        >
+          <SettingRow
+            label="Alerte collaborateurs absents"
+            description="Email quand des collaborateurs n'ont pas soumis leur journal depuis X jours"
+          >
+            <Toggle
+              checked={form.notif_alert_manager_enabled}
+              onChange={() => handleToggle('notif_alert_manager_enabled')}
+            />
+          </SettingRow>
+
+          {form.notif_alert_manager_enabled && (
+            <div className="ml-0 mt-3 mb-1 pb-4 border-b border-white/[0.04]">
+              <label className="block text-white/60 text-xs font-medium mb-2">
+                Seuil d'absence (jours ouvrés)
+              </label>
+              <div className="flex items-center gap-3">
+                <input
+                  type="number"
+                  min="1"
+                  max="10"
+                  value={form.manager_alert_threshold_days || 2}
+                  onChange={(e) => setForm(prev => ({ ...prev, manager_alert_threshold_days: parseInt(e.target.value) || 2 }))}
+                  className="w-20 px-3 py-2 bg-white/[0.05] border border-white/[0.08] rounded-lg text-white text-sm focus:outline-none focus:border-indigo-500/50"
+                />
+                <span className="text-white/40 text-sm">jours sans journal pour déclencher l'alerte</span>
+              </div>
+            </div>
+          )}
+
+          <SettingRow
+            label="Résumé hebdomadaire équipe"
+            description="Email chaque lundi avec les stats de performance de la semaine précédente"
+          >
+            <Toggle
+              checked={form.notif_weekly_summary_enabled}
+              onChange={() => handleToggle('notif_weekly_summary_enabled')}
+            />
+          </SettingRow>
+        </SectionCard>
+      )}
+
+      {/* Info sur l'architecture */}
+      <div
+        className="rounded-xl p-4 flex items-start gap-3"
+        style={{ background: 'rgba(79,70,229,0.06)', border: '1px solid rgba(79,70,229,0.12)' }}
+      >
+        <Info size={16} className="text-indigo-400 flex-shrink-0 mt-0.5" />
+        <div>
+          <p className="text-white/50 text-xs leading-relaxed">
+            Les emails sont envoyés via le service <strong className="text-white/70">Resend</strong>.
+            Les rappels automatiques s'exécutent à des horaires fixes définis par l'administrateur.
+            Désactiver une option ici ne supprime pas les emails déjà planifiés pour la journée en cours.
+          </p>
+        </div>
+      </div>
+
+      <div className="flex justify-end">
+        <SaveButton onClick={handleSave} saving={updateSettings.isPending} saved={saved} />
+      </div>
+    </div>
+  )
+}
+
 const TABS_USER = [
   { id: 'profile', label: 'Mon profil', icon: User },
   { id: 'security', label: 'Sécurité', icon: Lock },
   { id: 'notifications', label: 'Notifications', icon: Bell },
+  { id: 'pulse-notifications', label: 'Notifs PULSE', icon: Activity },
   { id: 'appearance', label: 'Apparence', icon: Palette },
 ]
 
@@ -1278,6 +1446,7 @@ export default function SettingsPage() {
       case 'profile': return <ProfileSection />
       case 'security': return <SecuritySection />
       case 'notifications': return <NotificationsSection />
+      case 'pulse-notifications': return <PulseNotificationsSection />
       case 'appearance': return <AppearanceSection />
       case 'company': return <CompanySection />
       case 'modules': return <ModulesSection />
