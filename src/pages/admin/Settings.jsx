@@ -765,6 +765,7 @@ function ModulesSection() {
         <SettingRow label="Notes manager" description="Les managers peuvent ajouter des notes privées ou partagées sur leurs collaborateurs">
           <Toggle checked={form.manager_notes_enabled ?? true} onChange={(v) => setForm(prev => ({ ...prev, manager_notes_enabled: v }))} />
         </SettingRow>
+      </SectionCard>
 
       <SectionCard title="Configuration OKR" description="Paramètres des cycles d'objectifs" icon={Target}>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
