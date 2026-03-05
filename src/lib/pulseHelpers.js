@@ -357,3 +357,13 @@ export function isAnalyticsEnabled(settings) {
   if (!settings) return false
   return settings.modules?.analytics_enabled === true
 }
+
+// ─── INTÉGRATIONS TIERCES ─────────────────────────────────────
+/**
+ * Vérifie si le module Intégrations Tierces est activé
+ * (stocké dans settings.modules.integrations_enabled)
+ */
+export function isIntegrationsEnabled(settings) {
+  if (!settings) return false
+  return settings.modules?.integrations_enabled === true
+}

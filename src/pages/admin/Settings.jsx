@@ -12,7 +12,7 @@ import {
   Calendar, RefreshCw, AlertTriangle, Search, ChevronLeft, ChevronDown,
   LogIn, LogOut, UserPlus, UserX, UserCheck, Edit2, Trash2, Download,
   Target, FolderKanban, CheckSquare, Info, Globe, Coins, Timer, MessageSquare,
-  BarChart2, BrainCircuit, Zap, ClipboardList, TrendingUp
+  BarChart2, BrainCircuit, Zap, ClipboardList, TrendingUp, Plug
 } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
 import {
@@ -34,6 +34,7 @@ import {
   useNotificationPreferences,
   useUpdateNotificationPreferences,
 } from '../../hooks/useNotifications'
+import IntegrationsPage from './Integrations'
 
 // ─── CONSTANTES ──────────────────────────────────────────────
 const ROLE_LABELS = {
@@ -747,6 +748,9 @@ function ModulesSection() {
         </SettingRow>
         <SettingRow label="Analytics Avancés & Prédictif" description="Heatmap équipe, corrélation PULSE/OKR, comparatif services et score de risque de départ — réservé managers">
           <Toggle checked={form.analytics_enabled ?? false} onChange={(v) => setForm(prev => ({ ...prev, analytics_enabled: v }))} />
+        </SettingRow>
+        <SettingRow label="Intégrations Tierces" description="Webhooks Slack, Teams, Zapier + export Google Calendar — réservé administrateurs">
+          <Toggle checked={form.integrations_enabled ?? false} onChange={(v) => setForm(prev => ({ ...prev, integrations_enabled: v }))} />
         </SettingRow>
       </SectionCard>
 
@@ -1845,6 +1849,7 @@ const TABS_ADMIN = [
   { id: 'ia-coach-settings', label: 'IA Coach', icon: BrainCircuit },
   { id: 'gamification-settings', label: 'Gamification', icon: Zap },
   { id: 'review-cycles-settings', label: 'Review Cycles', icon: ClipboardList },
+  { id: 'integrations', label: 'Intégrations', icon: Plug },
   { id: 'platform-security', label: 'Sécurité plateforme', icon: Shield },
   { id: 'audit', label: 'Journaux d\'audit', icon: FileText },
 ]
@@ -1987,6 +1992,7 @@ export default function SettingsPage() {
       case 'ia-coach-settings': return <IACoachSettingsSection />
       case 'gamification-settings': return <GamificationSettingsSection />
       case 'review-cycles-settings': return <ReviewCyclesSettingsSection />
+      case 'integrations': return <IntegrationsPage />
       case 'platform-security': return <PlatformSecuritySection />
       case 'audit': return <AuditLogsSection />
       default: return <ProfileSection />
