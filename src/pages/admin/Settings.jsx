@@ -11,7 +11,8 @@ import {
   FileText, Save, Check, X, Eye, EyeOff, ChevronRight, Clock, Activity,
   Calendar, RefreshCw, AlertTriangle, Search, ChevronLeft, ChevronDown,
   LogIn, LogOut, UserPlus, UserX, UserCheck, Edit2, Trash2, Download,
-  Target, FolderKanban, CheckSquare, Info, Globe, Coins, Timer, MessageSquare
+  Target, FolderKanban, CheckSquare, Info, Globe, Coins, Timer, MessageSquare,
+  BarChart2
 } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
 import {
@@ -733,6 +734,9 @@ function ModulesSection() {
         <SettingRow label="Feedback 360°" description="Évaluations structurées : auto-évaluation, pairs, manager">
           <Toggle checked={form.feedback360_enabled ?? false} onChange={(v) => setForm(prev => ({ ...prev, feedback360_enabled: v }))} />
         </SettingRow>
+        <SettingRow label="Surveys d'Engagement" description="Questionnaires anonymes périodiques — score et tendance d'engagement équipe">
+          <Toggle checked={form.surveys_engagement_enabled ?? false} onChange={(v) => setForm(prev => ({ ...prev, surveys_engagement_enabled: v }))} />
+        </SettingRow>
       </SectionCard>
 
       <SectionCard title="Configuration OKR" description="Paramètres des cycles d'objectifs" icon={Target}>
@@ -1420,6 +1424,120 @@ function PulseNotificationsSection() {
   )
 }
 
+// ─── SECTION SURVEYS D'ENGAGEMENT (Admin) ─────────────────────
+
+function SurveysEngagementSettingsSection() {
+  const { data: settings, isLoading } = useAppSettings()
+  const updateSetting = useUpdateAppSetting()
+  const [form, setForm] = useState({
+    surveys_frequency: 'quarterly',
+    surveys_reminder_days: 2,
+  })
+  const [saved, setSaved] = useState(false)
+
+  useEffect(() => {
+    if (settings) {
+      setForm({
+        surveys_frequency:     settings.surveys_frequency     ?? 'quarterly',
+        surveys_reminder_days: settings.surveys_reminder_days ?? 2,
+      })
+    }
+  }, [settings])
+
+  const handleSave = async () => {
+    await Promise.all([
+      updateSetting.mutateAsync({ key: 'surveys_frequency',     value: form.surveys_frequency }),
+      updateSetting.mutateAsync({ key: 'surveys_reminder_days', value: form.surveys_reminder_days }),
+    ])
+    setSaved(true)
+    setTimeout(() => setSaved(false), 2000)
+  }
+
+  if (isLoading) return <SettingsSkeleton />
+
+  const FREQUENCY_OPTIONS = [
+    { value: 'monthly',   label: 'Mensuel' },
+    { value: 'quarterly', label: 'Trimestriel (recommandé)' },
+    { value: 'biannual',  label: 'Semestriel' },
+    { value: 'annual',    label: 'Annuel' },
+  ]
+
+  return (
+    <div className="space-y-5">
+      <SectionCard
+        title="Configuration Surveys d'Engagement"
+        description="Paramètres des questionnaires d'engagement périodiques"
+        icon={BarChart2}
+      >
+        <SettingRow label="Fréquence recommandée" description="Cadence suggérée lors de la création d'un nouveau survey">
+          <select
+            value={form.surveys_frequency}
+            onChange={e => setForm(prev => ({ ...prev, surveys_frequency: e.target.value }))}
+            className="bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-gray-200 focus:outline-none focus:border-indigo-500/50"
+          >
+            {FREQUENCY_OPTIONS.map(o => (
+              <option key={o.value} value={o.value} className="bg-gray-900">{o.label}</option>
+            ))}
+          </select>
+        </SettingRow>
+
+        <SettingRow
+          label="Rappel avant clôture (jours)"
+          description="Nombre de jours avant la date de fin pour envoyer un rappel aux non-répondants"
+        >
+          <input
+            type="number"
+            min={1}
+            max={14}
+            value={form.surveys_reminder_days}
+            onChange={e => setForm(prev => ({ ...prev, surveys_reminder_days: parseInt(e.target.value) || 2 }))}
+            className="w-20 bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-gray-200 focus:outline-none focus:border-indigo-500/50 text-center"
+          />
+        </SettingRow>
+      </SectionCard>
+
+      <SectionCard
+        title="Dimensions évaluées"
+        description="Les 5 dimensions d'engagement incluses dans chaque survey (non modifiables)"
+        icon={BarChart2}
+      >
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 py-1">
+          {[
+            { icon: '😊', label: 'Satisfaction générale', desc: 'Satisfaction globale au travail' },
+            { icon: '⚡', label: 'Motivation & Énergie',  desc: 'Niveau de motivation quotidienne' },
+            { icon: '🤝', label: 'Relation Manager',       desc: 'Qualité du soutien managérial' },
+            { icon: '🏢', label: 'Environnement',          desc: 'Qualité du cadre de travail' },
+            { icon: '⚖️', label: 'Équilibre vie pro/perso', desc: 'Équilibre entre vie pro et perso' },
+          ].map(d => (
+            <div key={d.label} className="flex items-center gap-3 bg-white/3 border border-white/8 rounded-xl p-3">
+              <span className="text-xl flex-shrink-0">{d.icon}</span>
+              <div>
+                <div className="text-sm font-medium text-gray-300">{d.label}</div>
+                <div className="text-xs text-gray-600">{d.desc}</div>
+              </div>
+              <span className="ml-auto text-xs text-gray-600 bg-white/5 border border-white/8 px-2 py-0.5 rounded-full">Échelle 1–5</span>
+            </div>
+          ))}
+        </div>
+      </SectionCard>
+
+      <div className="flex justify-end">
+        <button
+          onClick={handleSave}
+          disabled={updateSetting.isPending}
+          className="flex items-center gap-2 px-5 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-medium rounded-xl transition-all"
+        >
+          {saved ? (
+            <><Check className="w-4 h-4" /> Enregistré</>
+          ) : (
+            <><Save className="w-4 h-4" /> Enregistrer</>
+          )}
+        </button>
+      </div>
+    </div>
+  )
+}
+
 // ─── SECTION FEEDBACK 360° (Admin) ───────────────────────────
 
 function Feedback360SettingsSection() {
@@ -1532,6 +1650,7 @@ const TABS_ADMIN = [
   { id: 'modules', label: 'Modules & Cycles', icon: Blocks },
   { id: 'pulse', label: 'PULSE', icon: Activity },
   { id: 'feedback360-settings', label: 'Feedback 360°', icon: MessageSquare },
+  { id: 'surveys-settings', label: 'Surveys Engagement', icon: BarChart2 },
   { id: 'platform-security', label: 'Sécurité plateforme', icon: Shield },
   { id: 'audit', label: 'Journaux d\'audit', icon: FileText },
 ]
@@ -1555,6 +1674,7 @@ export default function SettingsPage() {
       case 'modules': return <ModulesSection />
       case 'pulse': return <PulseSettingsSection />
       case 'feedback360-settings': return <Feedback360SettingsSection />
+      case 'surveys-settings': return <SurveysEngagementSettingsSection />
       case 'platform-security': return <PlatformSecuritySection />
       case 'audit': return <AuditLogsSection />
       default: return <ProfileSection />

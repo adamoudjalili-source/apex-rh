@@ -8,7 +8,7 @@
 //    Zéro modification backend (hooks, tables, RLS inchangés)
 // ============================================================
 import { useState } from 'react'
-import { Activity, FileText, Trophy, MessageSquare } from 'lucide-react'
+import { Activity, FileText, Trophy, MessageSquare, BarChart2 } from 'lucide-react'
 import { useTasks } from '../../hooks/useTasks'
 import { useTaskFilters } from '../../hooks/useTaskFilters'
 import { useTaskRealtime } from '../../hooks/useTaskRealtime'
@@ -27,12 +27,14 @@ import { exportTasks } from '../../lib/exportExcel'
 
 // ✅ Session 25 — Pages PULSE importées comme onglets (Phase G — Étape 2)
 // ✅ Session 28 — Feedback 360° ajouté comme onglet PULSE
+// ✅ Session 29 — Surveys d'Engagement ajouté comme onglet PULSE
 // Les composants eux-mêmes ne sont PAS modifiés — seul leur emplacement UI change
-import JournalPage     from '../pulse/Journal'
-import BoardPage       from '../pulse/Board'
-import ReportsPage     from '../pulse/Reports'
-import AwardsPage      from '../pulse/Awards'
-import Feedback360Page from '../pulse/Feedback360'
+import JournalPage           from '../pulse/Journal'
+import BoardPage             from '../pulse/Board'
+import ReportsPage           from '../pulse/Reports'
+import AwardsPage            from '../pulse/Awards'
+import Feedback360Page       from '../pulse/Feedback360'
+import EngagementSurveysPage from '../pulse/EngagementSurveys'
 
 // ─── Vues Tâches (inchangées) ──────────────────────────────
 const TASK_VIEWS = [
@@ -83,10 +85,11 @@ const PULSE_VIEWS = [
   { id: 'rapports',    label: 'Rapports',    icon: <FileText     className="w-4 h-4" />, module: null },
   { id: 'awards',      label: 'Awards',      icon: <Trophy       className="w-4 h-4" />, module: null },
   { id: 'feedback360', label: 'Feedback 360°', icon: <MessageSquare className="w-4 h-4" />, module: 'feedback360_enabled' },
+  { id: 'surveys',     label: 'Surveys',     icon: <BarChart2    className="w-4 h-4" />, module: 'surveys_engagement_enabled' },
 ]
 
 // IDs des onglets PULSE purs (sans Ma Journée)
-const PULSE_VIEW_IDS = new Set(['performance', 'rapports', 'awards', 'feedback360'])
+const PULSE_VIEW_IDS = new Set(['performance', 'rapports', 'awards', 'feedback360', 'surveys'])
 
 // ─── Composant principal ─────────────────────────────────────
 export default function Tasks() {
@@ -103,10 +106,16 @@ export default function Tasks() {
   // Feedback360 actif ?
   const feedback360On = !settingsLoading && settings?.modules?.feedback360_enabled === true
 
+  // Surveys d'Engagement actifs ?
+  const surveysOn = !settingsLoading && settings?.modules?.surveys_engagement_enabled === true
+
   // Vues PULSE filtrées selon les modules activés
-  const visiblePulseViews = PULSE_VIEWS.filter(v =>
-    v.module === null || (v.module === 'feedback360_enabled' && feedback360On)
-  )
+  const visiblePulseViews = PULSE_VIEWS.filter(v => {
+    if (v.module === null) return true
+    if (v.module === 'feedback360_enabled') return feedback360On
+    if (v.module === 'surveys_engagement_enabled') return surveysOn
+    return false
+  })
 
   // Quel type de contenu afficher ?
   const isPulseTab       = PULSE_VIEW_IDS.has(activeView)
@@ -283,6 +292,7 @@ export default function Tasks() {
           {activeView === 'rapports'    && <ReportsPage />}
           {activeView === 'awards'      && <AwardsPage />}
           {activeView === 'feedback360' && <Feedback360Page />}
+          {activeView === 'surveys'     && <EngagementSurveysPage />}
         </div>
       )}
 
