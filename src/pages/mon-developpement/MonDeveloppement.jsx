@@ -1,9 +1,10 @@
 // ============================================================
-// APEX RH — MonDeveloppement.jsx  ·  Session 41 (RÉÉCRITURE COMPLÈTE)
+// APEX RH — MonDeveloppement.jsx  ·  Session 43 (IA Générative)
 // Route /mon-developpement
 //   • PDI : Plan de Développement Individuel avec actions par compétence
 //   • Feedbacks 360° reçus : radar compétences + synthèse commentaires
 //   • Boucle fermée : Review Cycles → PDI → Objectifs
+//   • IA Coach : chat contextuel + génération PDI automatique (S43)
 // ⚠️ NE PAS réintroduire de score IPR composite côté employé
 // ⚠️ NE PAS modifier Sidebar.jsx, App.jsx, useTasks.js, usePulse.js
 // ============================================================
@@ -20,9 +21,15 @@ import {
 import { useFeedbackReceived, FEEDBACK_QUESTIONS } from '../../hooks/useFeedback360'
 import { useMyEvaluations, OVERALL_RATING_LABELS, OVERALL_RATING_COLORS } from '../../hooks/useReviewCycles'
 import {
+  useGeneratePDISuggestions, useMyPDISuggestions, useAcceptPDISuggestion,
+  AI_CONTEXT_TYPES,
+} from '../../hooks/useGenerativeAI'
+import AIAssistant from '../../components/ai/AIAssistant'
+import {
   BookOpen, Target, MessageSquare, CheckCircle2, Circle,
   Plus, ChevronDown, Trash2, Pencil, X, Check,
   TrendingUp, Zap, RefreshCw, Calendar, ArrowRight, ChevronRight,
+  Sparkles, Brain,
 } from 'lucide-react'
 
 // ─── Animations ──────────────────────────────────────────────
@@ -521,6 +528,156 @@ function TabBoucle({ profile }) {
   )
 }
 
+// ─── Onglet IA Coach ─────────────────────────────────────────
+function TabIACoach({ profile }) {
+  const generatePDI  = useGeneratePDISuggestions()
+  const acceptSugg   = useAcceptPDISuggestion()
+  const { data: suggestions = [], isLoading: suggLoading } = useMyPDISuggestions()
+  const createAction = useCreateAction()
+  const { data: plan } = useMyPlan(CURRENT_PERIOD())
+  const upsertPlan   = useUpsertPlan()
+
+  const [showSuggestions, setShowSuggestions] = useState(false)
+  const pending = suggestions.filter(s => !s.accepted)
+
+  const PRIORITY_COLORS = { high:'#EF4444', medium:'#F59E0B', low:'#10B981' }
+  const COMP_LABELS = {
+    quality:'Qualité', deadlines:'Délais', communication:'Communication',
+    teamwork:'Équipe', initiative:'Initiative',
+  }
+
+  const handleGenerate = async () => {
+    try {
+      await generatePDI.mutateAsync({ userId: profile?.id })
+      setShowSuggestions(true)
+    } catch (err) {
+      console.error('[TabIACoach] Erreur génération:', err)
+    }
+  }
+
+  const handleAcceptSuggestion = async (sugg) => {
+    let currentPlan = plan
+    if (!currentPlan) {
+      currentPlan = await upsertPlan.mutateAsync({ period_label: CURRENT_PERIOD() })
+    }
+    await createAction.mutateAsync({
+      plan_id       : currentPlan.id,
+      title         : sugg.suggested_action,
+      description   : sugg.rationale,
+      competency_key: sugg.competency_key,
+      priority      : sugg.priority,
+      status        : 'todo',
+    })
+    await acceptSugg.mutateAsync({ suggestionId: sugg.id })
+  }
+
+  return (
+    <div className="space-y-5">
+      {/* Chat IA */}
+      <AIAssistant
+        contextKey="developpement"
+        contextType={AI_CONTEXT_TYPES.DEVELOPPEMENT}
+        contextData={{ userId: profile?.id }}
+        placeholder="Demandez des conseils sur votre développement…"
+      />
+
+      {/* Section Génération PDI IA */}
+      <div className="rounded-2xl border border-white/[0.07] overflow-hidden"
+        style={{ background: 'rgba(16,185,129,0.03)' }}>
+        <div className="px-4 py-3 flex items-center justify-between border-b border-white/[0.05]">
+          <div className="flex items-center gap-2">
+            <Brain size={14} style={{ color: ACCENT }} />
+            <p className="text-sm font-semibold text-white/80">Générer mon PDI avec l'IA</p>
+          </div>
+          <button
+            onClick={handleGenerate}
+            disabled={generatePDI.isPending}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all disabled:opacity-50"
+            style={{ background: `${ACCENT}20`, color: ACCENT, border: `1px solid ${ACCENT}30` }}
+          >
+            {generatePDI.isPending
+              ? <><div className="w-3 h-3 border border-current border-t-transparent rounded-full animate-spin" style={{display:'inline-block',marginRight:4}}/>Analyse...</>
+              : <><Sparkles size={11} style={{display:'inline',marginRight:4}}/>Analyser mes données</>
+            }
+          </button>
+        </div>
+        <div className="px-4 py-3">
+          <p className="text-xs text-white/30 leading-relaxed">
+            L'IA analyse vos feedbacks 360°, vos évaluations formelles et votre PULSE pour vous proposer
+            des actions de développement prioritaires adaptées à votre profil.
+          </p>
+          {generatePDI.isError && (
+            <p className="text-xs text-red-400 mt-2">
+              ⚠️ {generatePDI.error?.message ?? 'Erreur lors de la génération. Vérifiez ANTHROPIC_API_KEY.'}
+            </p>
+          )}
+        </div>
+
+        <AnimatePresence>
+          {(showSuggestions || pending.length > 0) && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: 'auto', opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              className="overflow-hidden border-t border-white/[0.05]"
+            >
+              <div className="px-4 py-3 space-y-2">
+                {suggLoading || generatePDI.isPending ? (
+                  <div className="flex items-center gap-2 py-3 justify-center">
+                    <div className="w-4 h-4 border-2 border-emerald-500/30 border-t-emerald-500 rounded-full animate-spin"/>
+                    <p className="text-xs text-white/30">Génération des suggestions...</p>
+                  </div>
+                ) : pending.length === 0 ? (
+                  <p className="text-xs text-white/25 text-center py-2">
+                    Toutes les suggestions ont été acceptées dans votre PDI. ✓
+                  </p>
+                ) : (
+                  <>
+                    <p className="text-[11px] text-white/30 mb-2">
+                      {pending.length} suggestion{pending.length > 1 ? 's' : ''} IA — cliquez pour ajouter à votre PDI :
+                    </p>
+                    {pending.map(s => (
+                      <motion.div key={s.id}
+                        initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }}
+                        className="flex items-start gap-3 p-3 rounded-xl border border-white/[0.06]"
+                        style={{ background: 'rgba(255,255,255,0.025)' }}
+                      >
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-1 flex-wrap">
+                            <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full"
+                              style={{ background: `${ACCENT}15`, color: ACCENT }}>
+                              {COMP_LABELS[s.competency_key] ?? s.competency_key}
+                            </span>
+                            <span className="text-[10px] px-1.5 py-0.5 rounded-full"
+                              style={{ background: `${PRIORITY_COLORS[s.priority] ?? '#6B7280'}15`,
+                                       color: PRIORITY_COLORS[s.priority] ?? '#6B7280' }}>
+                              {s.priority === 'high' ? 'Priorité haute' : s.priority === 'low' ? 'Priorité basse' : 'Priorité normale'}
+                            </span>
+                          </div>
+                          <p className="text-xs text-white/75 font-medium">{s.suggested_action}</p>
+                          {s.rationale && <p className="text-[11px] text-white/30 mt-1">{s.rationale}</p>}
+                        </div>
+                        <button
+                          onClick={() => handleAcceptSuggestion(s)}
+                          disabled={createAction.isPending || acceptSugg.isPending}
+                          className="flex-shrink-0 flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[11px] font-semibold transition-all disabled:opacity-40"
+                          style={{ background: `${ACCENT}20`, color: ACCENT, border: `1px solid ${ACCENT}30` }}
+                        >
+                          <Plus size={10}/>Ajouter
+                        </button>
+                      </motion.div>
+                    ))}
+                  </>
+                )}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+    </div>
+  )
+}
+
 // ─── COMPOSANT PRINCIPAL ──────────────────────────────────────
 export default function MonDeveloppement() {
   const { profile }  = useAuth()
@@ -535,6 +692,7 @@ export default function MonDeveloppement() {
     { id:'pdi',       label:'Mon PDI',         icon:BookOpen,       color:ACCENT    },
     { id:'feedbacks', label:'Feedbacks reçus',  icon:MessageSquare,  color:'#4F46E5' },
     { id:'boucle',    label:'Boucle & Reviews', icon:RefreshCw,      color:'#F59E0B' },
+    { id:'ia',        label:'IA Coach',         icon:Brain,          color:'#10B981' },
   ]
 
   return (
@@ -544,13 +702,19 @@ export default function MonDeveloppement() {
 
       {/* Header */}
       <motion.div variants={fadeUp} className="px-5 pt-5 pb-3 border-b border-white/[0.06] flex-shrink-0">
-        <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{background:`${ACCENT}15`,border:`1px solid ${ACCENT}25`}}>
-            <BookOpen size={16} style={{color:ACCENT}}/>
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{background:`${ACCENT}15`,border:`1px solid ${ACCENT}25`}}>
+              <BookOpen size={16} style={{color:ACCENT}}/>
+            </div>
+            <div>
+              <h1 className="text-xl font-bold text-white" style={{fontFamily:"'Syne',sans-serif"}}>Mon Développement</h1>
+              <p className="text-xs text-white/30">PDI · Feedbacks · Compétences · IA Coach</p>
+            </div>
           </div>
-          <div>
-            <h1 className="text-xl font-bold text-white" style={{fontFamily:"'Syne',sans-serif"}}>Mon Développement</h1>
-            <p className="text-xs text-white/30">PDI · Feedbacks · Compétences · Progression</p>
+          <div className="flex items-center gap-1.5 text-[11px] px-2.5 py-1 rounded-full"
+            style={{ background:'rgba(16,185,129,0.1)', color:'#34D399', border:'1px solid rgba(16,185,129,0.2)' }}>
+            <Brain size={11}/>IA Active
           </div>
         </div>
       </motion.div>
@@ -561,11 +725,12 @@ export default function MonDeveloppement() {
           {TABS.map(tab=>{
             const Icon=tab.icon, isActive=activeTab===tab.id
             return <button key={tab.id} onClick={()=>setActiveTab(tab.id)}
-              className="flex-1 flex items-center justify-center gap-1.5 py-2 px-2 rounded-lg text-xs font-medium transition-all"
+              className="flex-1 flex items-center justify-center gap-1.5 py-2 px-2 rounded-lg text-xs font-medium transition-all relative"
               style={isActive?{background:`${tab.color}20`,color:tab.color,border:`1px solid ${tab.color}30`}:{color:'rgba(255,255,255,0.3)'}}>
               <Icon size={12}/>
               <span className="hidden sm:inline">{tab.label}</span>
-              <span className="sm:hidden">{tab.id==='pdi'?'PDI':tab.id==='feedbacks'?'F360':'Boucle'}</span>
+              <span className="sm:hidden">{tab.id==='pdi'?'PDI':tab.id==='feedbacks'?'F360':tab.id==='boucle'?'Boucle':'IA'}</span>
+              {tab.id==='ia' && !isActive && <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-emerald-400 animate-pulse"/>}
             </button>
           })}
         </div>
@@ -578,6 +743,7 @@ export default function MonDeveloppement() {
             {activeTab==='pdi'       && <TabPDI       profile={profile} reviewCycles={reviewCycles}/>}
             {activeTab==='feedbacks' && <TabFeedbacks profile={profile}/>}
             {activeTab==='boucle'    && <TabBoucle    profile={profile}/>}
+            {activeTab==='ia'        && <TabIACoach   profile={profile}/>}
           </motion.div>
         </AnimatePresence>
       </div>

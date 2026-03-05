@@ -13,7 +13,7 @@ import {
   Users, AlertTriangle, X, Activity, BarChart3,
   ArrowRight, ChevronRight, Trophy, Target, MessageSquare,
   ClipboardList, TrendingUp, TrendingDown, Minus,
-  Plus, Pencil, Trash2, Check,
+  Plus, Pencil, Trash2, Check, Brain, Sparkles,
 } from 'lucide-react'
 import { useAuth }     from '../../contexts/AuthContext'
 import { useTeamIPR }  from '../../hooks/useIPR'
@@ -25,6 +25,9 @@ import {
   useManagerNotes, useUpsertManagerNote, useDeleteManagerNote,
   NOTE_TYPE_LABELS, currentPeriodKey,
 } from '../../hooks/useTransparency'
+import PredictiveAlerts from '../../components/ai/PredictiveAlerts'
+import AIAssistant from '../../components/ai/AIAssistant'
+import { AI_CONTEXT_TYPES, useGenerateManagerInsight } from '../../hooks/useGenerativeAI'
 
 // ─── Helpers ─────────────────────────────────────────────────
 const roleLabel = r => ({
@@ -141,6 +144,9 @@ export default function MonEquipe() {
             }`}>{f.label}</button>
         ))}
       </div>
+
+      {/* Alertes Prédictives IA — S43 */}
+      <PredictiveAlerts serviceId={profile?.service_id} />
 
       {/* Table + Panel */}
       <div className="flex gap-5 flex-1 min-h-0">
@@ -437,16 +443,8 @@ function PersonPanel({ member: m, onClose, onNavigate }) {
         {/* Notes Manager */}
         <ManagerNotesPanel employeeId={m.id} employeeName={m.firstName} />
 
-        {/* Recommandation IA */}
-        <div className="rounded-xl p-4"
-          style={{ background:'rgba(79,70,229,0.07)', border:'1px solid rgba(79,70,229,0.13)' }}>
-          <p className="text-[10px] font-semibold text-indigo-400 uppercase tracking-wider mb-2 flex items-center gap-1">
-            ⚡ Recommandation IA Coach
-          </p>
-          <p className="text-[11px] text-white/55 leading-relaxed">
-            {generateRecommendation(m)}
-          </p>
-        </div>
+        {/* Assistant IA Manager */}
+        <AIManagerPanel member={m} />
       </div>
 
       {/* Actions */}
@@ -470,6 +468,101 @@ function PersonPanel({ member: m, onClose, onNavigate }) {
           Fermer
         </button>
       </div>
+    </div>
+  )
+}
+
+
+// ─── Panel Assistant IA Manager ─────────────────────────────
+function AIManagerPanel({ member }) {
+  const [showChat, setShowChat] = useState(false)
+  const generateInsight = useGenerateManagerInsight()
+  const [insight, setInsight] = useState(null)
+  const [loadingInsight, setLoadingInsight] = useState(false)
+
+  const memberData = {
+    name   : `${member.firstName} ${member.lastName}`,
+    role   : member.role,
+    ipr    : member.ipr,
+    pulse  : member.pulseAvg,
+    okr    : member.okrScore,
+    f360   : member.f360Score,
+    nita   : member.activiteScore,
+    alert  : member.alert,
+    trend  : member.trend,
+  }
+
+  const handleGetInsight = async () => {
+    setLoadingInsight(true)
+    try {
+      const result = await generateInsight.mutateAsync({ memberData })
+      setInsight(result)
+    } catch (err) {
+      console.error('[AIManagerPanel] Erreur:', err)
+    } finally {
+      setLoadingInsight(false)
+    }
+  }
+
+  return (
+    <div className="rounded-xl overflow-hidden"
+      style={{ background:'rgba(79,70,229,0.07)', border:'1px solid rgba(79,70,229,0.13)' }}>
+      <div className="px-4 py-3 flex items-center justify-between">
+        <p className="text-[10px] font-semibold text-indigo-400 uppercase tracking-wider flex items-center gap-1.5">
+          <Brain size={11}/> Assistant IA Manager
+        </p>
+        <div className="flex items-center gap-1.5">
+          <button
+            onClick={handleGetInsight}
+            disabled={loadingInsight}
+            className="flex items-center gap-1 text-[10px] px-2 py-1 rounded-lg transition-all disabled:opacity-40"
+            style={{ background:'rgba(79,70,229,0.15)', color:'#818CF8' }}
+          >
+            {loadingInsight
+              ? <><div className="w-2.5 h-2.5 border border-current border-t-transparent rounded-full animate-spin inline-block mr-1"/>Analyse...</>
+              : <><Sparkles size={9} className="inline mr-1"/>Insight IA</>
+            }
+          </button>
+          <button
+            onClick={() => setShowChat(v => !v)}
+            className="text-[10px] px-2 py-1 rounded-lg transition-all"
+            style={{ background: showChat ? 'rgba(79,70,229,0.25)' : 'rgba(79,70,229,0.1)', color:'#818CF8' }}
+          >
+            {showChat ? 'Fermer chat' : 'Chat IA'}
+          </button>
+        </div>
+      </div>
+
+      {/* Insight ou recommandation statique */}
+      {!insight && !loadingInsight && (
+        <div className="px-4 pb-3">
+          <p className="text-[11px] text-white/55 leading-relaxed">
+            {generateRecommendation(member)}
+          </p>
+          <p className="text-[10px] text-white/20 mt-1">
+            ↑ Cliquez "Insight IA" pour une analyse personnalisée
+          </p>
+        </div>
+      )}
+
+      {insight && (
+        <div className="px-4 pb-3">
+          <p className="text-[11px] text-white/70 leading-relaxed whitespace-pre-wrap">{insight}</p>
+        </div>
+      )}
+
+      {/* Chat contextuel */}
+      {showChat && (
+        <div className="border-t border-white/[0.07] p-3">
+          <AIAssistant
+            contextKey={`equipe_${member.id}`}
+            contextType={AI_CONTEXT_TYPES.MANAGER}
+            contextData={memberData}
+            compact={true}
+            placeholder={`Posez vos questions sur ${member.firstName}…`}
+          />
+        </div>
+      )}
     </div>
   )
 }
