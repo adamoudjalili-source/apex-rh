@@ -3,10 +3,12 @@
 // ✅ Session 25 — Phase G : Fusion UI PULSE
 //    Onglets Performance (Board), Rapports, Awards ajoutés
 //    Ma Journée → Journal.jsx (PULSE) quand pulse activé
+// ✅ Session 28 — Ajout onglet Feedback 360°
+//    Visible uniquement si feedback360_enabled dans settings.modules
 //    Zéro modification backend (hooks, tables, RLS inchangés)
 // ============================================================
 import { useState } from 'react'
-import { Activity, FileText, Trophy } from 'lucide-react'
+import { Activity, FileText, Trophy, MessageSquare } from 'lucide-react'
 import { useTasks } from '../../hooks/useTasks'
 import { useTaskFilters } from '../../hooks/useTaskFilters'
 import { useTaskRealtime } from '../../hooks/useTaskRealtime'
@@ -24,11 +26,13 @@ import ExportButton from '../../components/ui/ExportButton'
 import { exportTasks } from '../../lib/exportExcel'
 
 // ✅ Session 25 — Pages PULSE importées comme onglets (Phase G — Étape 2)
+// ✅ Session 28 — Feedback 360° ajouté comme onglet PULSE
 // Les composants eux-mêmes ne sont PAS modifiés — seul leur emplacement UI change
-import JournalPage  from '../pulse/Journal'
-import BoardPage    from '../pulse/Board'
-import ReportsPage  from '../pulse/Reports'
-import AwardsPage   from '../pulse/Awards'
+import JournalPage     from '../pulse/Journal'
+import BoardPage       from '../pulse/Board'
+import ReportsPage     from '../pulse/Reports'
+import AwardsPage      from '../pulse/Awards'
+import Feedback360Page from '../pulse/Feedback360'
 
 // ─── Vues Tâches (inchangées) ──────────────────────────────
 const TASK_VIEWS = [
@@ -75,13 +79,14 @@ const TASK_VIEWS = [
 
 // ─── Vues PULSE (affichées uniquement si pulse_enabled) ─────
 const PULSE_VIEWS = [
-  { id: 'performance', label: 'Performance', icon: <Activity className="w-4 h-4" /> },
-  { id: 'rapports',    label: 'Rapports',    icon: <FileText  className="w-4 h-4" /> },
-  { id: 'awards',      label: 'Awards',      icon: <Trophy    className="w-4 h-4" /> },
+  { id: 'performance', label: 'Performance', icon: <Activity     className="w-4 h-4" />, module: null },
+  { id: 'rapports',    label: 'Rapports',    icon: <FileText     className="w-4 h-4" />, module: null },
+  { id: 'awards',      label: 'Awards',      icon: <Trophy       className="w-4 h-4" />, module: null },
+  { id: 'feedback360', label: 'Feedback 360°', icon: <MessageSquare className="w-4 h-4" />, module: 'feedback360_enabled' },
 ]
 
 // IDs des onglets PULSE purs (sans Ma Journée)
-const PULSE_VIEW_IDS = new Set(['performance', 'rapports', 'awards'])
+const PULSE_VIEW_IDS = new Set(['performance', 'rapports', 'awards', 'feedback360'])
 
 // ─── Composant principal ─────────────────────────────────────
 export default function Tasks() {
@@ -94,6 +99,14 @@ export default function Tasks() {
 
   // PULSE actif ?
   const pulseOn = !settingsLoading && isPulseEnabled(settings)
+
+  // Feedback360 actif ?
+  const feedback360On = !settingsLoading && settings?.modules?.feedback360_enabled === true
+
+  // Vues PULSE filtrées selon les modules activés
+  const visiblePulseViews = PULSE_VIEWS.filter(v =>
+    v.module === null || (v.module === 'feedback360_enabled' && feedback360On)
+  )
 
   // Quel type de contenu afficher ?
   const isPulseTab       = PULSE_VIEW_IDS.has(activeView)
@@ -206,7 +219,7 @@ export default function Tasks() {
           {pulseOn && (
             <>
               <div className="w-px h-5 bg-white/10 mx-1 flex-shrink-0" />
-              {PULSE_VIEWS.map(view => (
+              {visiblePulseViews.map(view => (
                 <button
                   key={view.id}
                   onClick={() => setActiveView(view.id)}
@@ -263,12 +276,13 @@ export default function Tasks() {
         </div>
       )}
 
-      {/* ── Contenu PULSE — onglets Performance / Rapports / Awards ── */}
+      {/* ── Contenu PULSE — onglets Performance / Rapports / Awards / Feedback360 ── */}
       {isPulseTab && (
         <div className="flex-1 min-h-0 overflow-y-auto">
           {activeView === 'performance' && <BoardPage />}
           {activeView === 'rapports'    && <ReportsPage />}
           {activeView === 'awards'      && <AwardsPage />}
+          {activeView === 'feedback360' && <Feedback360Page />}
         </div>
       )}
 

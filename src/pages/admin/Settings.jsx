@@ -11,7 +11,7 @@ import {
   FileText, Save, Check, X, Eye, EyeOff, ChevronRight, Clock, Activity,
   Calendar, RefreshCw, AlertTriangle, Search, ChevronLeft, ChevronDown,
   LogIn, LogOut, UserPlus, UserX, UserCheck, Edit2, Trash2, Download,
-  Target, FolderKanban, CheckSquare, Info, Globe, Coins, Timer
+  Target, FolderKanban, CheckSquare, Info, Globe, Coins, Timer, MessageSquare
 } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
 import {
@@ -730,6 +730,9 @@ function ModulesSection() {
         <SettingRow label="Gestion des Projets" description="Gantt, jalons, livrables, risques, équipe">
           <Toggle checked={form.projects_enabled} onChange={(v) => setForm(prev => ({ ...prev, projects_enabled: v }))} />
         </SettingRow>
+        <SettingRow label="Feedback 360°" description="Évaluations structurées : auto-évaluation, pairs, manager">
+          <Toggle checked={form.feedback360_enabled ?? false} onChange={(v) => setForm(prev => ({ ...prev, feedback360_enabled: v }))} />
+        </SettingRow>
       </SectionCard>
 
       <SectionCard title="Configuration OKR" description="Paramètres des cycles d'objectifs" icon={Target}>
@@ -1417,6 +1420,105 @@ function PulseNotificationsSection() {
   )
 }
 
+// ─── SECTION FEEDBACK 360° (Admin) ───────────────────────────
+
+function Feedback360SettingsSection() {
+  const { data: settings, isLoading } = useAppSettings()
+  const updateSetting = useUpdateAppSetting()
+  const [form, setForm] = useState({
+    feedback360_anonymous: false,
+    feedback360_scores_visible: false,
+  })
+  const [saved, setSaved] = useState(false)
+
+  useEffect(() => {
+    if (settings) {
+      setForm({
+        feedback360_anonymous:       settings.feedback360_anonymous       ?? false,
+        feedback360_scores_visible:  settings.feedback360_scores_visible  ?? false,
+      })
+    }
+  }, [settings])
+
+  const handleSave = async () => {
+    await Promise.all([
+      updateSetting.mutateAsync({ key: 'feedback360_anonymous',      value: form.feedback360_anonymous }),
+      updateSetting.mutateAsync({ key: 'feedback360_scores_visible', value: form.feedback360_scores_visible }),
+    ])
+    setSaved(true)
+    setTimeout(() => setSaved(false), 2000)
+  }
+
+  if (isLoading) return <SettingsSkeleton />
+
+  return (
+    <div className="space-y-5">
+      <SectionCard
+        title="Paramètres Feedback 360°"
+        description="Configuration du module d'évaluation à 360 degrés"
+        icon={MessageSquare}
+      >
+        <SettingRow
+          label="Feedbacks anonymes"
+          description="L'évalué ne voit pas le nom de son évaluateur (pair) — le manager reste identifié"
+        >
+          <Toggle
+            checked={form.feedback360_anonymous}
+            onChange={(v) => setForm(prev => ({ ...prev, feedback360_anonymous: v }))}
+          />
+        </SettingRow>
+
+        <SettingRow
+          label="Scores visibles par l'évalué"
+          description="L'évalué peut consulter ses scores détaillés (sans les commentaires si anonyme)"
+        >
+          <Toggle
+            checked={form.feedback360_scores_visible}
+            onChange={(v) => setForm(prev => ({ ...prev, feedback360_scores_visible: v }))}
+          />
+        </SettingRow>
+      </SectionCard>
+
+      <SectionCard
+        title="Questions évaluées"
+        description="Les 5 compétences mesurées dans chaque feedback (non modifiables pour l'instant)"
+        icon={FileText}
+      >
+        {[
+          { key: 'quality',       label: 'Qualité du travail',       icon: '⭐' },
+          { key: 'deadlines',     label: 'Respect des délais',       icon: '⏱️' },
+          { key: 'communication', label: 'Communication',            icon: '💬' },
+          { key: 'teamwork',      label: 'Esprit d\'équipe',         icon: '🤝' },
+          { key: 'initiative',    label: 'Initiative & Proactivité', icon: '🚀' },
+        ].map(q => (
+          <SettingRow key={q.key} label={`${q.icon} ${q.label}`} description="Score de 0 à 10">
+            <span className="text-xs text-gray-500 bg-white/5 border border-white/10 rounded-lg px-2 py-1">
+              0 – 10
+            </span>
+          </SettingRow>
+        ))}
+        <p className="text-xs text-gray-600 mt-3">
+          + Commentaire libre ajouté automatiquement à chaque formulaire
+        </p>
+      </SectionCard>
+
+      <div className="flex justify-end">
+        <button
+          onClick={handleSave}
+          disabled={updateSetting.isPending}
+          className={`flex items-center gap-2 px-5 py-2 text-sm font-semibold rounded-xl transition-all ${
+            saved
+              ? 'bg-emerald-600 text-white'
+              : 'bg-indigo-600 hover:bg-indigo-500 text-white disabled:opacity-50'
+          }`}
+        >
+          {saved ? <><Check size={16} /> Enregistré</> : <><Save size={16} /> Enregistrer</>}
+        </button>
+      </div>
+    </div>
+  )
+}
+
 const TABS_USER = [
   { id: 'profile', label: 'Mon profil', icon: User },
   { id: 'security', label: 'Sécurité', icon: Lock },
@@ -1429,6 +1531,7 @@ const TABS_ADMIN = [
   { id: 'company', label: 'Entreprise', icon: Building2 },
   { id: 'modules', label: 'Modules & Cycles', icon: Blocks },
   { id: 'pulse', label: 'PULSE', icon: Activity },
+  { id: 'feedback360-settings', label: 'Feedback 360°', icon: MessageSquare },
   { id: 'platform-security', label: 'Sécurité plateforme', icon: Shield },
   { id: 'audit', label: 'Journaux d\'audit', icon: FileText },
 ]
@@ -1451,6 +1554,7 @@ export default function SettingsPage() {
       case 'company': return <CompanySection />
       case 'modules': return <ModulesSection />
       case 'pulse': return <PulseSettingsSection />
+      case 'feedback360-settings': return <Feedback360SettingsSection />
       case 'platform-security': return <PlatformSecuritySection />
       case 'audit': return <AuditLogsSection />
       default: return <ProfileSection />

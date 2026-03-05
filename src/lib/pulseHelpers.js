@@ -306,3 +306,13 @@ export function getAvailabilityOptions() {
   }
   return opts
 }
+
+// ─── FEEDBACK 360° ──────────────────────────────────────────
+/**
+ * Vérifie si le module Feedback 360° est activé
+ * (stocké dans settings.modules.feedback360_enabled)
+ */
+export function isFeedback360Enabled(settings) {
+  if (!settings) return false
+  return settings.modules?.feedback360_enabled === true
+}
