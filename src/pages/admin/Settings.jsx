@@ -30,6 +30,7 @@ import {
   useUsersList,
 } from '../../hooks/useSettings'
 import { logAudit } from '../../lib/auditLog'
+import { supabase } from '../../lib/supabase'
 import {
   useNotificationPreferences,
   useUpdateNotificationPreferences,
@@ -1991,19 +1992,6 @@ function CompetencyFrameworkSection() {
   const [draftFamily, setDraftFamily] = useState({ name:'', code:'', description:'', color:'#4F46E5', icon:'💼' })
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
-  const [editComp, setEditComp] = useState(null)
-  const [draftComp, setDraftComp] = useState({ competency_key:'quality', label:'', description:'', weight:20, level_1_desc:'', level_3_desc:'', level_5_desc:'' })
-
-  const { supabase: _sb } = (() => {
-    try { return { supabase: require('../../lib/supabase').supabase } }
-    catch { return { supabase: null } }
-  })()
-
-  // Import supabase correctly
-  const { supabase: sb } = (() => {
-    const mod = require('../../lib/supabase')
-    return { supabase: mod.supabase || mod.default }
-  })()
 
   useEffect(() => {
     loadFamilies()
@@ -2011,23 +1999,20 @@ function CompetencyFrameworkSection() {
 
   async function loadFamilies() {
     try {
-      const { data } = await sb.from('job_families').select('*').order('name')
+      const { data } = await supabase.from('job_families').select('*').order('name')
       setFamilies(data || [])
-      if (data?.length && !selected) setSelected(data[0])
+      if (data?.length) setSelected(prev => prev || data[0])
     } catch {}
     setLoading(false)
   }
 
-  async function loadSelected(fam) {
-    setSelected(fam)
-  }
-
   async function handleSaveFamily() {
+    if (!draftFamily.name) return
     setSaving(true)
     try {
-      const { data, error } = await sb.from('job_families').insert({
+      const { data, error } = await supabase.from('job_families').insert({
         name: draftFamily.name,
-        code: draftFamily.code?.toUpperCase(),
+        code: draftFamily.code?.toUpperCase() || null,
         description: draftFamily.description,
         color: draftFamily.color,
         icon: draftFamily.icon,
@@ -2042,14 +2027,6 @@ function CompetencyFrameworkSection() {
     setSaving(false)
   }
 
-  const COMP_KEYS = [
-    { k:'quality', l:'Qualité du travail' },
-    { k:'deadlines', l:'Respect des délais' },
-    { k:'communication', l:'Communication' },
-    { k:'teamwork', l:'Esprit d\'équipe' },
-    { k:'initiative', l:'Initiative & Proactivité' },
-  ]
-
   return (
     <div className="space-y-5">
       <SectionCard title="Référentiel Compétences" description="Familles de métiers NITA et grilles d'évaluation par poste" icon={TrendingUp}>
@@ -2062,7 +2039,7 @@ function CompetencyFrameworkSection() {
               <p className="text-xs text-white/30 font-medium mb-2">Familles de métiers</p>
               <div className="space-y-1 mb-3">
                 {families.map(fam => (
-                  <button key={fam.id} onClick={()=>loadSelected(fam)}
+                  <button key={fam.id} onClick={()=>setSelected(fam)}
                     className={`w-full flex items-center gap-2 px-3 py-2 rounded-xl text-left text-xs transition-all ${selected?.id===fam.id?'bg-indigo-500/15 border border-indigo-500/30 text-white':'text-white/50 hover:bg-white/5 hover:text-white/80'}`}>
                     <span>{fam.icon}</span>
                     <span className="flex-1 font-medium truncate">{fam.name}</span>
@@ -2127,10 +2104,6 @@ function FamilyCompetencyEditor({ family }) {
   const [editing, setEditing] = useState(null)
   const [saving, setSaving] = useState(false)
 
-  const { supabase: sb } = (() => {
-    const mod = require('../../lib/supabase'); return { supabase: mod.supabase || mod.default }
-  })()
-
   const COMP_KEYS = [
     { k:'quality', l:'Qualité du travail', icon:'⭐' },
     { k:'deadlines', l:'Respect des délais', icon:'⏱️' },
@@ -2141,7 +2114,7 @@ function FamilyCompetencyEditor({ family }) {
 
   useEffect(() => {
     setLoading(true)
-    sb.from('competency_frameworks').select('*')
+    supabase.from('competency_frameworks').select('*')
       .eq('job_family_id', family.id).eq('is_active', true).order('sort_order')
       .then(({ data }) => { setItems(data||[]); setLoading(false) })
   }, [family.id])
@@ -2149,7 +2122,7 @@ function FamilyCompetencyEditor({ family }) {
   async function handleSave(item) {
     setSaving(true)
     try {
-      const { data } = await sb.from('competency_frameworks')
+      const { data } = await supabase.from('competency_frameworks')
         .upsert({ ...item, job_family_id: family.id }, { onConflict:'job_family_id,competency_key' })
         .select().single()
       if (data) {
