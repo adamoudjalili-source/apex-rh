@@ -6,9 +6,11 @@
 // ✅ Session 28 — Ajout onglet Feedback 360°
 //    Visible uniquement si feedback360_enabled dans settings.modules
 //    Zéro modification backend (hooks, tables, RLS inchangés)
+// ✅ Session 33 — Ajout onglet Analytics Avancés & Prédictif
+//    Visible uniquement si analytics_enabled dans settings.modules
 // ============================================================
 import { useState } from 'react'
-import { Activity, FileText, Trophy, MessageSquare, BarChart2, BrainCircuit, Zap, ClipboardList } from 'lucide-react'
+import { Activity, FileText, Trophy, MessageSquare, BarChart2, BrainCircuit, Zap, ClipboardList, TrendingUp } from 'lucide-react'
 import { useTasks } from '../../hooks/useTasks'
 import { useTaskFilters } from '../../hooks/useTaskFilters'
 import { useTaskRealtime } from '../../hooks/useTaskRealtime'
@@ -40,6 +42,7 @@ import EngagementSurveysPage from '../pulse/EngagementSurveys'
 import AICoachPage           from '../pulse/AICoach'
 import GamificationPage      from '../pulse/Gamification'
 import ReviewCyclesPage      from '../pulse/ReviewCycles'
+import AnalyticsPage         from '../pulse/Analytics'
 
 // ─── Vues Tâches (inchangées) ──────────────────────────────
 const TASK_VIEWS = [
@@ -94,10 +97,11 @@ const PULSE_VIEWS = [
   { id: 'ia_coach',    label: 'IA Coach',    icon: <BrainCircuit className="w-4 h-4" />, module: 'ia_coach_enabled' },
   { id: 'gamification', label: 'Gamification', icon: <Zap        className="w-4 h-4" />, module: 'gamification_enabled' },
   { id: 'review_cycles', label: 'Review Cycles', icon: <ClipboardList className="w-4 h-4" />, module: 'review_cycles_enabled' },
+  { id: 'analytics',    label: 'Analytics',     icon: <TrendingUp   className="w-4 h-4" />, module: 'analytics_enabled' },
 ]
 
 // IDs des onglets PULSE purs (sans Ma Journée)
-const PULSE_VIEW_IDS = new Set(['performance', 'rapports', 'awards', 'feedback360', 'surveys', 'ia_coach', 'gamification', 'review_cycles'])
+const PULSE_VIEW_IDS = new Set(['performance', 'rapports', 'awards', 'feedback360', 'surveys', 'ia_coach', 'gamification', 'review_cycles', 'analytics'])
 
 // ─── Composant principal ─────────────────────────────────────
 export default function Tasks() {
@@ -126,6 +130,9 @@ export default function Tasks() {
   // Review Cycles actif ?
   const reviewCyclesOn = !settingsLoading && settings?.modules?.review_cycles_enabled === true
 
+  // Analytics Avancés actif ?
+  const analyticsOn = !settingsLoading && settings?.modules?.analytics_enabled === true
+
   // Vues PULSE filtrées selon les modules activés
   const visiblePulseViews = PULSE_VIEWS.filter(v => {
     if (v.module === null) return true
@@ -134,6 +141,7 @@ export default function Tasks() {
     if (v.module === 'ia_coach_enabled') return iaCoachOn
     if (v.module === 'gamification_enabled') return gamificationOn
     if (v.module === 'review_cycles_enabled') return reviewCyclesOn
+    if (v.module === 'analytics_enabled') return analyticsOn
     return false
   })
 
@@ -316,6 +324,7 @@ export default function Tasks() {
           {activeView === 'ia_coach'    && <AICoachPage />}
           {activeView === 'gamification' && <GamificationPage />}
           {activeView === 'review_cycles' && <ReviewCyclesPage />}
+          {activeView === 'analytics'    && <AnalyticsPage />}
         </div>
       )}
 

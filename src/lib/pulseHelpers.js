@@ -346,3 +346,14 @@ export function isReviewCyclesEnabled(settings) {
   if (!settings) return false
   return settings.modules?.review_cycles_enabled === true
 }
+
+// ─── ANALYTICS AVANCÉS ────────────────────────────────────────
+/**
+ * Vérifie si le module Analytics Avancés & Prédictif est activé
+ * (stocké dans settings.modules.analytics_enabled)
+ * Accès réservé aux managers et administrateurs côté UI
+ */
+export function isAnalyticsEnabled(settings) {
+  if (!settings) return false
+  return settings.modules?.analytics_enabled === true
+}

@@ -12,7 +12,7 @@ import {
   Calendar, RefreshCw, AlertTriangle, Search, ChevronLeft, ChevronDown,
   LogIn, LogOut, UserPlus, UserX, UserCheck, Edit2, Trash2, Download,
   Target, FolderKanban, CheckSquare, Info, Globe, Coins, Timer, MessageSquare,
-  BarChart2, BrainCircuit, Zap, ClipboardList
+  BarChart2, BrainCircuit, Zap, ClipboardList, TrendingUp
 } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
 import {
@@ -744,6 +744,9 @@ function ModulesSection() {
           <Toggle checked={form.gamification_enabled ?? false} onChange={(v) => setForm(prev => ({ ...prev, gamification_enabled: v }))} />        </SettingRow>
         <SettingRow label="Review Cycles Formels" description="Évaluations trimestrielles, semestrielles et annuelles avec synthèse PULSE + Feedback 360° + OKRs">
           <Toggle checked={form.review_cycles_enabled ?? false} onChange={(v) => setForm(prev => ({ ...prev, review_cycles_enabled: v }))} />
+        </SettingRow>
+        <SettingRow label="Analytics Avancés & Prédictif" description="Heatmap équipe, corrélation PULSE/OKR, comparatif services et score de risque de départ — réservé managers">
+          <Toggle checked={form.analytics_enabled ?? false} onChange={(v) => setForm(prev => ({ ...prev, analytics_enabled: v }))} />
         </SettingRow>
       </SectionCard>
 
