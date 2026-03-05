@@ -6,7 +6,7 @@
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { CheckCircle, ChevronRight, ChevronLeft } from 'lucide-react'
-import { useMyActiveTasks, useCreateMorningPlan } from '../../hooks/usePulse'
+import { useMyActiveTasks, useSaveMorningPlan, useSubmitMorningPlan } from '../../hooks/usePulse'
 import { useAuth } from '../../contexts/AuthContext'
 
 const MOODS = [
@@ -27,7 +27,8 @@ const AVAILABILITY = [
 export default function MobileBriefForm({ onSuccess, onCancel }) {
   const { profile } = useAuth()
   const { data: activeTasks = [] } = useMyActiveTasks()
-  const createPlan = useCreateMorningPlan?.()
+  const savePlan   = useSaveMorningPlan()
+  const submitPlan = useSubmitMorningPlan()
 
   const [step, setStep]             = useState(0) // 0=humeur 1=tâches 2=confirm
   const [mood, setMood]             = useState(null)
@@ -46,16 +47,16 @@ export default function MobileBriefForm({ onSuccess, onCancel }) {
     if (!mood || !availability) return
     setLoading(true)
     try {
-      if (createPlan) {
-        await createPlan.mutateAsync({
-          energy_level:          mood,
-          available_hours:       availability,
-          planned_task_ids:      selectedTasks,
-          objectives_today:      selectedTasks.length > 0
-            ? topTasks.filter(t => selectedTasks.includes(t.id)).map(t => t.title).join(', ')
-            : 'Tâches du jour',
-        })
-      }
+      // 1. Sauvegarder le plan
+      await savePlan.mutateAsync({
+        availableHours:  availability,
+        plannedTaskIds:  selectedTasks,
+        note: selectedTasks.length > 0
+          ? topTasks.filter(t => selectedTasks.includes(t.id)).map(t => t.title).join(', ')
+          : '',
+      })
+      // 2. Soumettre
+      await submitPlan.mutateAsync()
       setDone(true)
       setTimeout(() => onSuccess?.(), 1200)
     } catch(e) {
