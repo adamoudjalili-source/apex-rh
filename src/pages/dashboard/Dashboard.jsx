@@ -1,13 +1,10 @@
 // ============================================================
-// APEX RH — Dashboard.jsx  ·  Session 36 v3
+// APEX RH — Dashboard.jsx  ·  Session 38 / S39
 // Dashboard repensé — répond à : "Qui est en difficulté aujourd'hui ?"
-// Nouveau contenu :
-//   - Widget IPR équipe (managers) avec top/bottom performers
-//   - Alertes actives en temps réel
-//   - Accès direct Mon Espace (carte personnelle IPR)
-//   - Stats existantes conservées (tâches, OKR, projets)
+// ✅ S39 — MobileHome intégrée (vue < 768px)
 // ============================================================
 import { motion } from 'framer-motion'
+import MobileHome from '../../components/mobile/MobileHome'
 import { useNavigate } from 'react-router-dom'
 import {
   AlertTriangle, ArrowRight, BarChart3, CheckSquare,
@@ -60,7 +57,11 @@ export default function Dashboard() {
   const greeting = hour < 12 ? 'Bonjour' : hour < 18 ? 'Bon après-midi' : 'Bonsoir'
 
   return (
-    <motion.div className="p-6 md:p-8 max-w-7xl mx-auto space-y-6"
+    <>
+      {/* Vue MOBILE */}
+      <MobileHome />
+      {/* Vue DESKTOP */}
+    <motion.div className="hidden md:block p-6 md:p-8 max-w-7xl mx-auto space-y-6"
       variants={stagger} initial="hidden" animate="visible">
 
       {/* ── Greeting ── */}
@@ -297,6 +298,8 @@ export default function Dashboard() {
         </div>
       </div>
     </motion.div>
+    </motion.div>
+    </>
   )
 }
 

@@ -1,13 +1,14 @@
 // ============================================================
 // APEX RH — TaskForm.jsx
-// ✅ Session 9 — Corrigé : auto-assignation créateur,
-//    log intelligent, user→profile, select styling
+// ✅ Session 9  — Corrigé : auto-assignation créateur, log intelligent
+// ✅ Session 39 — Ajout pondération tâches (4 critères × 1–5)
 // ============================================================
 import { useState, useEffect } from 'react'
 import { useAuth } from '../../contexts/AuthContext'
 import { useCreateTask, useUpdateTask, useAllUsers } from '../../hooks/useTasks'
 import { TASK_STATUS, TASK_PRIORITY, getUserFullName } from '../../lib/taskHelpers'
 import { supabase } from '../../lib/supabase'
+import TaskWeightForm from './TaskWeightForm'
 
 export default function TaskForm({ task = null, onClose, defaultStatus = 'backlog' }) {
   // ✅ FIX Bug 1 : utiliser profile pour id et infos
@@ -35,6 +36,15 @@ export default function TaskForm({ task = null, onClose, defaultStatus = 'backlo
     division_id: task?.division_id || (!task && profile?.division_id ? profile.division_id : ''),
     direction_id: task?.direction_id || (!task && profile?.direction_id ? profile.direction_id : ''),
   })
+
+  // S39 — Pondération
+  const [weights, setWeights] = useState({
+    weight_complexity: task?.weight_complexity ?? 1,
+    weight_impact:     task?.weight_impact     ?? 1,
+    weight_urgency:    task?.weight_urgency    ?? 1,
+    weight_strategic:  task?.weight_strategic  ?? 1,
+  })
+  const [showWeight, setShowWeight] = useState(false)
 
   // ✅ FIX Bug 5 : auto-assignation du créateur pour une nouvelle tâche
   const [assigneeIds, setAssigneeIds] = useState(
@@ -103,6 +113,7 @@ export default function TaskForm({ task = null, onClose, defaultStatus = 'backlo
         service_id: form.service_id || null,
         division_id: form.division_id || null,
         direction_id: form.direction_id || null,
+        ...weights,
       }
 
       if (task) {
@@ -267,6 +278,25 @@ export default function TaskForm({ task = null, onClose, defaultStatus = 'backlo
       </div>
 
       {/* Assignés */}
+
+      {/* S39 — Pondération tâche */}
+      <div>
+        <button
+          type="button"
+          onClick={() => setShowWeight(p => !p)}
+          className="flex items-center gap-2 text-xs font-medium text-indigo-400 hover:text-indigo-300 transition-colors mb-2"
+        >
+          <span className="text-base">⚖️</span>
+          Pondération de la tâche
+          <span className="text-white/30">{showWeight ? "▲" : "▼"}</span>
+        </button>
+        {showWeight && (
+          <TaskWeightForm
+            weights={weights}
+            onChange={setWeights}
+          />
+        )}
+      </div>
       <div>
         <label className="block text-xs font-medium text-gray-400 mb-2">
           Assignés ({assigneeIds.length} sélectionné{assigneeIds.length !== 1 ? 's' : ''})

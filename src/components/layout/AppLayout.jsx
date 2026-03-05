@@ -1,6 +1,11 @@
+// ============================================================
+// APEX RH — AppLayout.jsx  ·  Session 39
+// ✅ S39 — MobileNav intégrée (bottom bar < 768px)
+// ============================================================
 import { Outlet } from 'react-router-dom'
-import Sidebar from './Sidebar'
-import Header from './Header'
+import Sidebar    from './Sidebar'
+import Header     from './Header'
+import MobileNav  from '../mobile/MobileNav'
 
 export default function AppLayout() {
   return (
@@ -8,12 +13,14 @@ export default function AppLayout() {
       className="flex h-screen overflow-hidden"
       style={{ background: '#0F0F23' }}
     >
-      {/* Sidebar à gauche */}
-      <Sidebar />
+      {/* Sidebar desktop — masquée sur mobile */}
+      <div className="hidden md:flex">
+        <Sidebar />
+      </div>
 
       {/* Zone principale */}
       <div className="flex flex-col flex-1 overflow-hidden">
-        {/* Header en haut */}
+        {/* Header */}
         <Header />
 
         {/* Contenu des pages */}
@@ -21,6 +28,9 @@ export default function AppLayout() {
           <Outlet />
         </main>
       </div>
+
+      {/* Navigation mobile (bottom bar) */}
+      <MobileNav />
     </div>
   )
 }
