@@ -13,13 +13,19 @@ import {
   Users, AlertTriangle, X, Activity, BarChart3,
   ArrowRight, ChevronRight, Trophy, Target, MessageSquare,
   ClipboardList, TrendingUp, TrendingDown, Minus,
+  Plus, Pencil, Trash2, Check,
 } from 'lucide-react'
+import { AnimatePresence } from 'framer-motion'
 import { useAuth }     from '../../contexts/AuthContext'
 import { useTeamIPR }  from '../../hooks/useIPR'
 import {
   GaugeRing, Sparkline, TrendBadge, iprColor, iprLabel,
 } from '../../components/ui/premium'
 import { getQualitativeLabel } from '../../components/ui/ProfilPerformance'
+import {
+  useManagerNotes, useUpsertManagerNote, useDeleteManagerNote,
+  NOTE_TYPE_LABELS, currentPeriodKey,
+} from '../../hooks/useTransparency'
 
 // ─── Helpers ─────────────────────────────────────────────────
 const roleLabel = r => ({
@@ -246,6 +252,107 @@ function TeamRow({ member: m, isSelected, onClick }) {
   )
 }
 
+// ─── Notes Manager ───────────────────────────────────────────
+function ManagerNotesPanel({ employeeId, employeeName }) {
+  const { data: notes = [], isLoading } = useManagerNotes(employeeId)
+  const upsert = useUpsertManagerNote()
+  const remove = useDeleteManagerNote()
+  const [open, setOpen] = useState(false)
+  const [draft, setDraft] = useState('')
+  const [noteType, setNoteType] = useState('general')
+  const [isShared, setIsShared] = useState(false)
+  const [editing, setEditing] = useState(null)
+  const [deleting, setDeleting] = useState(null)
+
+  async function handleSave() {
+    if (!draft.trim()) return
+    await upsert.mutateAsync({ id:editing?.id, employee_id:employeeId, note_text:draft.trim(), note_type:noteType, is_shared:isShared })
+    setOpen(false); setDraft(''); setNoteType('general'); setIsShared(false); setEditing(null)
+  }
+
+  function startEdit(note) {
+    setEditing(note); setDraft(note.note_text); setNoteType(note.note_type)
+    setIsShared(note.is_shared); setOpen(true)
+  }
+
+  async function handleDelete(id) {
+    setDeleting(id)
+    await remove.mutateAsync({ id, employee_id:employeeId })
+    setDeleting(null)
+  }
+
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-2">
+        <p className="text-[10px] text-white/20 uppercase tracking-wider">Notes Manager</p>
+        <button onClick={()=>{setOpen(o=>!o);setEditing(null);setDraft('');setNoteType('general');setIsShared(false)}}
+          className="flex items-center gap-1 text-[10px] text-indigo-400 hover:text-indigo-300 transition-colors">
+          <Plus size={11}/> Ajouter
+        </button>
+      </div>
+
+      <AnimatePresence>
+        {open && (
+          <motion.div initial={{height:0,opacity:0}} animate={{height:'auto',opacity:1}} exit={{height:0,opacity:0}}
+            className="overflow-hidden mb-3">
+            <div className="space-y-2 p-3 rounded-xl" style={{background:'rgba(79,70,229,0.07)',border:'1px solid rgba(79,70,229,0.15)'}}>
+              <select value={noteType} onChange={e=>setNoteType(e.target.value)}
+                className="w-full rounded-lg border border-white/10 bg-white/5 text-xs text-white px-2 py-1.5 focus:outline-none">
+                {Object.entries(NOTE_TYPE_LABELS).map(([k,v])=><option key={k} value={k}>{v.icon} {v.label}</option>)}
+              </select>
+              <textarea value={draft} onChange={e=>setDraft(e.target.value)}
+                placeholder={`Note sur ${employeeName}...`} rows={3}
+                className="w-full px-2 py-1.5 rounded-lg text-xs bg-white/5 border border-white/10 text-white placeholder:text-white/20 focus:outline-none resize-none"/>
+              <div className="flex items-center justify-between">
+                <label className="flex items-center gap-1.5 text-[10px] text-white/40 cursor-pointer">
+                  <input type="checkbox" checked={isShared} onChange={e=>setIsShared(e.target.checked)} className="w-3 h-3 rounded"/>
+                  Partager avec l'employé
+                </label>
+                <div className="flex gap-1.5">
+                  <button onClick={()=>{setOpen(false);setEditing(null)}} className="px-2 py-1 text-[10px] text-white/30 hover:text-white/50 transition-colors">Annuler</button>
+                  <button onClick={handleSave} disabled={!draft.trim()||upsert.isPending}
+                    className="flex items-center gap-1 px-3 py-1 text-[10px] font-semibold rounded-lg bg-indigo-500 text-white hover:bg-indigo-400 disabled:opacity-40 transition-colors">
+                    <Check size={10}/> {editing ? 'Modifier' : 'Enregistrer'}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {notes.length === 0 ? (
+        <p className="text-[10px] text-white/15 py-1">Aucune note pour ce collaborateur.</p>
+      ) : (
+        <div className="space-y-1.5">
+          {notes.map(note => {
+            const nt = NOTE_TYPE_LABELS[note.note_type]||NOTE_TYPE_LABELS.general
+            return (
+              <div key={note.id} className="flex items-start gap-2 p-2.5 rounded-xl"
+                style={{background:`${nt.color}06`,border:`1px solid ${nt.color}15`}}>
+                <span className="text-sm flex-shrink-0">{nt.icon}</span>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-1.5 mb-0.5">
+                    <span className="text-[9px] font-semibold" style={{color:nt.color}}>{nt.label}</span>
+                    {note.is_shared && <span className="text-[8px] text-emerald-400">• Partagé</span>}
+                    <span className="text-[8px] text-white/20 ml-auto">{note.period_key}</span>
+                  </div>
+                  <p className="text-[10px] text-white/55 leading-relaxed line-clamp-2">{note.note_text}</p>
+                </div>
+                <div className="flex gap-0.5 flex-shrink-0">
+                  <button onClick={()=>startEdit(note)} className="p-1 rounded text-white/20 hover:text-indigo-400 transition-colors"><Pencil size={9}/></button>
+                  <button onClick={()=>handleDelete(note.id)} disabled={deleting===note.id}
+                    className="p-1 rounded text-white/20 hover:text-red-400 transition-colors disabled:opacity-40"><Trash2 size={9}/></button>
+                </div>
+              </div>
+            )
+          })}
+        </div>
+      )}
+    </div>
+  )
+}
+
 // ─── Fiche Personne complète ──────────────────────────────────
 function PersonPanel({ member: m, onClose, onNavigate }) {
   const name  = `${m.firstName||''} ${m.lastName||''}`.trim()||'Inconnu'
@@ -327,6 +434,9 @@ function PersonPanel({ member: m, onClose, onNavigate }) {
             </div>
           </div>
         )}
+
+        {/* Notes Manager */}
+        <ManagerNotesPanel employeeId={m.id} employeeName={m.firstName} />
 
         {/* Recommandation IA */}
         <div className="rounded-xl p-4"
