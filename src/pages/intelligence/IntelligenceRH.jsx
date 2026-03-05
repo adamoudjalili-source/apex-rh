@@ -15,6 +15,8 @@ import SurveysPage      from '../pulse/EngagementSurveys'
 import ReviewCyclesPage from '../pulse/ReviewCycles'
 import ActiviteReelle   from './ActiviteReelle'
 import AdoptionDashboard from './AdoptionDashboard'
+import ReportingIA       from './ReportingIA'
+import { FileText } from 'lucide-react'
 
 const TABS = [
   { id:'performance',   label:'Performance PULSE', icon:Activity,      component:BoardPage,          color:'#4F46E5', moduleKey:null },
@@ -24,6 +26,7 @@ const TABS = [
   { id:'review_cycles', label:'Review Cycles',     icon:ClipboardList, component:ReviewCyclesPage,   color:'#C9A227', moduleKey:'review_cycles_enabled' },
   { id:'activite',      label:'Activité Réelle',   icon:Wifi,          component:ActiviteReelle,     color:'#F59E0B', moduleKey:null, badge:'S37' },
   { id:'adoption',      label:'Adoption',          icon:Users,         component:AdoptionDashboard,  color:'#10B981', moduleKey:null, badge:'S40', adminOnly:true },
+  { id:'reporting',     label:'Rapports IA',       icon:FileText,      component:ReportingIA,        color:'#818CF8', moduleKey:null, badge:'S44', adminOnly:false },
 ]
 
 export default function IntelligenceRH() {

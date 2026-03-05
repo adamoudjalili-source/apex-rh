@@ -1,9 +1,10 @@
 // ============================================================
-// APEX RH — MaPerformance.jsx  ·  Session 42
-// Route /ma-performance — 3 onglets :
+// APEX RH — MaPerformance.jsx  ·  Session 44
+// Route /ma-performance — 4 onglets :
 //   • "Ma Performance"    : profil multi-dim + historique + PULSE + NITA (S40)
 //   • "Vue Manager"       : transparency mode — ce que le manager voit (S42)
 //   • "Mes Commentaires"  : droit de commentaire par dimension (S42)
+//   • "Mes Rapports"      : reporting automatisé IA (S44)
 // ⚠️ PAS de score IPR composite affiché à l'employé
 // ⚠️ NE PAS modifier Sidebar.jsx, App.jsx, useTasks.js, usePulse.js
 // ============================================================
@@ -22,10 +23,11 @@ import {
   useSharedManagerNotes, DIMENSION_LABELS, NOTE_TYPE_LABELS,
   currentPeriodKey, isTransparencyEnabled,
 } from '../../hooks/useTransparency'
+import ReportingIA from '../intelligence/ReportingIA'
 import {
   Activity, TrendingUp, TrendingDown, Minus,
   BarChart2, Zap, Calendar, MessageSquare, Eye,
-  Plus, Trash2, Check, X, Lock, Unlock, ChevronDown, Users,
+  Plus, Trash2, Check, X, Lock, Unlock, ChevronDown, Users, FileText,
 } from 'lucide-react'
 
 const stagger = { hidden:{}, visible:{ transition:{ staggerChildren:0.07 } } }
@@ -373,6 +375,7 @@ export default function MaPerformance() {
     { id:'performance',  label:'Ma Performance',   icon:Activity },
     { id:'vue_manager',  label:'Vue Manager',       icon:Eye },
     { id:'commentaires', label:'Mes Commentaires',  icon:MessageSquare },
+    { id:'rapports',     label:'Mes Rapports',      icon:FileText, badge:'S44' },
   ]
 
   return (
@@ -408,6 +411,7 @@ export default function MaPerformance() {
                 <Icon size={13}/>
                 <span className="hidden sm:inline">{t.label}</span>
                 {t.id==='vue_manager'&&transparencyOn&&<span className="w-1.5 h-1.5 rounded-full bg-emerald-400"/>}
+                {t.badge&&<span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full" style={{background:'rgba(129,140,248,0.15)',color:'#818CF8'}}>{t.badge}</span>}
               </button>
             )
           })}
@@ -526,6 +530,11 @@ export default function MaPerformance() {
           {tab==='commentaires' && (
             <motion.div key="comments" initial={{opacity:0,y:8}} animate={{opacity:1,y:0}}>
               <MesCommentaires/>
+            </motion.div>
+          )}
+          {tab==='rapports' && (
+            <motion.div key="rapports" initial={{opacity:0,y:8}} animate={{opacity:1,y:0}} className="-mx-6">
+              <ReportingIA/>
             </motion.div>
           )}
         </AnimatePresence>
