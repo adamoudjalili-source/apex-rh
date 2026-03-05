@@ -1,70 +1,88 @@
 // ============================================================
-// APEX RH — App.jsx
-// ✅ Session 23 — Ajout routes /pulse/board (Phase C) et /pulse/reports (Phase D)
-// ✅ Session 24 — Ajout route /pulse/awards (Phase E)
-// ✅ Session 25 — Phase G : Suppression routes /pulse/* (Étape 2 — Fusion UI)
-//    Les pages PULSE sont maintenant des onglets dans Tasks.jsx (/tasks)
+// APEX RH — App.jsx  ·  Session 36 v3
+// Routes complètes — vision originale + rétrocompatibilité totale
+//
+// Nouvelles routes :
+//   /mon-espace              → MonEspace
+//   /mon-equipe              → MonEquipe
+//   /travail/taches          → Tasks (exécution pure)
+//   /travail/projets         → Projects
+//   /travail/objectifs       → Objectives
+//   /intelligence            → IntelligenceRH (Analytics+F360+Reviews+Surveys)
+//   /engagement              → EngagementHub (Awards+Gamification+IACoach+Rapports)
+//
+// Rétrocompat :
+//   /tasks      → /travail/taches
+//   /objectives → /travail/objectifs
+//   /projects   → /travail/projets
+//   /pulse/*    → /intelligence
 // ============================================================
 import { Routes, Route, Navigate } from 'react-router-dom'
 
-// Layout
-import ProtectedRoute from './components/layout/ProtectedRoute'
-import AppLayout from './components/layout/AppLayout'
+import ProtectedRoute      from './components/layout/ProtectedRoute'
+import AppLayout           from './components/layout/AppLayout'
 
-// Pages publiques (auth)
-import Login from './pages/auth/Login'
-import ForgotPassword from './pages/auth/ForgotPassword'
-import ResetPassword from './pages/auth/ResetPassword'
-
-// Page semi-protégée (connecté mais doit changer mdp)
+// Auth
+import Login               from './pages/auth/Login'
+import ForgotPassword      from './pages/auth/ForgotPassword'
+import ResetPassword       from './pages/auth/ResetPassword'
 import ForceChangePassword from './pages/auth/ForceChangePassword'
 
-// Pages protégées
-import Dashboard from './pages/dashboard/Dashboard'
-import UsersPage from './pages/admin/Users'
-import Organisation from './pages/admin/Organisation'
-import Tasks from './pages/tasks/Tasks'
-import ObjectivesPage from './pages/objectives/Objectives'
-import ProjectsPage from './pages/projects/Projects'
-import SettingsPage from './pages/admin/Settings'
+// Pages inchangées
+import UsersPage           from './pages/admin/Users'
+import Organisation        from './pages/admin/Organisation'
+import SettingsPage        from './pages/admin/Settings'
 
-// ✅ Session 25 — Phase G : Les imports PULSE sont supprimés ici.
-// Journal, Team, Board, Reports, Awards sont importés directement dans Tasks.jsx
-// Pulse.jsx (hub standalone) est supprimé.
+// S36 v3 — nouvelles / refactorisées
+import Dashboard           from './pages/dashboard/Dashboard'
+import MonEspace           from './pages/mon-espace/MonEspace'
+import MonEquipe           from './pages/mon-equipe/MonEquipe'
+import Tasks               from './pages/tasks/Tasks'
+import ObjectivesPage      from './pages/objectives/Objectives'
+import ProjectsPage        from './pages/projects/Projects'
+import IntelligenceRH      from './pages/intelligence/IntelligenceRH'
+import EngagementHub       from './pages/engagement/EngagementHub'
 
 export default function App() {
   return (
     <Routes>
-      {/* Routes publiques */}
+      {/* Publiques */}
       <Route path="/login"           element={<Login />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/reset-password"  element={<ResetPassword />} />
 
-      {/* Routes protégées — wrappées dans AppLayout */}
+      {/* Protégées */}
       <Route element={<ProtectedRoute />}>
-        {/* Page changement de mot de passe obligatoire (sans AppLayout) */}
         <Route path="/change-password" element={<ForceChangePassword />} />
 
         <Route element={<AppLayout />}>
           <Route path="/" element={<Navigate to="/dashboard" replace />} />
-          <Route path="/dashboard" element={<Dashboard />} />
+
+          {/* Principal */}
+          <Route path="/dashboard"  element={<Dashboard />} />
+          <Route path="/mon-espace" element={<MonEspace />} />
+          <Route path="/mon-equipe" element={<MonEquipe />} />
+
+          {/* Travail */}
+          <Route path="/travail/taches"    element={<Tasks />} />
+          <Route path="/travail/projets"   element={<ProjectsPage />} />
+          <Route path="/travail/objectifs" element={<ObjectivesPage />} />
+
+          {/* Mesure & Analyse */}
+          <Route path="/intelligence" element={<IntelligenceRH />} />
+          <Route path="/engagement"   element={<EngagementHub />} />
 
           {/* Administration */}
-          <Route path="/admin/users"         element={<UsersPage />} />
-          <Route path="/admin/organisation"  element={<Organisation />} />
-          <Route path="/admin/settings"      element={<SettingsPage />} />
+          <Route path="/admin/users"        element={<UsersPage />} />
+          <Route path="/admin/organisation" element={<Organisation />} />
+          <Route path="/admin/settings"     element={<SettingsPage />} />
 
-          {/* Modules */}
-          <Route path="/tasks"      element={<Tasks />} />
-          <Route path="/objectives" element={<ObjectivesPage />} />
-          <Route path="/projects"   element={<ProjectsPage />} />
+          {/* Rétrocompatibilité — anciennes URLs */}
+          <Route path="/tasks"      element={<Navigate to="/travail/taches"    replace />} />
+          <Route path="/objectives" element={<Navigate to="/travail/objectifs" replace />} />
+          <Route path="/projects"   element={<Navigate to="/travail/projets"   replace />} />
+          <Route path="/pulse/*"    element={<Navigate to="/intelligence"       replace />} />
 
-          {/* ✅ Session 25 — Routes /pulse/* supprimées (Phase G — Étape 2)
-              Les onglets PULSE sont accessibles via /tasks (Performance, Rapports, Awards, Ma Journée)
-              Redirection de sécurité : si quelqu'un accède à une ancienne URL /pulse/... */}
-          <Route path="/pulse/*" element={<Navigate to="/tasks" replace />} />
-
-          {/* Fallback */}
           <Route path="*" element={<Navigate to="/dashboard" replace />} />
         </Route>
       </Route>

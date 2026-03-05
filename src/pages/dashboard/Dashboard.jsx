@@ -1,429 +1,383 @@
 // ============================================================
-// APEX RH — Dashboard.jsx
-// ✅ Session 12 — Dashboard dynamique pour 5 profils
-// ✅ Session 18 — Fix animation Vue d'ensemble + fix police nom
-// ✅ Session 24 — Widget PulseSnapshot (Phase F) — conditionnel isPulseEnabled
-// Stats temps réel, graphiques, activité récente
+// APEX RH — Dashboard.jsx  ·  Session 36 v3
+// Dashboard repensé — répond à : "Qui est en difficulté aujourd'hui ?"
+// Nouveau contenu :
+//   - Widget IPR équipe (managers) avec top/bottom performers
+//   - Alertes actives en temps réel
+//   - Accès direct Mon Espace (carte personnelle IPR)
+//   - Stats existantes conservées (tâches, OKR, projets)
 // ============================================================
 import { motion } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
 import {
-  CheckSquare,
-  Target,
-  FolderKanban,
-  TrendingUp,
-  Clock,
-  Zap,
-  AlertTriangle,
-  ArrowRight,
-  BarChart3,
+  AlertTriangle, ArrowRight, BarChart3, CheckSquare,
+  Target, FolderKanban, Zap, Users, TrendingUp, Shield,
 } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
-import {
-  useTaskStats,
-  useOkrStats,
-  useProjectStats,
-  useRecentActivity,
-  useTeamStats,
-} from '../../hooks/useDashboard'
 import { useAppSettings } from '../../hooks/useSettings'
 import { isPulseEnabled } from '../../lib/pulseHelpers'
+import { useTaskStats, useOkrStats, useProjectStats } from '../../hooks/useDashboard'
+import { useMyIPR, useTeamIPR } from '../../hooks/useIPR'
+import { useTodayScore } from '../../hooks/usePulse'
+import { GaugeRing, Sparkline, TrendBadge, iprColor, iprLabel } from '../../components/ui/premium'
+import { Activity } from 'lucide-react'
 
-// Components
-import StatCard from '../../components/dashboard/StatCard'
-import TasksOverview from '../../components/dashboard/TasksOverview'
-import OkrOverview from '../../components/dashboard/OkrOverview'
-import ProjectsOverview from '../../components/dashboard/ProjectsOverview'
-import RecentActivity from '../../components/dashboard/RecentActivity'
-import TeamOverview from '../../components/dashboard/TeamOverview'
-// ✅ Session 24 — Widget PULSE
-import PulseSnapshot from '../../components/pulse/PulseSnapshot'
-
-// ─── CONSTANTES ──────────────────────────────────────────────
-const ROLE_LABELS = {
-  administrateur: 'Administrateur',
-  directeur: 'Directeur',
-  chef_division: 'Chef de Division',
-  chef_service: 'Chef de Service',
-  collaborateur: 'Collaborateur',
+// ─── Animations ──────────────────────────────────────────────
+const stagger = {
+  hidden:  {},
+  visible: { transition: { staggerChildren: 0.06 } },
+}
+const fadeUp = {
+  hidden:  { opacity: 0, y: 12 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.35, ease: [0.4,0,0.2,1] } },
 }
 
-const ROLE_COLORS = {
-  administrateur: '#EF4444',
-  directeur: '#C9A227',
-  chef_division: '#8B5CF6',
-  chef_service: '#3B82F6',
-  collaborateur: '#10B981',
-}
-
-const ROLE_DESCRIPTIONS = {
-  administrateur: 'Vision globale de la plateforme',
-  directeur: 'Pilotage stratégique de votre Direction',
-  chef_division: 'Performance de votre Division',
-  chef_service: 'Suivi opérationnel de votre Service',
-  collaborateur: 'Votre espace de travail personnel',
-}
-
-// ─── ANIMATIONS ──────────────────────────────────────────────
-const containerVariants = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: { staggerChildren: 0.06, delayChildren: 0.1 },
-  },
-}
-
-const itemVariants = {
-  hidden: { opacity: 0, y: 16 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: [0.4, 0, 0.2, 1] } },
-}
-
-// ✅ Session 18 — Wrapper autonome pour animer chaque widget indépendamment
-function FadeIn({ children, delay = 0 }) {
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 16 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4, delay, ease: [0.4, 0, 0.2, 1] }}
-    >
-      {children}
-    </motion.div>
-  )
-}
-
-// ─── COMPOSANT PRINCIPAL ─────────────────────────────────────
+// ─── Composant principal ─────────────────────────────────────
 export default function Dashboard() {
-  const { profile, role, isAdmin } = useAuth()
-  const navigate = useNavigate()
+  const { profile } = useAuth()
+  const navigate    = useNavigate()
+  const { data: settings }    = useAppSettings()
+  const pulseOn                = isPulseEnabled(settings)
+  const isManager = ['administrateur','directeur','chef_division','chef_service'].includes(profile?.role)
 
-  // Hooks de données
-  const taskStats = useTaskStats()
-  const okrStats = useOkrStats()
+  const taskStats    = useTaskStats()
+  const okrStats     = useOkrStats()
   const projectStats = useProjectStats()
-  const recentActivity = useRecentActivity()
-  const teamStats = useTeamStats()
 
-  // ✅ Session 24 — PULSE : guard conditionnel
-  const { data: settings } = useAppSettings()
-  const pulseEnabled = isPulseEnabled(settings)
+  const { data: iprData }   = useMyIPR()
+  const { data: todayScore } = useTodayScore()
+  const { data: team = [] }  = useTeamIPR({ enabled: isManager })
 
-  // Salutation
-  const hour = new Date().getHours()
+  const alertMembers  = team.filter(m => m.alert)
+  const topPerformer  = team.find(m => (m.ipr ?? 0) >= 70)
+  const avgTeamIPR    = team.filter(m => m.ipr !== null).length
+    ? Math.round(team.filter(m=>m.ipr!==null).reduce((s,m)=>s+m.ipr,0)/team.filter(m=>m.ipr!==null).length)
+    : null
+
+  const fullName = [profile?.first_name, profile?.last_name].filter(Boolean).join(' ') || 'Utilisateur'
+  const hour     = new Date().getHours()
   const greeting = hour < 12 ? 'Bonjour' : hour < 18 ? 'Bon après-midi' : 'Bonsoir'
-  const fullName = profile?.first_name || profile?.last_name
-    ? `${profile.first_name || ''} ${profile.last_name || ''}`.trim()
-    : 'Utilisateur'
-
-  // Score de performance global
-  const perfScore = okrStats.data?.avgScore
-    ? `${(okrStats.data.avgScore * 100).toFixed(0)}%`
-    : '—'
 
   return (
-    <motion.div
-      className="p-6 md:p-8 max-w-7xl mx-auto"
-      variants={containerVariants}
-      initial="hidden"
-      animate="visible"
-    >
-      {/* ═══════ BANDEAU DE BIENVENUE ═══════ */}
-      <motion.div
-        variants={itemVariants}
-        className="relative rounded-2xl overflow-hidden mb-8 p-6 md:p-8"
-        style={{
-          background: 'linear-gradient(135deg, rgba(79,70,229,0.15) 0%, rgba(124,58,237,0.08) 50%, rgba(201,162,39,0.04) 100%)',
-          border: '1px solid rgba(79,70,229,0.15)',
-        }}
-      >
-        {/* Effets décoratifs */}
-        <div
-          className="absolute top-0 right-0 w-64 h-64 opacity-10 pointer-events-none"
-          style={{
-            background: 'radial-gradient(circle, #4F46E5 0%, transparent 70%)',
-            transform: 'translate(30%, -30%)',
-          }}
-        />
-        <div
-          className="absolute bottom-0 left-1/3 w-32 h-32 opacity-5 pointer-events-none"
-          style={{ background: 'radial-gradient(circle, #C9A227 0%, transparent 70%)' }}
-        />
+    <motion.div className="p-6 md:p-8 max-w-7xl mx-auto space-y-6"
+      variants={stagger} initial="hidden" animate="visible">
 
-        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div>
-            <p className="text-white/40 text-sm mb-1">{greeting},</p>
-            <h2
-              className="text-2xl md:text-3xl font-extrabold text-white mb-2 tracking-wide"
-              style={{ fontFamily: "'Syne', sans-serif" }}
-            >
-              {fullName}
-            </h2>
-            <div className="flex items-center gap-3 flex-wrap">
-              <span
-                className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold"
-                style={{
-                  background: `${ROLE_COLORS[role] || '#4F46E5'}20`,
-                  color: ROLE_COLORS[role] || '#4F46E5',
-                  border: `1px solid ${ROLE_COLORS[role] || '#4F46E5'}40`,
-                }}
-              >
-                <Zap size={10} />
-                {ROLE_LABELS[role] || role}
-              </span>
-              <span className="text-[11px] text-white/25">
-                {ROLE_DESCRIPTIONS[role] || ''}
-              </span>
+      {/* ── Greeting ── */}
+      <motion.div variants={fadeUp} className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-extrabold text-white" style={{ fontFamily:"'Syne',sans-serif" }}>
+            {greeting}, {fullName.split(' ')[0]} 👋
+          </h1>
+          <p className="text-sm text-white/35 mt-0.5 capitalize">
+            {new Date().toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long',year:'numeric'})}
+          </p>
+        </div>
+        <button onClick={() => navigate('/mon-espace')}
+          className="hidden sm:flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium text-white transition-all"
+          style={{ background:'linear-gradient(135deg,#4F46E5,#7C3AED)', boxShadow:'0 4px 16px rgba(79,70,229,0.3)' }}>
+          <Zap size={14} /> Mon Espace
+        </button>
+      </motion.div>
+
+      {/* ── Bannière IPR personnel (si PULSE actif) ── */}
+      {pulseOn && (
+        <motion.div variants={fadeUp}>
+          <div className="rounded-2xl p-5 cursor-pointer group transition-all duration-300 hover:-translate-y-0.5"
+            onClick={() => navigate('/mon-espace')}
+            style={{
+              background:'linear-gradient(135deg,rgba(79,70,229,0.1) 0%,rgba(124,58,237,0.05) 100%)',
+              border:'1px solid rgba(79,70,229,0.2)',
+              boxShadow:'0 0 0 0 rgba(79,70,229,0)',
+            }}>
+            <div className="flex items-center justify-between flex-wrap gap-4">
+              <div className="flex items-center gap-4">
+                <GaugeRing score={iprData?.ipr ?? 0} size={72} stroke={6}
+                  color={iprColor(iprData?.ipr)}>
+                  <span className="text-sm font-black" style={{ color:iprColor(iprData?.ipr), fontFamily:"'Syne',sans-serif" }}>
+                    {iprData?.ipr ?? '—'}
+                  </span>
+                </GaugeRing>
+                <div>
+                  <div className="flex items-center gap-2 mb-0.5">
+                    <p className="text-lg font-bold text-white" style={{ fontFamily:"'Syne',sans-serif" }}>
+                      Mon IPR ce mois
+                    </p>
+                    {iprData?.trend !== null && iprData?.trend !== undefined && (
+                      <TrendBadge value={iprData.trend} suffix="pts" />
+                    )}
+                  </div>
+                  <p className="text-sm text-white/40">{iprLabel(iprData?.ipr)} — {iprData?.daysWithData ?? 0} jours actifs</p>
+                </div>
+              </div>
+
+              {/* Mini sparkline */}
+              <div className="hidden md:flex items-center gap-4">
+                {iprData?.sparkline?.length > 1 && (
+                  <Sparkline data={iprData.sparkline} width={140} height={36}
+                    color={iprColor(iprData?.ipr)} filled />
+                )}
+                <div className="flex items-center gap-1.5 text-indigo-400 group-hover:translate-x-1 transition-transform">
+                  <span className="text-sm font-medium">Mon Espace</span>
+                  <ArrowRight size={14} />
+                </div>
+              </div>
             </div>
           </div>
-
-          <div className="flex flex-col items-end gap-2">
-            <div className="flex items-center gap-2 text-white/30 text-xs">
-              <Clock size={12} />
-              <span>
-                {new Date().toLocaleDateString('fr-FR', {
-                  weekday: 'long',
-                  day: 'numeric',
-                  month: 'long',
-                  year: 'numeric',
-                })}
-              </span>
-            </div>
-
-            {/* Alertes rapides */}
-            {taskStats.data?.overdue > 0 && (
-              <motion.div
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                className="flex items-center gap-1.5 text-[11px] text-amber-400 bg-amber-500/10 border border-amber-500/20 px-3 py-1 rounded-full cursor-pointer hover:bg-amber-500/15 transition-colors"
-                onClick={() => navigate('/tasks')}
-              >
-                <AlertTriangle size={10} />
-                {taskStats.data.overdue} tâche{taskStats.data.overdue > 1 ? 's' : ''} en retard
-                <ArrowRight size={9} />
-              </motion.div>
-            )}
-          </div>
-        </div>
-      </motion.div>
-
-      {/* ═══════ STATS RAPIDES ═══════ */}
-      <motion.div variants={itemVariants} className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        <StatCard
-          label="Tâches actives"
-          value={taskStats.data?.active ?? '—'}
-          icon={CheckSquare}
-          color="#3B82F6"
-          subtitle={taskStats.data?.inProgress ? `${taskStats.data.inProgress} en cours` : null}
-        />
-        <StatCard
-          label="Objectifs en cours"
-          value={okrStats.data?.byStatus?.actif ?? '—'}
-          icon={Target}
-          color="#C9A227"
-          subtitle={okrStats.data?.periodName || null}
-        />
-        <StatCard
-          label="Projets actifs"
-          value={projectStats.data?.active ?? '—'}
-          icon={FolderKanban}
-          color="#8B5CF6"
-          subtitle={projectStats.data?.completed ? `${projectStats.data.completed} terminé${projectStats.data.completed > 1 ? 's' : ''}` : null}
-        />
-        <StatCard
-          label="Score performance"
-          value={perfScore}
-          icon={TrendingUp}
-          color="#10B981"
-          subtitle="Score OKR moyen"
-        />
-      </motion.div>
-
-      {/* ═══════ ACCÈS RAPIDE AUX MODULES ═══════ */}
-      <motion.div variants={itemVariants} className="mb-8">
-        <div className="flex items-center justify-between mb-4">
-          <h3
-            className="text-xs font-bold text-white/30 uppercase tracking-widest"
-            style={{ fontFamily: "'Syne', sans-serif" }}
-          >
-            Accès rapide
-          </h3>
-        </div>
-        <div className="grid grid-cols-3 gap-3">
-          <QuickAccessCard
-            label="Tâches"
-            icon={CheckSquare}
-            color="#3B82F6"
-            count={taskStats.data?.dueToday}
-            countLabel="aujourd'hui"
-            onClick={() => navigate('/tasks')}
-          />
-          <QuickAccessCard
-            label="Objectifs"
-            icon={Target}
-            color="#C9A227"
-            count={okrStats.data?.total}
-            countLabel="objectifs"
-            onClick={() => navigate('/objectives')}
-          />
-          <QuickAccessCard
-            label="Projets"
-            icon={FolderKanban}
-            color="#8B5CF6"
-            count={projectStats.data?.active}
-            countLabel="actifs"
-            onClick={() => navigate('/projects')}
-          />
-        </div>
-      </motion.div>
-
-      {/* ═══════ CONTENU PRINCIPAL (adapté au rôle) ═══════ */}
-      <motion.div variants={itemVariants}>
-        <h3
-          className="text-xs font-bold text-white/30 uppercase tracking-widest mb-4"
-          style={{ fontFamily: "'Syne', sans-serif" }}
-        >
-          <BarChart3 size={11} className="inline mr-1.5 -mt-0.5" />
-          Vue d'ensemble
-        </h3>
-      </motion.div>
-
-      {/* Layout adapté : 2 colonnes collaborateur, 3 colonnes managers */}
-      {role === 'collaborateur' ? (
-        <CollaborateurLayout
-          taskStats={taskStats}
-          okrStats={okrStats}
-          projectStats={projectStats}
-          recentActivity={recentActivity}
-          pulseEnabled={pulseEnabled}
-        />
-      ) : (
-        <ManagerLayout
-          taskStats={taskStats}
-          okrStats={okrStats}
-          projectStats={projectStats}
-          recentActivity={recentActivity}
-          teamStats={teamStats}
-          isAdmin={isAdmin}
-          pulseEnabled={pulseEnabled}
-        />
+        </motion.div>
       )}
 
-      {/* ═══════ FOOTER ═══════ */}
-      <motion.div variants={itemVariants} className="flex items-center justify-center gap-2 pt-8">
-        <div className="h-px flex-1 bg-white/5" />
-        <p className="text-[10px] text-white/10 px-4 whitespace-nowrap">
-          APEX RH · Performance Platform · v1.0
-        </p>
-        <div className="h-px flex-1 bg-white/5" />
+      {/* ── Alertes équipe (managers) ── */}
+      {isManager && alertMembers.length > 0 && (
+        <motion.div variants={fadeUp}>
+          <div className="rounded-2xl p-4"
+            style={{ background:'rgba(239,68,68,0.06)', border:'1px solid rgba(239,68,68,0.15)' }}>
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2">
+                <AlertTriangle size={15} className="text-red-400" />
+                <span className="text-sm font-semibold text-red-400">
+                  {alertMembers.length} alerte{alertMembers.length > 1 ? 's' : ''} dans votre équipe
+                </span>
+              </div>
+              <button onClick={() => navigate('/mon-equipe')}
+                className="text-[11px] text-red-400/70 hover:text-red-400 flex items-center gap-1 transition-colors">
+                Voir Mon Équipe <ArrowRight size={10} />
+              </button>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {alertMembers.slice(0, 5).map(m => (
+                <div key={m.userId}
+                  className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs"
+                  style={{ background:'rgba(239,68,68,0.08)', border:'1px solid rgba(239,68,68,0.12)' }}>
+                  <div className="w-5 h-5 rounded-md flex items-center justify-center text-[9px] font-bold text-white"
+                    style={{ background:'rgba(239,68,68,0.3)' }}>
+                    {m.firstName?.charAt(0)}{m.lastName?.charAt(0)}
+                  </div>
+                  <span className="text-red-300">{m.firstName} {m.lastName?.charAt(0)}.</span>
+                  <span className="text-red-400/60">
+                    {m.alert === 'no_brief' ? `${m.daysSinceLastBrief}j sans brief` : `IPR ${m.ipr}`}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </motion.div>
+      )}
+
+      {/* ── Stats principales ── */}
+      <motion.div variants={fadeUp}
+        className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        <StatCardFixed
+          label="Tâches actives" icon={<CheckSquare size={14}/>}
+          value={taskStats.data?.inProgress ?? 0}
+          sub={`${taskStats.data?.completed ?? 0} terminées`}
+          color="#3B82F6" onClick={() => navigate('/travail/taches')} />
+        <StatCardFixed
+          label="OKR en cours" icon={<Target size={14}/>}
+          value={okrStats.data?.active ?? 0}
+          sub={`${okrStats.data?.avgProgress ?? 0}% progression`}
+          color="#C9A227" onClick={() => navigate('/travail/objectifs')} />
+        <StatCardFixed
+          label="Projets actifs" icon={<FolderKanban size={14}/>}
+          value={projectStats.data?.active ?? 0}
+          sub={`${projectStats.data?.completed ?? 0} terminés`}
+          color="#8B5CF6" onClick={() => navigate('/travail/projets')} />
+        {isManager ? (
+          <StatCardFixed
+            label="IPR équipe moyen" icon={<Users size={14}/>}
+            value={avgTeamIPR ?? '—'}
+            sub={`${team.length} membres`}
+            color={iprColor(avgTeamIPR)} onClick={() => navigate('/mon-equipe')} />
+        ) : (
+          <StatCardFixed
+            label="PULSE aujourd'hui" icon={<Activity size={14}/>}
+            value={todayScore?.score_total ?? '—'}
+            sub={pulseOn ? 'Score du jour' : 'Module désactivé'}
+            color={iprColor(todayScore?.score_total)} onClick={() => navigate('/intelligence')} />
+        )}
       </motion.div>
-    </motion.div>
-  )
-}
 
-// ─── LAYOUT COLLABORATEUR (2 colonnes) ───────────────────────
-function CollaborateurLayout({ taskStats, okrStats, projectStats, recentActivity, pulseEnabled }) {
-  return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-      <div className="space-y-6">
-        <FadeIn delay={0.1}>
-          <TasksOverview stats={taskStats.data} isLoading={taskStats.isLoading} />
-        </FadeIn>
-        <FadeIn delay={0.2}>
-          <OkrOverview stats={okrStats.data} isLoading={okrStats.isLoading} />
-        </FadeIn>
-      </div>
-      <div className="space-y-6">
-        <FadeIn delay={0.15}>
-          <ProjectsOverview stats={projectStats.data} isLoading={projectStats.isLoading} />
-        </FadeIn>
-        {/* ✅ Session 24 — Widget PULSE conditionnel */}
-        {pulseEnabled && (
-          <FadeIn delay={0.22}>
-            <PulseSnapshot />
-          </FadeIn>
-        )}
-        <FadeIn delay={0.25}>
-          <RecentActivity data={recentActivity.data} isLoading={recentActivity.isLoading} />
-        </FadeIn>
-      </div>
-    </div>
-  )
-}
+      {/* ── Grille principale ── */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
 
-// ─── LAYOUT MANAGER (3 colonnes) ─────────────────────────────
-function ManagerLayout({ taskStats, okrStats, projectStats, recentActivity, teamStats, isAdmin, pulseEnabled }) {
-  return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-      {/* Colonne gauche */}
-      <div className="space-y-6">
-        <FadeIn delay={0.1}>
-          <TasksOverview stats={taskStats.data} isLoading={taskStats.isLoading} />
-        </FadeIn>
-        <FadeIn delay={0.25}>
-          <TeamOverview stats={teamStats.data} isLoading={teamStats.isLoading} isAdmin={isAdmin} />
-        </FadeIn>
-      </div>
+        {/* Colonne gauche 2/3 */}
+        <div className="lg:col-span-2 space-y-5">
 
-      {/* Colonne centre */}
-      <div className="space-y-6">
-        <FadeIn delay={0.15}>
-          <OkrOverview stats={okrStats.data} isLoading={okrStats.isLoading} />
-        </FadeIn>
-        <FadeIn delay={0.3}>
-          <ProjectsOverview stats={projectStats.data} isLoading={projectStats.isLoading} />
-        </FadeIn>
-      </div>
+          {/* IPR équipe (managers) */}
+          {isManager && team.length > 0 && pulseOn && (
+            <motion.div variants={fadeUp}>
+              <SectionCard title="Équipe — IPR aujourd'hui"
+                icon={<Users size={13} className="text-indigo-400"/>}
+                action={{ label:'Mon Équipe complet', onClick:() => navigate('/mon-equipe') }}>
+                <div className="space-y-1">
+                  {team.slice(0, 6).map(m => (
+                    <TeamMiniRow key={m.userId} member={m} onClick={() => navigate('/mon-equipe')} />
+                  ))}
+                  {team.length > 6 && (
+                    <button onClick={() => navigate('/mon-equipe')}
+                      className="w-full text-center text-[11px] text-white/20 hover:text-indigo-400 py-1.5 transition-colors">
+                      + {team.length - 6} autres membres
+                    </button>
+                  )}
+                </div>
+              </SectionCard>
+            </motion.div>
+          )}
 
-      {/* Colonne droite */}
-      <div className="space-y-6">
-        {/* ✅ Session 24 — Widget PULSE conditionnel */}
-        {pulseEnabled && (
-          <FadeIn delay={0.18}>
-            <PulseSnapshot />
-          </FadeIn>
-        )}
-        <FadeIn delay={0.2}>
-          <RecentActivity data={recentActivity.data} isLoading={recentActivity.isLoading} />
-        </FadeIn>
-      </div>
-    </div>
-  )
-}
-
-// ─── CARTE ACCÈS RAPIDE ──────────────────────────────────────
-function QuickAccessCard({ label, icon: Icon, color, count, countLabel, onClick }) {
-  return (
-    <motion.div
-      className="rounded-xl p-4 cursor-pointer group relative overflow-hidden"
-      style={{
-        background: 'rgba(255,255,255,0.03)',
-        border: '1px solid rgba(255,255,255,0.06)',
-      }}
-      onClick={onClick}
-      whileHover={{ y: -2 }}
-      transition={{ duration: 0.2 }}
-    >
-      <div
-        className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"
-        style={{ background: `linear-gradient(135deg, ${color}08 0%, transparent 100%)` }}
-      />
-
-      <div className="relative z-10 flex items-center gap-3">
-        <div
-          className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0"
-          style={{ background: `${color}15`, border: `1px solid ${color}20` }}
-        >
-          <Icon size={15} style={{ color }} />
+          {/* Tâches en retard */}
+          {(taskStats.data?.overdue ?? 0) > 0 && (
+            <motion.div variants={fadeUp}>
+              <div className="rounded-xl px-4 py-3 flex items-center justify-between gap-3"
+                style={{ background:'rgba(245,158,11,0.06)', border:'1px solid rgba(245,158,11,0.15)' }}>
+                <div className="flex items-center gap-2">
+                  <AlertTriangle size={14} className="text-amber-400" />
+                  <span className="text-sm text-amber-300 font-medium">
+                    {taskStats.data.overdue} tâche{taskStats.data.overdue>1?'s':''} en retard
+                  </span>
+                </div>
+                <button onClick={() => navigate('/travail/taches')}
+                  className="text-[11px] text-amber-400/70 hover:text-amber-400 flex items-center gap-1 transition-colors">
+                  Voir <ArrowRight size={10} />
+                </button>
+              </div>
+            </motion.div>
+          )}
         </div>
 
-        <div className="flex-1 min-w-0">
-          <p className="text-xs font-semibold text-white">{label}</p>
-          {count !== undefined && count !== null && (
-            <p className="text-[10px] text-white/30">
-              <span className="font-bold text-white/50">{count}</span> {countLabel}
-            </p>
+        {/* Colonne droite 1/3 */}
+        <div className="space-y-5">
+          {/* Raccourcis */}
+          <motion.div variants={fadeUp}>
+            <SectionCard title="Navigation rapide" icon={<Zap size={13} className="text-amber-400" />}>
+              <div className="space-y-1">
+                <QuickNav icon={<Zap size={13}/>}       label="Mon Espace"      color="#4F46E5" onClick={() => navigate('/mon-espace')} />
+                {isManager && <QuickNav icon={<Users size={13}/>} label="Mon Équipe" color="#8B5CF6" onClick={() => navigate('/mon-equipe')} />}
+                <QuickNav icon={<CheckSquare size={13}/>} label="Mes tâches"    color="#3B82F6" onClick={() => navigate('/travail/taches')} />
+                <QuickNav icon={<Target size={13}/>}    label="Objectifs OKR"   color="#C9A227" onClick={() => navigate('/travail/objectifs')} />
+                {pulseOn && <QuickNav icon={<BarChart3 size={13}/>} label="Intelligence RH" color="#10B981" onClick={() => navigate('/intelligence')} />}
+              </div>
+            </SectionCard>
+          </motion.div>
+
+          {/* Progression OKR */}
+          {okrStats.data && (
+            <motion.div variants={fadeUp}>
+              <SectionCard title="Objectifs OKR" icon={<Target size={13} className="text-amber-400"/>}
+                action={{ label:'Voir', onClick:()=>navigate('/travail/objectifs') }}>
+                <div className="space-y-2.5">
+                  <OKRBar label="Complétés"   count={okrStats.data.completed??0}  color="#10B981" total={okrStats.data.total??1} />
+                  <OKRBar label="En bonne voie" count={okrStats.data.onTrack??0}  color="#4F46E5" total={okrStats.data.total??1} />
+                  <OKRBar label="À risque"    count={okrStats.data.atRisk??0}     color="#F59E0B" total={okrStats.data.total??1} />
+                  <OKRBar label="Hors piste"  count={okrStats.data.offTrack??0}   color="#EF4444" total={okrStats.data.total??1} />
+                </div>
+              </SectionCard>
+            </motion.div>
           )}
         </div>
       </div>
     </motion.div>
+  )
+}
+
+// ─── Sous-composants ──────────────────────────────────────────
+function SectionCard({ title, icon, action, children }) {
+  return (
+    <div className="rounded-2xl p-5"
+      style={{ background:'rgba(255,255,255,0.025)', border:'1px solid rgba(255,255,255,0.07)' }}>
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center gap-2">
+          {icon}
+          <h3 className="text-xs font-semibold text-white/40 uppercase tracking-wider">{title}</h3>
+        </div>
+        {action && (
+          <button onClick={action.onClick}
+            className="text-[11px] text-white/20 hover:text-indigo-400 flex items-center gap-1 transition-colors">
+            {action.label} <ArrowRight size={10} />
+          </button>
+        )}
+      </div>
+      {children}
+    </div>
+  )
+}
+
+
+// Version sans require (fix)
+function StatCardFixed({ label, icon, value, sub, color, onClick }) {
+  return (
+    <div onClick={onClick}
+      className="rounded-2xl p-4 cursor-pointer transition-all duration-200 hover:-translate-y-0.5 group"
+      style={{ background:'rgba(255,255,255,0.025)', border:`1px solid rgba(255,255,255,0.07)` }}>
+      <div className="flex items-center gap-2 mb-2">
+        <div className="w-6 h-6 rounded-lg flex items-center justify-center" style={{ background:`${color}15`, color }}>{icon}</div>
+        <span className="text-[10px] text-white/30 uppercase tracking-wide">{label}</span>
+      </div>
+      <p className="text-2xl font-black mb-0.5" style={{ color, fontFamily:"'Syne',sans-serif" }}>{value}</p>
+      <p className="text-[11px] text-white/25">{sub}</p>
+    </div>
+  )
+}
+
+function TeamMiniRow({ member: m, onClick }) {
+  const name = `${m.firstName||''} ${m.lastName||''}`.trim()
+  const c    = iprColor(m.ipr)
+  return (
+    <button onClick={onClick}
+      className="w-full grid items-center px-2 py-2 rounded-lg hover:bg-white/[0.03] transition-colors gap-3"
+      style={{ gridTemplateColumns:'1fr 48px 80px 90px' }}>
+      <div className="flex items-center gap-2 min-w-0">
+        <div className="w-6 h-6 rounded-md flex items-center justify-center text-[9px] font-bold text-white flex-shrink-0"
+          style={{ background:c+'33' }}>
+          {m.firstName?.charAt(0)}{m.lastName?.charAt(0)}
+        </div>
+        <span className="text-xs text-white/70 truncate">{name}</span>
+      </div>
+      <span className="text-sm font-black text-right" style={{ color:c, fontFamily:"'Syne',sans-serif" }}>
+        {m.ipr ?? '—'}
+      </span>
+      <div className="flex justify-end">
+        {m.sparkline?.length > 1
+          ? <Sparkline data={m.sparkline} width={70} height={20} color={c} filled={false} />
+          : <span className="text-[10px] text-white/15">—</span>}
+      </div>
+      <div className="flex justify-end">
+        {m.alert ? (
+          <span className="text-[9px] px-1.5 py-0.5 rounded-full font-semibold"
+            style={{
+              background: m.alert==='no_brief'?'rgba(239,68,68,0.1)':'rgba(245,158,11,0.1)',
+              color: m.alert==='no_brief'?'#EF4444':'#F59E0B',
+            }}>
+            {m.alert==='no_brief'?`${m.daysSinceLastBrief}j sans brief`:'IPR bas'}
+          </span>
+        ) : <span className="text-[10px] text-emerald-400/60">✓</span>}
+      </div>
+    </button>
+  )
+}
+
+function QuickNav({ icon, label, color, onClick }) {
+  return (
+    <button onClick={onClick}
+      className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl group hover:bg-white/[0.04] transition-all text-left">
+      <div className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0"
+        style={{ background:`${color}15`, color }}>{icon}</div>
+      <span className="text-sm text-white/60 group-hover:text-white/90 transition-colors">{label}</span>
+      <ArrowRight size={12} className="ml-auto text-white/10 group-hover:text-white/30 transition-colors" />
+    </button>
+  )
+}
+
+function OKRBar({ label, count, total, color }) {
+  const pct = total > 0 ? Math.round((count/total)*100) : 0
+  return (
+    <div>
+      <div className="flex justify-between text-[11px] mb-1">
+        <span className="text-white/35">{label}</span>
+        <span className="font-semibold" style={{ color }}>{count}</span>
+      </div>
+      <div className="h-1 bg-white/5 rounded-full overflow-hidden">
+        <div className="h-full rounded-full transition-all duration-700"
+          style={{ width:`${pct}%`, background:color }} />
+      </div>
+    </div>
   )
 }
