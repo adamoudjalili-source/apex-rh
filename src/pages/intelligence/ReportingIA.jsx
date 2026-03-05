@@ -21,7 +21,7 @@ import {
 // ─── Constantes ───────────────────────────────────────────────
 const MANAGER_ROLES = ['chef_service','chef_division','directeur','administrateur']
 
-const HIGHLIGHT_ICONS: Record<string, any> = {
+const HIGHLIGHT_ICONS = {
   pulse   : BarChart3,
   briefs  : Calendar,
   okr     : Star,
@@ -32,20 +32,20 @@ const HIGHLIGHT_ICONS: Record<string, any> = {
   top     : Star,
 }
 
-const REPORT_TYPE_LABELS: Record<string, string> = {
+const REPORT_TYPE_LABELS = {
   monthly_individual: 'Rapport Mensuel Individuel',
   monthly_team      : 'Rapport Mensuel Équipe',
   weekly_team       : 'Rapport Hebdomadaire Équipe',
 }
 
 // ─── Utilitaires ──────────────────────────────────────────────
-function TrendIcon({ trend }: { trend: string | null }) {
+function TrendIcon({ trend }) {
   if (trend === 'up')   return <TrendingUp  size={12} className="text-emerald-400"/>
   if (trend === 'down') return <TrendingDown size={12} className="text-red-400"/>
   return <Minus size={12} className="text-white/30"/>
 }
 
-function exportToPDF(report: any) {
+function exportToPDF(report) {
   const { stats, ai_summary, highlights = [], period_label, report_type } = report
   const isTeam = report_type?.includes('team')
 
@@ -98,7 +98,7 @@ function exportToPDF(report: any) {
 ${isTeam ? `<div style="font-size:18px;font-weight:700;margin-bottom:20px;">Service : ${stats?.service ?? ''}</div>` : `<div style="font-size:18px;font-weight:700;margin-bottom:20px;">${stats?.name ?? ''} — ${stats?.role ?? ''}</div>`}
 
 <div class="kpi-grid">
-${(highlights ?? []).slice(0,6).map((h: any) => `
+${(highlights ?? []).slice(0,6).map((h) => `
 <div class="kpi">
   <div class="label">${h.label}</div>
   <div class="value">${h.value}</div>
@@ -117,7 +117,7 @@ ${isTeam && stats?.member_details?.length ? `
   <table class="members-table">
     <thead><tr><th>Collaborateur</th><th>PULSE moyen</th><th>Taux briefs</th><th>Jours mesurés</th><th>Statut</th></tr></thead>
     <tbody>
-    ${stats.member_details.map((m: any) => {
+    ${stats.member_details.map((m) => {
       const score = m.pulse_avg ?? 0
       const cls = score >= 70 ? 'green' : score >= 40 ? 'orange' : 'red'
       const lbl = score >= 70 ? 'Excellent' : score >= 40 ? 'Correct' : 'À surveiller'
@@ -150,7 +150,7 @@ ${isTeam && stats?.member_details?.length ? `
 }
 
 // ─── Carte rapport ────────────────────────────────────────────
-function ReportCard({ report, onDelete }: { report: any; onDelete: () => void }) {
+function ReportCard({ report, onDelete }) {
   const [expanded, setExpanded] = useState(false)
   const [confirmDel, setConfirmDel] = useState(false)
   const isTeam   = report.report_type?.includes('team')
@@ -204,7 +204,7 @@ function ReportCard({ report, onDelete }: { report: any; onDelete: () => void })
       {/* KPIs highlights */}
       {highlights.length > 0 && (
         <div className="px-5 pb-3 flex gap-2 flex-wrap">
-          {highlights.slice(0,4).map((h: any, i: number) => {
+          {highlights.slice(0,4).map((h, i) => {
             const Icon = HIGHLIGHT_ICONS[h.type] ?? BarChart3
             return (
               <div key={i} className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg"
@@ -243,7 +243,7 @@ function ReportCard({ report, onDelete }: { report: any; onDelete: () => void })
 }
 
 // ─── Générateur de rapport ────────────────────────────────────
-function ReportGenerator({ serviceId, isManager }: { serviceId?: string; isManager: boolean }) {
+function ReportGenerator({ serviceId, isManager }) {
   const { profile }  = useAuth()
   const generate     = useGenerateReport()
   const { year: cy, month: cm } = currentYearMonth()
