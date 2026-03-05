@@ -12,7 +12,7 @@ import {
   Calendar, RefreshCw, AlertTriangle, Search, ChevronLeft, ChevronDown,
   LogIn, LogOut, UserPlus, UserX, UserCheck, Edit2, Trash2, Download,
   Target, FolderKanban, CheckSquare, Info, Globe, Coins, Timer, MessageSquare,
-  BarChart2, BrainCircuit
+  BarChart2, BrainCircuit, Zap
 } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
 import {
@@ -740,6 +740,9 @@ function ModulesSection() {
         <SettingRow label="IA Coach" description="Analyse IA des journaux PULSE — suggestions personnalisées et résumé équipe (API Anthropic)">
           <Toggle checked={form.ia_coach_enabled ?? false} onChange={(v) => setForm(prev => ({ ...prev, ia_coach_enabled: v }))} />
         </SettingRow>
+        <SettingRow label="Gamification Avancée" description="Streaks, badges Bronze/Argent/Or, points rewards et classement inter-équipes">
+          <Toggle checked={form.gamification_enabled ?? false} onChange={(v) => setForm(prev => ({ ...prev, gamification_enabled: v }))} />
+        </SettingRow>
       </SectionCard>
 
       <SectionCard title="Configuration OKR" description="Paramètres des cycles d'objectifs" icon={Target}>
@@ -1427,6 +1430,115 @@ function PulseNotificationsSection() {
   )
 }
 
+// ─── SECTION GAMIFICATION (Admin) ───────────────────────────
+
+const GAMIF_BADGES = [
+  { icon: '🌱', label: 'Premier Journal', tier: 'Bronze', pts: 20 },
+  { icon: '🔥', label: '3 Jours de Suite', tier: 'Bronze', pts: 30 },
+  { icon: '⚡', label: 'Flamme de la Semaine', tier: 'Argent', pts: 100 },
+  { icon: '💫', label: 'Sprint du Mois', tier: 'Or', pts: 500 },
+  { icon: '🏅', label: 'Performer (score ≥ 60)', tier: 'Bronze', pts: 50 },
+  { icon: '⭐', label: 'Haute Performance (≥ 75)', tier: 'Argent', pts: 150 },
+  { icon: '🏆', label: 'Excellence (≥ 85)', tier: 'Or', pts: 400 },
+  { icon: '🎯', label: 'Semaine Parfaite', tier: 'Argent', pts: 120 },
+  { icon: '👑', label: 'Meilleur de l\'Équipe', tier: 'Or', pts: 200 },
+]
+
+const TIER_COLORS = { Bronze: '#CD7F32', Argent: '#C0C0C0', Or: '#C9A227' }
+
+function GamificationSettingsSection() {
+  return (
+    <SectionCard
+      title="Configuration Gamification"
+      description="Paramètres du module Gamification Avancée"
+      icon={Zap}
+    >
+      {/* Niveaux */}
+      <SettingRow
+        label="Niveaux de progression"
+        description="Les 5 paliers de progression des collaborateurs"
+      >
+        <div className="flex flex-col gap-1 items-end">
+          {[
+            { label: 'Recrue',     pts: '0',    color: '#6B7280' },
+            { label: 'Actif',      pts: '100',  color: '#3B82F6' },
+            { label: 'Engagé',     pts: '300',  color: '#8B5CF6' },
+            { label: 'Performant', pts: '700',  color: '#10B981' },
+            { label: 'Excellence', pts: '1 500', color: '#C9A227' },
+          ].map(l => (
+            <div
+              key={l.label}
+              className="flex items-center gap-2 text-xs px-2.5 py-1 rounded-lg"
+              style={{ background: `${l.color}18`, color: l.color }}
+            >
+              <span className="font-semibold">{l.label}</span>
+              <span style={{ opacity: 0.7 }}>— {l.pts} pts</span>
+            </div>
+          ))}
+        </div>
+      </SettingRow>
+
+      {/* Points par action */}
+      <SettingRow
+        label="Points par action"
+        description="Points attribués automatiquement à chaque action"
+      >
+        <div className="flex flex-col gap-1 items-end text-xs">
+          {[
+            { label: 'Journal soumis', pts: '+10' },
+            { label: 'Brief soumis', pts: '+5' },
+            { label: 'Score ≥ 70', pts: '+25' },
+            { label: 'Streak 7 jours', pts: '+50' },
+            { label: 'Streak 30 jours', pts: '+200' },
+          ].map(a => (
+            <div key={a.label} className="flex items-center gap-2">
+              <span className="text-gray-400">{a.label}</span>
+              <span
+                className="font-bold px-1.5 py-0.5 rounded"
+                style={{ background: 'rgba(99,102,241,0.15)', color: '#818CF8' }}
+              >
+                {a.pts}
+              </span>
+            </div>
+          ))}
+        </div>
+      </SettingRow>
+
+      {/* Badges */}
+      <SettingRow
+        label="Catalogue badges"
+        description={`${GAMIF_BADGES.length} badges disponibles (Bronze, Argent, Or)`}
+      >
+        <div className="flex flex-col gap-1.5 items-end">
+          {GAMIF_BADGES.map(b => (
+            <div
+              key={b.label}
+              className="flex items-center gap-2 text-xs px-2 py-0.5 rounded-lg"
+              style={{
+                background: `${TIER_COLORS[b.tier]}15`,
+                color: TIER_COLORS[b.tier],
+              }}
+            >
+              <span>{b.icon}</span>
+              <span>{b.label}</span>
+              <span style={{ opacity: 0.7 }}>+{b.pts} pts</span>
+            </div>
+          ))}
+        </div>
+      </SettingRow>
+
+      {/* Note technique */}
+      <div
+        className="rounded-xl p-3 mt-1 text-xs text-gray-400 leading-relaxed"
+        style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}
+      >
+        💡 Les badges et points sont calculés automatiquement depuis les données PULSE.
+        Les collaborateurs peuvent déclencher une mise à jour depuis l'onglet Gamification → "Mettre à jour mes stats".
+      </div>
+    </SectionCard>
+  )
+}
+
 // ─── SECTION IA COACH (Admin) ────────────────────────────────
 
 function IACoachSettingsSection() {
@@ -1436,26 +1548,6 @@ function IACoachSettingsSection() {
       description="Paramètres du module IA Coach (Anthropic Claude)"
       icon={BrainCircuit}
     >
-      {/* Info API Key */}
-      <div
-        className="rounded-xl p-4 mb-4"
-        style={{ background: 'rgba(79,70,229,0.08)', border: '1px solid rgba(99,102,241,0.2)' }}
-      >
-        <div className="flex items-start gap-3">
-          <span className="text-xl mt-0.5">🔑</span>
-          <div>
-            <div className="text-sm font-medium text-white mb-1">Clé API Anthropic requise</div>
-            <p className="text-xs text-gray-400 leading-relaxed">
-              Pour activer l'IA Coach, ajoutez votre clé API Anthropic dans les secrets Supabase :
-            </p>
-            <div className="mt-2 font-mono text-xs bg-black/30 rounded-lg px-3 py-2 text-indigo-300">
-              Supabase → Project Settings → Edge Functions → Secrets<br />
-              Nom : <strong>ANTHROPIC_API_KEY</strong><br />
-              Valeur : sk-ant-api03-xxxxxxxxxxxx
-            </div>
-          </div>
-        </div>
-      </div>
 
       {/* Modèle utilisé */}
       <SettingRow
@@ -1746,6 +1838,7 @@ const TABS_ADMIN = [
   { id: 'feedback360-settings', label: 'Feedback 360°', icon: MessageSquare },
   { id: 'surveys-settings', label: 'Surveys Engagement', icon: BarChart2 },
   { id: 'ia-coach-settings', label: 'IA Coach', icon: BrainCircuit },
+  { id: 'gamification-settings', label: 'Gamification', icon: Zap },
   { id: 'platform-security', label: 'Sécurité plateforme', icon: Shield },
   { id: 'audit', label: 'Journaux d\'audit', icon: FileText },
 ]
@@ -1771,6 +1864,7 @@ export default function SettingsPage() {
       case 'feedback360-settings': return <Feedback360SettingsSection />
       case 'surveys-settings': return <SurveysEngagementSettingsSection />
       case 'ia-coach-settings': return <IACoachSettingsSection />
+      case 'gamification-settings': return <GamificationSettingsSection />
       case 'platform-security': return <PlatformSecuritySection />
       case 'audit': return <AuditLogsSection />
       default: return <ProfileSection />

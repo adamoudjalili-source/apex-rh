@@ -317,6 +317,16 @@ export function isFeedback360Enabled(settings) {
   return settings.modules?.feedback360_enabled === true
 }
 
+// ─── GAMIFICATION ────────────────────────────────────────────
+/**
+ * Vérifie si le module Gamification est activé
+ * (stocké dans settings.modules.gamification_enabled)
+ */
+export function isGamificationEnabled(settings) {
+  if (!settings) return false
+  return settings.modules?.gamification_enabled === true
+}
+
 // ─── IA COACH ────────────────────────────────────────────────
 /**
  * Vérifie si le module IA Coach est activé
