@@ -12,7 +12,7 @@ import {
   Calendar, RefreshCw, AlertTriangle, Search, ChevronLeft, ChevronDown,
   LogIn, LogOut, UserPlus, UserX, UserCheck, Edit2, Trash2, Download,
   Target, FolderKanban, CheckSquare, Info, Globe, Coins, Timer, MessageSquare,
-  BarChart2, BrainCircuit, Zap
+  BarChart2, BrainCircuit, Zap, ClipboardList
 } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
 import {
@@ -741,7 +741,9 @@ function ModulesSection() {
           <Toggle checked={form.ia_coach_enabled ?? false} onChange={(v) => setForm(prev => ({ ...prev, ia_coach_enabled: v }))} />
         </SettingRow>
         <SettingRow label="Gamification Avancée" description="Streaks, badges Bronze/Argent/Or, points rewards et classement inter-équipes">
-          <Toggle checked={form.gamification_enabled ?? false} onChange={(v) => setForm(prev => ({ ...prev, gamification_enabled: v }))} />
+          <Toggle checked={form.gamification_enabled ?? false} onChange={(v) => setForm(prev => ({ ...prev, gamification_enabled: v }))} />        </SettingRow>
+        <SettingRow label="Review Cycles Formels" description="Évaluations trimestrielles, semestrielles et annuelles avec synthèse PULSE + Feedback 360° + OKRs">
+          <Toggle checked={form.review_cycles_enabled ?? false} onChange={(v) => setForm(prev => ({ ...prev, review_cycles_enabled: v }))} />
         </SettingRow>
       </SectionCard>
 
@@ -1839,9 +1841,125 @@ const TABS_ADMIN = [
   { id: 'surveys-settings', label: 'Surveys Engagement', icon: BarChart2 },
   { id: 'ia-coach-settings', label: 'IA Coach', icon: BrainCircuit },
   { id: 'gamification-settings', label: 'Gamification', icon: Zap },
+  { id: 'review-cycles-settings', label: 'Review Cycles', icon: ClipboardList },
   { id: 'platform-security', label: 'Sécurité plateforme', icon: Shield },
   { id: 'audit', label: 'Journaux d\'audit', icon: FileText },
 ]
+
+// ─── SECTION REVIEW CYCLES (Admin) ──────────────────────────
+
+function ReviewCyclesSettingsSection() {
+  const { data: settings } = useAppSettings()
+  const updateSetting = useUpdateAppSetting()
+  const [form, setForm] = useState({
+    review_cycles_default_frequency: 'annual',
+    review_cycles_self_eval_days: 7,
+    review_cycles_manager_eval_days: 14,
+  })
+  const [saved, setSaved] = useState(false)
+
+  useEffect(() => {
+    if (settings) {
+      setForm({
+        review_cycles_default_frequency: settings.review_cycles_default_frequency ?? 'annual',
+        review_cycles_self_eval_days:    settings.review_cycles_self_eval_days    ?? 7,
+        review_cycles_manager_eval_days: settings.review_cycles_manager_eval_days ?? 14,
+      })
+    }
+  }, [settings])
+
+  async function handleSave() {
+    await Promise.all([
+      updateSetting.mutateAsync({ key: 'review_cycles_default_frequency', value: form.review_cycles_default_frequency }),
+      updateSetting.mutateAsync({ key: 'review_cycles_self_eval_days',    value: form.review_cycles_self_eval_days }),
+      updateSetting.mutateAsync({ key: 'review_cycles_manager_eval_days', value: form.review_cycles_manager_eval_days }),
+    ])
+    setSaved(true)
+    setTimeout(() => setSaved(false), 2000)
+  }
+
+  return (
+    <SectionCard
+      title="Configuration Review Cycles"
+      description="Paramètres des cycles d'évaluation formels (trimestriel, semestriel, annuel)"
+      icon={ClipboardList}
+    >
+      <SettingRow
+        label="Fréquence par défaut"
+        description="Fréquence pré-sélectionnée lors de la création d'un nouveau cycle"
+      >
+        <select
+          value={form.review_cycles_default_frequency}
+          onChange={e => setForm(p => ({ ...p, review_cycles_default_frequency: e.target.value }))}
+          className="rounded-lg border border-white/10 bg-white/5 text-sm text-white px-3 py-1.5 focus:outline-none focus:border-indigo-500/50"
+        >
+          <option value="quarterly">Trimestrielle</option>
+          <option value="biannual">Semestrielle</option>
+          <option value="annual">Annuelle</option>
+        </select>
+      </SettingRow>
+
+      <SettingRow
+        label="Délai auto-évaluation (jours)"
+        description="Nombre de jours accordés au collaborateur pour soumettre son auto-évaluation"
+      >
+        <input
+          type="number"
+          min="1"
+          max="30"
+          value={form.review_cycles_self_eval_days}
+          onChange={e => setForm(p => ({ ...p, review_cycles_self_eval_days: parseInt(e.target.value) || 7 }))}
+          className="w-20 rounded-lg border border-white/10 bg-white/5 text-sm text-white px-3 py-1.5 text-center focus:outline-none focus:border-indigo-500/50"
+        />
+      </SettingRow>
+
+      <SettingRow
+        label="Délai évaluation manager (jours)"
+        description="Nombre de jours accordés au manager après soumission de l'auto-évaluation"
+      >
+        <input
+          type="number"
+          min="1"
+          max="30"
+          value={form.review_cycles_manager_eval_days}
+          onChange={e => setForm(p => ({ ...p, review_cycles_manager_eval_days: parseInt(e.target.value) || 14 }))}
+          className="w-20 rounded-lg border border-white/10 bg-white/5 text-sm text-white px-3 py-1.5 text-center focus:outline-none focus:border-indigo-500/50"
+        />
+      </SettingRow>
+
+      {/* Grille compétences */}
+      <div className="mt-4 pt-4 border-t border-white/8">
+        <p className="text-xs text-gray-500 mb-3">Compétences évaluées (grille standard)</p>
+        <div className="space-y-1.5">
+          {[
+            { icon: '⭐', label: 'Qualité du travail', weight: '25%' },
+            { icon: '⏱️', label: 'Respect des délais', weight: '20%' },
+            { icon: '💬', label: 'Communication', weight: '20%' },
+            { icon: '🤝', label: 'Esprit d\'équipe', weight: '20%' },
+            { icon: '🚀', label: 'Initiative & Proactivité', weight: '15%' },
+          ].map(c => (
+            <div key={c.label} className="flex items-center justify-between rounded-lg bg-white/3 border border-white/8 px-3 py-2">
+              <span className="text-sm text-gray-400">{c.icon} {c.label}</span>
+              <span className="text-xs text-indigo-400 font-medium">{c.weight}</span>
+            </div>
+          ))}
+        </div>
+        <p className="text-[10px] text-gray-600 mt-2">La grille peut être personnalisée par cycle lors de la création.</p>
+      </div>
+
+      <div className="flex justify-end mt-4">
+        <button
+          onClick={handleSave}
+          disabled={updateSetting.isPending}
+          className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium text-white transition-all disabled:opacity-40"
+          style={{ background: 'linear-gradient(135deg,#4F46E5,#7C3AED)' }}
+        >
+          {saved ? <><Check size={14} /> Enregistré</> : <><Save size={14} /> Enregistrer</>}
+        </button>
+      </div>
+    </SectionCard>
+  )
+}
 
 // ─── PAGE PRINCIPALE ─────────────────────────────────────────
 
@@ -1865,6 +1983,7 @@ export default function SettingsPage() {
       case 'surveys-settings': return <SurveysEngagementSettingsSection />
       case 'ia-coach-settings': return <IACoachSettingsSection />
       case 'gamification-settings': return <GamificationSettingsSection />
+      case 'review-cycles-settings': return <ReviewCyclesSettingsSection />
       case 'platform-security': return <PlatformSecuritySection />
       case 'audit': return <AuditLogsSection />
       default: return <ProfileSection />

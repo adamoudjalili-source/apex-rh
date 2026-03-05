@@ -8,7 +8,7 @@
 //    Zéro modification backend (hooks, tables, RLS inchangés)
 // ============================================================
 import { useState } from 'react'
-import { Activity, FileText, Trophy, MessageSquare, BarChart2, BrainCircuit, Zap } from 'lucide-react'
+import { Activity, FileText, Trophy, MessageSquare, BarChart2, BrainCircuit, Zap, ClipboardList } from 'lucide-react'
 import { useTasks } from '../../hooks/useTasks'
 import { useTaskFilters } from '../../hooks/useTaskFilters'
 import { useTaskRealtime } from '../../hooks/useTaskRealtime'
@@ -29,6 +29,7 @@ import { exportTasks } from '../../lib/exportExcel'
 // ✅ Session 28 — Feedback 360° ajouté comme onglet PULSE
 // ✅ Session 29 — Surveys d'Engagement ajouté comme onglet PULSE
 // ✅ Session 31 — Gamification Avancée ajouté comme onglet PULSE
+// ✅ Session 32 — Review Cycles Formels ajouté comme onglet PULSE
 // Les composants eux-mêmes ne sont PAS modifiés — seul leur emplacement UI change
 import JournalPage           from '../pulse/Journal'
 import BoardPage             from '../pulse/Board'
@@ -38,6 +39,7 @@ import Feedback360Page       from '../pulse/Feedback360'
 import EngagementSurveysPage from '../pulse/EngagementSurveys'
 import AICoachPage           from '../pulse/AICoach'
 import GamificationPage      from '../pulse/Gamification'
+import ReviewCyclesPage      from '../pulse/ReviewCycles'
 
 // ─── Vues Tâches (inchangées) ──────────────────────────────
 const TASK_VIEWS = [
@@ -91,10 +93,11 @@ const PULSE_VIEWS = [
   { id: 'surveys',     label: 'Surveys',     icon: <BarChart2    className="w-4 h-4" />, module: 'surveys_engagement_enabled' },
   { id: 'ia_coach',    label: 'IA Coach',    icon: <BrainCircuit className="w-4 h-4" />, module: 'ia_coach_enabled' },
   { id: 'gamification', label: 'Gamification', icon: <Zap        className="w-4 h-4" />, module: 'gamification_enabled' },
+  { id: 'review_cycles', label: 'Review Cycles', icon: <ClipboardList className="w-4 h-4" />, module: 'review_cycles_enabled' },
 ]
 
 // IDs des onglets PULSE purs (sans Ma Journée)
-const PULSE_VIEW_IDS = new Set(['performance', 'rapports', 'awards', 'feedback360', 'surveys', 'ia_coach', 'gamification'])
+const PULSE_VIEW_IDS = new Set(['performance', 'rapports', 'awards', 'feedback360', 'surveys', 'ia_coach', 'gamification', 'review_cycles'])
 
 // ─── Composant principal ─────────────────────────────────────
 export default function Tasks() {
@@ -120,6 +123,9 @@ export default function Tasks() {
   // Gamification actif ?
   const gamificationOn = !settingsLoading && settings?.modules?.gamification_enabled === true
 
+  // Review Cycles actif ?
+  const reviewCyclesOn = !settingsLoading && settings?.modules?.review_cycles_enabled === true
+
   // Vues PULSE filtrées selon les modules activés
   const visiblePulseViews = PULSE_VIEWS.filter(v => {
     if (v.module === null) return true
@@ -127,6 +133,7 @@ export default function Tasks() {
     if (v.module === 'surveys_engagement_enabled') return surveysOn
     if (v.module === 'ia_coach_enabled') return iaCoachOn
     if (v.module === 'gamification_enabled') return gamificationOn
+    if (v.module === 'review_cycles_enabled') return reviewCyclesOn
     return false
   })
 
@@ -308,6 +315,7 @@ export default function Tasks() {
           {activeView === 'surveys'     && <EngagementSurveysPage />}
           {activeView === 'ia_coach'    && <AICoachPage />}
           {activeView === 'gamification' && <GamificationPage />}
+          {activeView === 'review_cycles' && <ReviewCyclesPage />}
         </div>
       )}
 

@@ -336,3 +336,13 @@ export function isAICoachEnabled(settings) {
   if (!settings) return false
   return settings.modules?.ia_coach_enabled === true
 }
+
+// ─── REVIEW CYCLES ────────────────────────────────────────────
+/**
+ * Vérifie si le module Review Cycles est activé
+ * (stocké dans settings.modules.review_cycles_enabled)
+ */
+export function isReviewCyclesEnabled(settings) {
+  if (!settings) return false
+  return settings.modules?.review_cycles_enabled === true
+}
