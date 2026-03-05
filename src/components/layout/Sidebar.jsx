@@ -138,6 +138,13 @@ export default function Sidebar() {
               <NavItem key={item.path} icon={item.icon} label={item.label} path={item.path} collapsed={collapsed}/>
             ))}
 
+            {pulseOn && (
+              <>
+                <Divider label="Performance" collapsed={collapsed}/>
+                <NavItem icon={Activity} label="Ma Performance" path="/ma-performance" color="#4F46E5" collapsed={collapsed}/>
+              </>
+            )}
+
             <Divider label="Management" collapsed={collapsed}/>
             <NavItem icon={Users}    label="Mon Équipe"    path="/mon-equipe"   color="#3B82F6" collapsed={collapsed}/>
 
