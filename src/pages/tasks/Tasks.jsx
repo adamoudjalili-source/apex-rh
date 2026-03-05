@@ -8,7 +8,7 @@
 //    Zéro modification backend (hooks, tables, RLS inchangés)
 // ============================================================
 import { useState } from 'react'
-import { Activity, FileText, Trophy, MessageSquare, BarChart2 } from 'lucide-react'
+import { Activity, FileText, Trophy, MessageSquare, BarChart2, BrainCircuit } from 'lucide-react'
 import { useTasks } from '../../hooks/useTasks'
 import { useTaskFilters } from '../../hooks/useTaskFilters'
 import { useTaskRealtime } from '../../hooks/useTaskRealtime'
@@ -35,6 +35,7 @@ import ReportsPage           from '../pulse/Reports'
 import AwardsPage            from '../pulse/Awards'
 import Feedback360Page       from '../pulse/Feedback360'
 import EngagementSurveysPage from '../pulse/EngagementSurveys'
+import AICoachPage           from '../pulse/AICoach'
 
 // ─── Vues Tâches (inchangées) ──────────────────────────────
 const TASK_VIEWS = [
@@ -86,10 +87,11 @@ const PULSE_VIEWS = [
   { id: 'awards',      label: 'Awards',      icon: <Trophy       className="w-4 h-4" />, module: null },
   { id: 'feedback360', label: 'Feedback 360°', icon: <MessageSquare className="w-4 h-4" />, module: 'feedback360_enabled' },
   { id: 'surveys',     label: 'Surveys',     icon: <BarChart2    className="w-4 h-4" />, module: 'surveys_engagement_enabled' },
+  { id: 'ia_coach',    label: 'IA Coach',    icon: <BrainCircuit className="w-4 h-4" />, module: 'ia_coach_enabled' },
 ]
 
 // IDs des onglets PULSE purs (sans Ma Journée)
-const PULSE_VIEW_IDS = new Set(['performance', 'rapports', 'awards', 'feedback360', 'surveys'])
+const PULSE_VIEW_IDS = new Set(['performance', 'rapports', 'awards', 'feedback360', 'surveys', 'ia_coach'])
 
 // ─── Composant principal ─────────────────────────────────────
 export default function Tasks() {
@@ -109,11 +111,15 @@ export default function Tasks() {
   // Surveys d'Engagement actifs ?
   const surveysOn = !settingsLoading && settings?.modules?.surveys_engagement_enabled === true
 
+  // IA Coach actif ?
+  const iaCoachOn = !settingsLoading && settings?.modules?.ia_coach_enabled === true
+
   // Vues PULSE filtrées selon les modules activés
   const visiblePulseViews = PULSE_VIEWS.filter(v => {
     if (v.module === null) return true
     if (v.module === 'feedback360_enabled') return feedback360On
     if (v.module === 'surveys_engagement_enabled') return surveysOn
+    if (v.module === 'ia_coach_enabled') return iaCoachOn
     return false
   })
 
@@ -293,6 +299,7 @@ export default function Tasks() {
           {activeView === 'awards'      && <AwardsPage />}
           {activeView === 'feedback360' && <Feedback360Page />}
           {activeView === 'surveys'     && <EngagementSurveysPage />}
+          {activeView === 'ia_coach'    && <AICoachPage />}
         </div>
       )}
 

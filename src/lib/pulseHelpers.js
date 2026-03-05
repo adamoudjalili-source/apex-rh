@@ -316,3 +316,13 @@ export function isFeedback360Enabled(settings) {
   if (!settings) return false
   return settings.modules?.feedback360_enabled === true
 }
+
+// ─── IA COACH ────────────────────────────────────────────────
+/**
+ * Vérifie si le module IA Coach est activé
+ * (stocké dans settings.modules.ia_coach_enabled)
+ */
+export function isAICoachEnabled(settings) {
+  if (!settings) return false
+  return settings.modules?.ia_coach_enabled === true
+}

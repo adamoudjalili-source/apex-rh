@@ -12,7 +12,7 @@ import {
   Calendar, RefreshCw, AlertTriangle, Search, ChevronLeft, ChevronDown,
   LogIn, LogOut, UserPlus, UserX, UserCheck, Edit2, Trash2, Download,
   Target, FolderKanban, CheckSquare, Info, Globe, Coins, Timer, MessageSquare,
-  BarChart2
+  BarChart2, BrainCircuit
 } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
 import {
@@ -737,6 +737,9 @@ function ModulesSection() {
         <SettingRow label="Surveys d'Engagement" description="Questionnaires anonymes périodiques — score et tendance d'engagement équipe">
           <Toggle checked={form.surveys_engagement_enabled ?? false} onChange={(v) => setForm(prev => ({ ...prev, surveys_engagement_enabled: v }))} />
         </SettingRow>
+        <SettingRow label="IA Coach" description="Analyse IA des journaux PULSE — suggestions personnalisées et résumé équipe (API Anthropic)">
+          <Toggle checked={form.ia_coach_enabled ?? false} onChange={(v) => setForm(prev => ({ ...prev, ia_coach_enabled: v }))} />
+        </SettingRow>
       </SectionCard>
 
       <SectionCard title="Configuration OKR" description="Paramètres des cycles d'objectifs" icon={Target}>
@@ -1424,6 +1427,97 @@ function PulseNotificationsSection() {
   )
 }
 
+// ─── SECTION IA COACH (Admin) ────────────────────────────────
+
+function IACoachSettingsSection() {
+  return (
+    <SectionCard
+      title="Configuration IA Coach"
+      description="Paramètres du module IA Coach (Anthropic Claude)"
+      icon={BrainCircuit}
+    >
+      {/* Info API Key */}
+      <div
+        className="rounded-xl p-4 mb-4"
+        style={{ background: 'rgba(79,70,229,0.08)', border: '1px solid rgba(99,102,241,0.2)' }}
+      >
+        <div className="flex items-start gap-3">
+          <span className="text-xl mt-0.5">🔑</span>
+          <div>
+            <div className="text-sm font-medium text-white mb-1">Clé API Anthropic requise</div>
+            <p className="text-xs text-gray-400 leading-relaxed">
+              Pour activer l'IA Coach, ajoutez votre clé API Anthropic dans les secrets Supabase :
+            </p>
+            <div className="mt-2 font-mono text-xs bg-black/30 rounded-lg px-3 py-2 text-indigo-300">
+              Supabase → Project Settings → Edge Functions → Secrets<br />
+              Nom : <strong>ANTHROPIC_API_KEY</strong><br />
+              Valeur : sk-ant-api03-xxxxxxxxxxxx
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Modèle utilisé */}
+      <SettingRow
+        label="Modèle IA utilisé"
+        description="Modèle Claude utilisé pour l'analyse des journaux PULSE"
+      >
+        <div
+          className="text-xs font-mono px-3 py-1.5 rounded-lg"
+          style={{ background: 'rgba(79,70,229,0.1)', color: '#818CF8' }}
+        >
+          claude-sonnet-4-20250514
+        </div>
+      </SettingRow>
+
+      {/* Période d'analyse */}
+      <SettingRow
+        label="Période d'analyse"
+        description="Nombre de jours de journaux analysés par l'IA lors d'une demande"
+      >
+        <div
+          className="text-xs font-mono px-3 py-1.5 rounded-lg"
+          style={{ background: 'rgba(79,70,229,0.1)', color: '#818CF8' }}
+        >
+          7 jours
+        </div>
+      </SettingRow>
+
+      {/* Axes analysés */}
+      <SettingRow
+        label="Axes d'analyse"
+        description="Les 3 dimensions analysées pour chaque collaborateur"
+      >
+        <div className="flex flex-col gap-1.5 items-end">
+          {[
+            { icon: '🎯', label: 'Performance', color: '#4F46E5' },
+            { icon: '💚', label: 'Bien-être',   color: '#10B981' },
+            { icon: '🔓', label: 'Blocages',    color: '#F59E0B' },
+          ].map(a => (
+            <div
+              key={a.label}
+              className="flex items-center gap-1.5 text-xs px-2 py-0.5 rounded-lg"
+              style={{ background: `${a.color}18`, color: a.color }}
+            >
+              <span>{a.icon}</span> {a.label}
+            </div>
+          ))}
+        </div>
+      </SettingRow>
+
+      {/* Info coût */}
+      <div
+        className="rounded-xl p-3 mt-2"
+        style={{ background: 'rgba(245,158,11,0.06)', border: '1px solid rgba(245,158,11,0.15)' }}
+      >
+        <p className="text-xs text-amber-400/80">
+          ⚠️ Chaque analyse consomme environ 1 000–2 000 tokens (input + output). Avec Claude Sonnet, le coût est estimé à ~0,001–0,003 $ par analyse individuelle.
+        </p>
+      </div>
+    </SectionCard>
+  )
+}
+
 // ─── SECTION SURVEYS D'ENGAGEMENT (Admin) ─────────────────────
 
 function SurveysEngagementSettingsSection() {
@@ -1651,6 +1745,7 @@ const TABS_ADMIN = [
   { id: 'pulse', label: 'PULSE', icon: Activity },
   { id: 'feedback360-settings', label: 'Feedback 360°', icon: MessageSquare },
   { id: 'surveys-settings', label: 'Surveys Engagement', icon: BarChart2 },
+  { id: 'ia-coach-settings', label: 'IA Coach', icon: BrainCircuit },
   { id: 'platform-security', label: 'Sécurité plateforme', icon: Shield },
   { id: 'audit', label: 'Journaux d\'audit', icon: FileText },
 ]
@@ -1675,6 +1770,7 @@ export default function SettingsPage() {
       case 'pulse': return <PulseSettingsSection />
       case 'feedback360-settings': return <Feedback360SettingsSection />
       case 'surveys-settings': return <SurveysEngagementSettingsSection />
+      case 'ia-coach-settings': return <IACoachSettingsSection />
       case 'platform-security': return <PlatformSecuritySection />
       case 'audit': return <AuditLogsSection />
       default: return <ProfileSection />
