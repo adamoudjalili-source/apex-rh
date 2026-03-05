@@ -204,7 +204,12 @@ export function useMyIPR() {
         okrCount: okrRows.length, reviewScore, f360Score,
       }
     },
-    enabled: !!profile?.id && externalEnabled,// ─── IPR équipe (manager) ─────────────────────────────────────
+    enabled: !!profile?.id,
+    staleTime: 5 * 60 * 1000,
+  })
+}
+
+// ─── IPR équipe (manager) ─────────────────────────────────────
 export function useTeamIPR(options = {}) {
   const { profile } = useAuth()
   const { enabled: externalEnabled = true } = options
