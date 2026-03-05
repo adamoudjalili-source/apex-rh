@@ -15,7 +15,6 @@ import {
   ClipboardList, TrendingUp, TrendingDown, Minus,
   Plus, Pencil, Trash2, Check,
 } from 'lucide-react'
-import { AnimatePresence } from 'framer-motion'
 import { useAuth }     from '../../contexts/AuthContext'
 import { useTeamIPR }  from '../../hooks/useIPR'
 import {
