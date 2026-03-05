@@ -73,10 +73,10 @@ export default function Dashboard() {
             {new Date().toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long',year:'numeric'})}
           </p>
         </div>
-        <button onClick={() => navigate('/mon-espace')}
+        <button onClick={() => navigate('/mon-tableau-de-bord')}
           className="hidden sm:flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium text-white transition-all"
           style={{ background:'linear-gradient(135deg,#4F46E5,#7C3AED)', boxShadow:'0 4px 16px rgba(79,70,229,0.3)' }}>
-          <Zap size={14} /> Mon Espace
+          <Zap size={14} /> Mon Tableau de Bord
         </button>
       </motion.div>
 
@@ -84,7 +84,7 @@ export default function Dashboard() {
       {pulseOn && (
         <motion.div variants={fadeUp}>
           <div className="rounded-2xl p-5 cursor-pointer group transition-all duration-300 hover:-translate-y-0.5"
-            onClick={() => navigate('/mon-espace')}
+            onClick={() => navigate('/mon-tableau-de-bord')}
             style={{
               background:'linear-gradient(135deg,rgba(79,70,229,0.1) 0%,rgba(124,58,237,0.05) 100%)',
               border:'1px solid rgba(79,70,229,0.2)',
@@ -139,7 +139,7 @@ export default function Dashboard() {
                     color={iprColor(iprData?.ipr)} filled />
                 )}
                 <div className="flex items-center gap-1.5 text-indigo-400 group-hover:translate-x-1 transition-transform">
-                  <span className="text-sm font-medium">Mon Espace</span>
+                  <span className="text-sm font-medium">Mon Tableau de Bord</span>
                   <ArrowRight size={14} />
                 </div>
               </div>
@@ -271,7 +271,7 @@ export default function Dashboard() {
           <motion.div variants={fadeUp}>
             <SectionCard title="Navigation rapide" icon={<Zap size={13} className="text-amber-400" />}>
               <div className="space-y-1">
-                <QuickNav icon={<Zap size={13}/>}       label="Mon Espace"      color="#4F46E5" onClick={() => navigate('/mon-espace')} />
+                <QuickNav icon={<Zap size={13}/>}       label="Mon Tableau de Bord"      color="#4F46E5" onClick={() => navigate('/mon-tableau-de-bord')} />
                 {isManager && <QuickNav icon={<Users size={13}/>} label="Mon Équipe" color="#8B5CF6" onClick={() => navigate('/mon-equipe')} />}
                 <QuickNav icon={<CheckSquare size={13}/>} label="Mes tâches"    color="#3B82F6" onClick={() => navigate('/travail/taches')} />
                 <QuickNav icon={<Target size={13}/>}    label="Objectifs OKR"   color="#C9A227" onClick={() => navigate('/travail/objectifs')} />

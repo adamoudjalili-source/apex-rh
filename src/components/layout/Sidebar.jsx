@@ -117,6 +117,30 @@ export default function Sidebar() {
         {isAdmin ? (
           <>
             <NavItem icon={LayoutDashboard} label="Tableau de Bord" path="/mon-tableau-de-bord" collapsed={collapsed}/>
+
+            <Divider label="Mon Travail" collapsed={collapsed}/>
+            <GroupItem label="Mon Travail" icon={CheckSquare}
+              open={travailOpen || isTravailActive}
+              onToggle={() => setTravailOpen(o=>!o)}
+              collapsed={collapsed} active={isTravailActive}/>
+            <AnimatePresence>
+              {(travailOpen || isTravailActive) && !collapsed && (
+                <motion.div key="travail-items-admin"
+                  initial={{opacity:0,height:0}} animate={{opacity:1,height:'auto'}} exit={{opacity:0,height:0}}
+                  transition={{duration:0.22}} style={{overflow:'hidden'}}>
+                  {travailItems.map(item => (
+                    <SubItem key={item.path} icon={item.icon} label={item.label} path={item.path}/>
+                  ))}
+                </motion.div>
+              )}
+            </AnimatePresence>
+            {(travailOpen || isTravailActive) && collapsed && travailItems.map(item => (
+              <NavItem key={item.path} icon={item.icon} label={item.label} path={item.path} collapsed={collapsed}/>
+            ))}
+
+            <Divider label="Management" collapsed={collapsed}/>
+            <NavItem icon={Users}    label="Mon Équipe"    path="/mon-equipe"   color="#3B82F6" collapsed={collapsed}/>
+
             <Divider label="Analyse" collapsed={collapsed}/>
             <NavItem icon={BarChart3} label="Intelligence RH"  path="/intelligence" color="#8B5CF6" collapsed={collapsed}/>
             <NavItem icon={Trophy}   label="Engagement & Rapports" path="/engagement" color="#C9A227" collapsed={collapsed}/>
