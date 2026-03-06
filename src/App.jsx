@@ -19,6 +19,7 @@ import ForceChangePassword from './pages/auth/ForceChangePassword'
 const UsersPage      = lazy(() => import('./pages/admin/Users'))
 const Organisation   = lazy(() => import('./pages/admin/Organisation'))
 const SettingsPage   = lazy(() => import('./pages/admin/Settings'))
+const SuperAdmin     = lazy(() => import('./pages/admin/SuperAdmin'))   // S52
 
 const Dashboard      = lazy(() => import('./pages/dashboard/Dashboard'))
 const MonEspace      = lazy(() => import('./pages/mon-espace/MonEspace'))
@@ -73,6 +74,7 @@ export default function App() {
           <Route path="/admin/users"        element={<S><UsersPage /></S>} />
           <Route path="/admin/organisation" element={<S><Organisation /></S>} />
           <Route path="/admin/settings"     element={<S><SettingsPage /></S>} />
+          <Route path="/admin/super-admin"  element={<S><SuperAdmin /></S>} />   {/* S52 */}
 
           {/* Rétrocompatibilité — anciennes URLs */}
           <Route path="/tasks"      element={<Navigate to="/travail/taches"    replace />} />
