@@ -333,17 +333,6 @@ function StatCard({ icon: Icon, label, value, color }) {
   )
 }
 
-function EmptyState() {
-  return (
-    <div className="flex flex-col items-center justify-center py-16 text-center">
-      <div className="w-14 h-14 rounded-2xl bg-white/5 flex items-center justify-center mb-4">
-        <Target size={24} className="text-white/15" />
-      </div>
-      <p className="text-white/30 text-sm mb-1">Aucun objectif trouvé</p>
-      <p className="text-white/15 text-xs">Créez votre premier objectif pour commencer</p>
-    </div>
-  )
-}
 
 function StatsView({ objectives, stats }) {
   return (
