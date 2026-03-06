@@ -207,6 +207,7 @@ export const AuthProvider = ({ children }) => {
     updatePassword,
     isAdmin: profile?.role === 'administrateur',
     isDirecteur: profile?.role === 'directeur',
+    isDirection: profile?.role === 'direction',
     isChefDivision: profile?.role === 'chef_division',
     isChefService: profile?.role === 'chef_service',
     isCollaborateur: profile?.role === 'collaborateur',

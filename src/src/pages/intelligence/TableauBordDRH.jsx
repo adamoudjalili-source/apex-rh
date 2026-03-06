@@ -23,7 +23,7 @@ import {
   useDRHTopFlop,
 } from '../../hooks/useDRHDashboard'
 import { monthKeyToLabel } from '../../hooks/useAnalytics'
-import { exportDRHDashboard } from '../../utils/exportExcel'
+import { exportDRHDashboard } from '../../lib/exportExcel'
 
 // ─── Animations ───────────────────────────────────────────────
 const fadeUp  = { hidden:{opacity:0,y:10}, visible:{opacity:1,y:0,transition:{duration:0.28}} }

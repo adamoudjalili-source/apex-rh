@@ -1,25 +1,32 @@
 // ============================================================
-// APEX RH — Sidebar.jsx  ·  Session 36 v3
-// Navigation 6 sections — vision originale complète
-//   🏠 Accueil
-//   ⚡ Mon Espace      [Nouveau]
-//   👥 Mon Équipe      [Nouveau — managers]
-//   ── TRAVAIL ──
-//   🎯 Tâches
-//   🎯 Projets
-//   🎯 Objectifs OKR
-//   ── MESURE & ANALYSE ──
-//   📊 Intelligence RH
-//   🏆 Engagement
-//   ── ADMINISTRATION ──
-//   Utilisateurs · Organisation · Paramètres
+// APEX RH — Sidebar.jsx  ·  Session 38
+// 3 EXPÉRIENCES DISTINCTES, 1 PLATEFORME COHÉRENTE
+//
+// VUE COLLABORATEUR (5 sections) :
+//   1. Mon Tableau de Bord  → /mon-tableau-de-bord
+//   2. Mon Travail ▾        → Tâches · Projets · Objectifs
+//   3. Ma Performance       → /ma-performance
+//   4. Mon Développement    → /mon-developpement
+//   5. Mes Reconnaissances  → /mes-reconnaissances
+//
+// VUE MANAGER (+ sections) :
+//   + Mon Équipe            → /mon-equipe
+//   + Intelligence RH       → /intelligence
+//   + Engagement équipe     → /engagement
+//
+// VUE ADMIN/RH :
+//   1. Tableau de Bord Global → /mon-tableau-de-bord
+//   2. Intelligence RH        → /intelligence
+//   3. Gestion ▾              → Utilisateurs · Organisation · Paramètres
+//   4. Rapports               → /engagement
 // ============================================================
 import { useState } from 'react'
-import { NavLink, useNavigate } from 'react-router-dom'
+import { NavLink, useNavigate, useLocation } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
-  LayoutDashboard, Zap, Users, CheckSquare, Target, FolderKanban,
-  BarChart3, Trophy, ChevronLeft, ChevronRight,
+  LayoutDashboard, CheckSquare, Target, FolderKanban,
+  Activity, BookOpen, Trophy, Users, BarChart3,
+  ChevronLeft, ChevronRight, ChevronDown,
   LogOut, Settings, Building2, UserCog,
 } from 'lucide-react'
 import { useAuth }        from '../../contexts/AuthContext'
@@ -30,59 +37,51 @@ import logoNita from '../../assets/logo-nita.png'
 
 const ROLE_COLORS = {
   administrateur:'#EF4444', directeur:'#C9A227',
-  chef_division:'#8B5CF6', chef_service:'#3B82F6', collaborateur:'#10B981',
+  chef_division:'#8B5CF6',  chef_service:'#3B82F6', collaborateur:'#10B981',
 }
 const ROLE_LABELS = {
   administrateur:'Administrateur', directeur:'Directeur',
   chef_division:'Chef de Division', chef_service:'Chef de Service', collaborateur:'Collaborateur',
 }
 const MANAGERS = ['administrateur','directeur','chef_division','chef_service']
-
-const MAIN_ITEMS = [
-  { label:'Tableau de bord', icon:LayoutDashboard, path:'/dashboard', roles:['administrateur','directeur','chef_division','chef_service','collaborateur'] },
-  { label:'Mon Espace',      icon:Zap,             path:'/mon-espace', roles:['administrateur','directeur','chef_division','chef_service','collaborateur'], badge:'Nouveau', badgeColor:'#C9A227' },
-  { label:'Mon Équipe',      icon:Users,           path:'/mon-equipe', roles:['administrateur','directeur','chef_division','chef_service'], badge:'Nouveau', badgeColor:'#C9A227' },
-]
+const ADMINS   = ['administrateur','directeur','direction']
 
 const TRAVAIL_ITEMS = [
-  { label:'Tâches',       icon:CheckSquare, path:'/travail/taches',    moduleKey:'tasks_enabled' },
-  { label:'Projets',      icon:FolderKanban,path:'/travail/projets',   moduleKey:'projects_enabled' },
-  { label:'Objectifs OKR',icon:Target,      path:'/travail/objectifs', moduleKey:'okr_enabled' },
+  { label:'Tâches',        icon:CheckSquare,  path:'/travail/taches',    moduleKey:'tasks_enabled' },
+  { label:'Projets',       icon:FolderKanban, path:'/travail/projets',   moduleKey:'projects_enabled' },
+  { label:'Objectifs OKR', icon:Target,       path:'/travail/objectifs', moduleKey:'okr_enabled' },
 ]
 
-const MESURE_ITEMS = [
-  { label:'Intelligence RH', icon:BarChart3, path:'/intelligence', color:'#8B5CF6' },
-  { label:'Engagement',      icon:Trophy,    path:'/engagement',   color:'#C9A227' },
-]
-
-const ADMIN_ITEMS = [
+const GESTION_ITEMS = [
   { label:'Utilisateurs', icon:UserCog,   path:'/admin/users',        roles:['administrateur'] },
   { label:'Organisation', icon:Building2, path:'/admin/organisation', roles:['administrateur'] },
-  { label:'Paramètres',   icon:Settings,  path:'/admin/settings',     roles:['administrateur','directeur','chef_division','chef_service','collaborateur'] },
+  { label:'Paramètres',   icon:Settings,  path:'/admin/settings' },
 ]
 
 export default function Sidebar() {
-  const [collapsed, setCollapsed] = useState(false)
-  const { profile, signOut }      = useAuth()
-  const navigate                   = useNavigate()
-  const { data: settings }        = useAppSettings()
-  const { data: todayScore }      = useTodayScore()
+  const [collapsed, setCollapsed]     = useState(false)
+  const [travailOpen, setTravailOpen] = useState(true)
+  const [gestionOpen, setGestionOpen] = useState(false)
 
-  const modules    = settings?.modules || {}
-  const pulseOn    = isPulseEnabled(settings)
-  const isManager  = MANAGERS.includes(profile?.role)
+  const { profile, signOut }  = useAuth()
+  const navigate               = useNavigate()
+  const location               = useLocation()
+  const { data: settings }    = useAppSettings()
+  const { data: todayScore }  = useTodayScore()
 
-  const visibleMain   = MAIN_ITEMS.filter(i => {
-    if (!i.roles.includes(profile?.role)) return false
-    if (i.path==='/mon-equipe' && !isManager) return false
-    return true
-  })
-  const visibleTravail = TRAVAIL_ITEMS.filter(i => !i.moduleKey || modules[i.moduleKey] !== false)
-  const visibleMesure  = pulseOn ? MESURE_ITEMS : []
-  const visibleAdmin   = ADMIN_ITEMS.filter(i => !i.roles || i.roles.includes(profile?.role))
+  const modules   = settings?.modules || {}
+  const pulseOn   = isPulseEnabled(settings)
+  const isManager = MANAGERS.includes(profile?.role)
+  const isAdmin   = ADMINS.includes(profile?.role)
+  const role      = profile?.role
 
   const initiale = profile?.first_name?.charAt(0) || profile?.last_name?.charAt(0) || 'U'
   const fullName = [profile?.first_name, profile?.last_name].filter(Boolean).join(' ') || 'Utilisateur'
+
+  const travailItems  = TRAVAIL_ITEMS.filter(i => !i.moduleKey || modules[i.moduleKey] !== false)
+  const gestionItems  = GESTION_ITEMS.filter(i => !i.roles || i.roles.includes(role))
+  const isTravailActive = travailItems.some(i => location.pathname.startsWith(i.path))
+  const isGestionActive = gestionItems.some(i => location.pathname.startsWith(i.path))
 
   return (
     <motion.aside
@@ -92,7 +91,6 @@ export default function Sidebar() {
       className="relative flex flex-col h-screen border-r border-white/[0.06] overflow-hidden flex-shrink-0"
       style={{ background:'linear-gradient(180deg,#090920 0%,#070718 100%)' }}>
 
-      {/* Ligne dorée */}
       <div className="absolute top-0 left-0 right-0 h-[2px]"
         style={{ background:'linear-gradient(90deg,#C9A227,#4F46E5,transparent)' }}/>
 
@@ -112,28 +110,147 @@ export default function Sidebar() {
         </AnimatePresence>
       </div>
 
-      {/* Nav */}
+      {/* Navigation */}
       <nav className="flex-1 px-3 py-4 overflow-y-auto overflow-x-hidden space-y-0.5">
-        {visibleMain.map(item => <NavItem key={item.path} item={item} collapsed={collapsed}/>)}
 
-        {visibleTravail.length > 0 && (
+        {/* ═══ VUE ADMIN / RH ═══ */}
+        {isAdmin ? (
           <>
-            <Divider label="Travail" collapsed={collapsed}/>
-            {visibleTravail.map(item => <NavItem key={item.path} item={item} collapsed={collapsed}/>)}
+            <NavItem icon={LayoutDashboard} label="Tableau de Bord" path="/mon-tableau-de-bord" collapsed={collapsed}/>
+
+            <Divider label="Mon Travail" collapsed={collapsed}/>
+            <GroupItem label="Mon Travail" icon={CheckSquare}
+              open={travailOpen || isTravailActive}
+              onToggle={() => setTravailOpen(o=>!o)}
+              collapsed={collapsed} active={isTravailActive}/>
+            <AnimatePresence>
+              {(travailOpen || isTravailActive) && !collapsed && (
+                <motion.div key="travail-items-admin"
+                  initial={{opacity:0,height:0}} animate={{opacity:1,height:'auto'}} exit={{opacity:0,height:0}}
+                  transition={{duration:0.22}} style={{overflow:'hidden'}}>
+                  {travailItems.map(item => (
+                    <SubItem key={item.path} icon={item.icon} label={item.label} path={item.path}/>
+                  ))}
+                </motion.div>
+              )}
+            </AnimatePresence>
+            {(travailOpen || isTravailActive) && collapsed && travailItems.map(item => (
+              <NavItem key={item.path} icon={item.icon} label={item.label} path={item.path} collapsed={collapsed}/>
+            ))}
+
+            <Divider label="Performance" collapsed={collapsed}/>
+            <NavItem icon={Activity} label="Ma Performance" path="/ma-performance" color="#4F46E5" collapsed={collapsed}/>
+
+            <Divider label="Management" collapsed={collapsed}/>
+            <NavItem icon={Users}    label="Mon Équipe"    path="/mon-equipe"   color="#3B82F6" collapsed={collapsed}/>
+
+            <Divider label="Analyse" collapsed={collapsed}/>
+            <NavItem icon={BarChart3} label="Intelligence RH"  path="/intelligence" color="#8B5CF6" collapsed={collapsed}/>
+            <NavItem icon={Trophy}   label="Engagement & Rapports" path="/engagement" color="#C9A227" collapsed={collapsed}/>
+            <Divider label="Gestion" collapsed={collapsed}/>
+            <GroupItem label="Gestion" icon={Building2}
+              open={gestionOpen || isGestionActive}
+              onToggle={() => setGestionOpen(o=>!o)}
+              collapsed={collapsed} active={isGestionActive}/>
+            <AnimatePresence>
+              {(gestionOpen || isGestionActive) && !collapsed && (
+                <motion.div key="gestion-items"
+                  initial={{opacity:0,height:0}} animate={{opacity:1,height:'auto'}} exit={{opacity:0,height:0}}
+                  transition={{duration:0.22, overflow:'hidden'}} style={{overflow:'hidden'}}>
+                  {gestionItems.map(item => (
+                    <SubItem key={item.path} icon={item.icon} label={item.label} path={item.path}/>
+                  ))}
+                </motion.div>
+              )}
+            </AnimatePresence>
+            {(gestionOpen || isGestionActive) && collapsed && gestionItems.map(item => (
+              <NavItem key={item.path} icon={item.icon} label={item.label} path={item.path} collapsed={collapsed}/>
+            ))}
           </>
-        )}
 
-        {visibleMesure.length > 0 && (
+        /* ═══ VUE MANAGER ═══ */
+        ) : isManager ? (
           <>
-            <Divider label="Mesure & Analyse" collapsed={collapsed}/>
-            {visibleMesure.map(item => <NavItem key={item.path} item={item} collapsed={collapsed}/>)}
-          </>
-        )}
-
-        {visibleAdmin.length > 0 && (
-          <>
+            <NavItem icon={LayoutDashboard} label="Mon Tableau de Bord" path="/mon-tableau-de-bord" collapsed={collapsed}/>
+            <Divider label="Mon Travail" collapsed={collapsed}/>
+            <GroupItem label="Mon Travail" icon={CheckSquare}
+              open={travailOpen || isTravailActive}
+              onToggle={() => setTravailOpen(o=>!o)}
+              collapsed={collapsed} active={isTravailActive}/>
+            <AnimatePresence>
+              {(travailOpen || isTravailActive) && !collapsed && (
+                <motion.div key="travail-items-mgr"
+                  initial={{opacity:0,height:0}} animate={{opacity:1,height:'auto'}} exit={{opacity:0,height:0}}
+                  transition={{duration:0.22}} style={{overflow:'hidden'}}>
+                  {travailItems.map(item => (
+                    <SubItem key={item.path} icon={item.icon} label={item.label} path={item.path}/>
+                  ))}
+                </motion.div>
+              )}
+            </AnimatePresence>
+            {(travailOpen || isTravailActive) && collapsed && travailItems.map(item => (
+              <NavItem key={item.path} icon={item.icon} label={item.label} path={item.path} collapsed={collapsed}/>
+            ))}
+            {pulseOn && (
+              <>
+                <Divider label="Performance" collapsed={collapsed}/>
+                <NavItem icon={Activity} label="Ma Performance" path="/ma-performance" color="#4F46E5" collapsed={collapsed}/>
+              </>
+            )}
+            <Divider label="Management" collapsed={collapsed}/>
+            <NavItem icon={Users}    label="Mon Équipe"         path="/mon-equipe"    color="#3B82F6" collapsed={collapsed}/>
+            <NavItem icon={BarChart3} label="Intelligence RH"   path="/intelligence"  color="#8B5CF6" collapsed={collapsed}/>
+            <NavItem icon={Trophy}   label="Engagement équipe"  path="/engagement"    color="#C9A227" collapsed={collapsed}/>
             <Divider label="Administration" collapsed={collapsed}/>
-            {visibleAdmin.map(item => <NavItem key={item.path} item={item} collapsed={collapsed}/>)}
+            <NavItem icon={Settings} label="Paramètres" path="/admin/settings" collapsed={collapsed}/>
+          </>
+
+        /* ═══ VUE COLLABORATEUR ═══ */
+        ) : (
+          <>
+            {/* 1 — Mon Tableau de Bord */}
+            <NavItem icon={LayoutDashboard} label="Mon Tableau de Bord" path="/mon-tableau-de-bord" collapsed={collapsed}/>
+
+            {/* 2 — Mon Travail */}
+            <Divider label="Mon Travail" collapsed={collapsed}/>
+            <GroupItem label="Mon Travail" icon={CheckSquare}
+              open={travailOpen || isTravailActive}
+              onToggle={() => setTravailOpen(o=>!o)}
+              collapsed={collapsed} active={isTravailActive}/>
+            <AnimatePresence>
+              {(travailOpen || isTravailActive) && !collapsed && (
+                <motion.div key="travail-items-collab"
+                  initial={{opacity:0,height:0}} animate={{opacity:1,height:'auto'}} exit={{opacity:0,height:0}}
+                  transition={{duration:0.22}} style={{overflow:'hidden'}}>
+                  {travailItems.map(item => (
+                    <SubItem key={item.path} icon={item.icon} label={item.label} path={item.path}/>
+                  ))}
+                </motion.div>
+              )}
+            </AnimatePresence>
+            {(travailOpen || isTravailActive) && collapsed && travailItems.map(item => (
+              <NavItem key={item.path} icon={item.icon} label={item.label} path={item.path} collapsed={collapsed}/>
+            ))}
+
+            {/* 3 — Ma Performance */}
+            {pulseOn && (
+              <>
+                <Divider label="Performance" collapsed={collapsed}/>
+                <NavItem icon={Activity} label="Ma Performance" path="/ma-performance" color="#4F46E5" collapsed={collapsed}/>
+              </>
+            )}
+
+            {/* 4 — Mon Développement */}
+            <Divider label="Développement" collapsed={collapsed}/>
+            <NavItem icon={BookOpen} label="Mon Développement" path="/mon-developpement" color="#10B981" collapsed={collapsed}/>
+
+            {/* 5 — Mes Reconnaissances */}
+            <Divider label="Reconnaissances" collapsed={collapsed}/>
+            <NavItem icon={Trophy} label="Mes Reconnaissances" path="/mes-reconnaissances" color="#C9A227" collapsed={collapsed}/>
+
+            {/* Paramètres */}
+            <Divider label="Administration" collapsed={collapsed}/>
+            <NavItem icon={Settings} label="Paramètres" path="/admin/settings" collapsed={collapsed}/>
           </>
         )}
       </nav>
@@ -143,14 +260,14 @@ export default function Sidebar() {
         <div className="rounded-xl p-3 flex items-center gap-3 overflow-hidden"
           style={{ background:'rgba(255,255,255,0.03)' }}>
           <div className="w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold flex-shrink-0 text-white uppercase"
-            style={{ background:ROLE_COLORS[profile?.role]||'#4F46E5' }}>{initiale}</div>
+            style={{ background:ROLE_COLORS[role]||'#4F46E5' }}>{initiale}</div>
           <AnimatePresence>
             {!collapsed && (
               <motion.div initial={{opacity:0}} animate={{opacity:1}} exit={{opacity:0}} transition={{duration:0.18}}
                 className="overflow-hidden flex-1 min-w-0">
                 <p className="text-sm font-semibold text-white truncate leading-tight">{fullName}</p>
-                <p className="text-[10px] font-medium truncate" style={{ color:ROLE_COLORS[profile?.role] }}>
-                  {ROLE_LABELS[profile?.role]||profile?.role}
+                <p className="text-[10px] font-medium truncate" style={{ color:ROLE_COLORS[role] }}>
+                  {ROLE_LABELS[role]||role}
                 </p>
                 {pulseOn && todayScore && (
                   <div className="flex items-center gap-1.5 mt-1">
@@ -189,10 +306,9 @@ export default function Sidebar() {
   )
 }
 
-function NavItem({ item, collapsed }) {
-  const Icon = item.icon
+function NavItem({ icon: Icon, label, path, collapsed, color }) {
   return (
-    <NavLink to={item.path}
+    <NavLink to={path}
       className={({ isActive }) =>
         `flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 relative overflow-hidden group ${
           isActive ? 'bg-indigo-500/10 text-indigo-400' : 'text-white/35 hover:text-white/75 hover:bg-white/[0.03]'
@@ -206,23 +322,51 @@ function NavItem({ item, collapsed }) {
               transition={{ type:'spring', stiffness:500, damping:30 }}/>
           )}
           <Icon size={17} className="flex-shrink-0"
-            style={item.color && isActive ? { color:item.color } : undefined}/>
+            style={color && isActive ? { color } : undefined}/>
           <AnimatePresence>
             {!collapsed && (
               <motion.span initial={{opacity:0}} animate={{opacity:1}} exit={{opacity:0}} transition={{duration:0.18}}
-                className="text-sm font-medium truncate flex-1">{item.label}</motion.span>
+                className="text-sm font-medium truncate flex-1">{label}</motion.span>
             )}
           </AnimatePresence>
-          {!collapsed && item.badge && (
-            <motion.span initial={{opacity:0,scale:0.8}} animate={{opacity:1,scale:1}} exit={{opacity:0}}
-              className="text-[9px] font-bold px-1.5 py-0.5 rounded-full flex-shrink-0"
-              style={{ background:`${item.badgeColor}20`, color:item.badgeColor, border:`1px solid ${item.badgeColor}25` }}>
-              {item.badge}
-            </motion.span>
-          )}
         </>
       )}
     </NavLink>
+  )
+}
+
+function SubItem({ icon: Icon, label, path }) {
+  return (
+    <NavLink to={path}
+      className={({ isActive }) =>
+        `flex items-center gap-3 pl-8 pr-3 py-2 rounded-lg transition-all text-sm ${
+          isActive ? 'text-indigo-400 bg-indigo-500/[0.07]' : 'text-white/25 hover:text-white/55 hover:bg-white/[0.02]'
+        }`
+      }>
+      <Icon size={14} className="flex-shrink-0"/>
+      <span className="truncate">{label}</span>
+    </NavLink>
+  )
+}
+
+function GroupItem({ icon: Icon, label, open, onToggle, collapsed, active }) {
+  return (
+    <button onClick={onToggle}
+      className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 ${
+        active ? 'text-indigo-300' : 'text-white/35 hover:text-white/65 hover:bg-white/[0.03]'
+      }`}>
+      <Icon size={17} className="flex-shrink-0"/>
+      <AnimatePresence>
+        {!collapsed && (
+          <motion.div initial={{opacity:0}} animate={{opacity:1}} exit={{opacity:0}} transition={{duration:0.18}}
+            className="flex items-center flex-1 min-w-0 justify-between">
+            <span className="text-sm font-medium truncate">{label}</span>
+            <ChevronDown size={13}
+              className={`transition-transform duration-200 flex-shrink-0 ${open ? 'rotate-180' : ''}`}/>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </button>
   )
 }
 

@@ -44,7 +44,7 @@ const ROLE_LABELS = {
   chef_division:'Chef de Division', chef_service:'Chef de Service', collaborateur:'Collaborateur',
 }
 const MANAGERS = ['administrateur','directeur','chef_division','chef_service']
-const ADMINS   = ['administrateur','directeur']
+const ADMINS   = ['administrateur','directeur','direction']
 
 const TRAVAIL_ITEMS = [
   { label:'Tâches',        icon:CheckSquare,  path:'/travail/taches',    moduleKey:'tasks_enabled' },
