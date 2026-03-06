@@ -1,12 +1,13 @@
 // ============================================================
-// APEX RH — IntelligenceRH.jsx  ·  Session 46
-// + Analytics Prédictifs (S46) : corrélations NITA↔PULSE↔F360,
-//   graphiques tendances, détection de patterns
+// APEX RH — IntelligenceRH.jsx  ·  Session 47
+// + Tableau de Bord DRH (S47) : vue consolidée stratégique
+//   KPIs globaux, matrice divisions, alertes, export Excel
 // ============================================================
 import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { useAppSettings } from '../../hooks/useSettings'
-import { BarChart3, MessageSquare, ClipboardList, Activity, Wifi, TrendingUp, GitBranch } from 'lucide-react'
+import { useAuth } from '../../contexts/AuthContext'
+import { BarChart3, MessageSquare, ClipboardList, Activity, Wifi, TrendingUp, GitBranch, LayoutDashboard } from 'lucide-react'
 
 import BoardPage             from '../pulse/Board'
 import AnalyticsPage         from '../pulse/Analytics'
@@ -15,24 +16,32 @@ import SurveysPage           from '../pulse/EngagementSurveys'
 import ReviewCyclesPage      from '../pulse/ReviewCycles'
 import ActiviteReelle        from './ActiviteReelle'
 import AnalyticsPredictifs   from './AnalyticsPredictifs'
+import TableauBordDRH        from './TableauBordDRH'
 
 const TABS = [
-  { id:'performance',          label:'Performance PULSE',   icon:Activity,    component:BoardPage,            color:'#4F46E5', moduleKey:null },
-  { id:'analytics',            label:'Analytics',           icon:BarChart3,   component:AnalyticsPage,        color:'#8B5CF6', moduleKey:'analytics_enabled' },
-  { id:'analytics_predictifs', label:'Prédictifs',          icon:GitBranch,   component:AnalyticsPredictifs,  color:'#A78BFA', moduleKey:null, badge:'S46' },
-  { id:'feedback360',          label:'Feedback 360°',       icon:MessageSquare, component:Feedback360Page,    color:'#3B82F6', moduleKey:'feedback360_enabled' },
-  { id:'surveys',              label:'Surveys',             icon:TrendingUp,  component:SurveysPage,          color:'#10B981', moduleKey:'surveys_engagement_enabled' },
-  { id:'review_cycles',        label:'Review Cycles',       icon:ClipboardList, component:ReviewCyclesPage,   color:'#C9A227', moduleKey:'review_cycles_enabled' },
-  { id:'activite',             label:'Activité Réelle',     icon:Wifi,        component:ActiviteReelle,       color:'#F59E0B', moduleKey:null, badge:'S37' },
+  { id:'performance',          label:'Performance PULSE',   icon:Activity,         component:BoardPage,          color:'#4F46E5', moduleKey:null },
+  { id:'analytics',            label:'Analytics',           icon:BarChart3,        component:AnalyticsPage,      color:'#8B5CF6', moduleKey:'analytics_enabled' },
+  { id:'analytics_predictifs', label:'Prédictifs',          icon:GitBranch,        component:AnalyticsPredictifs,color:'#A78BFA', moduleKey:null, badge:'S46' },
+  { id:'feedback360',          label:'Feedback 360°',       icon:MessageSquare,    component:Feedback360Page,    color:'#3B82F6', moduleKey:'feedback360_enabled' },
+  { id:'surveys',              label:'Surveys',             icon:TrendingUp,       component:SurveysPage,        color:'#10B981', moduleKey:'surveys_engagement_enabled' },
+  { id:'review_cycles',        label:'Review Cycles',       icon:ClipboardList,    component:ReviewCyclesPage,   color:'#C9A227', moduleKey:'review_cycles_enabled' },
+  { id:'activite',             label:'Activité Réelle',     icon:Wifi,             component:ActiviteReelle,     color:'#F59E0B', moduleKey:null, badge:'S37' },
+  { id:'drh',                  label:'Tableau DRH',         icon:LayoutDashboard,  component:TableauBordDRH,     color:'#EC4899', moduleKey:null, badge:'S47', adminOnly:true },
 ]
 
 export default function IntelligenceRH() {
   const { data: settings }    = useAppSettings()
+  const { isAdmin, isDirecteur } = useAuth()
   const modules                = settings?.modules || {}
   const [activeTab, setActive] = useState('performance')
 
-  const visible = TABS.filter(t => !t.moduleKey || modules[t.moduleKey] === true)
-  const current = visible.find(t=>t.id===activeTab) || visible[0]
+  const visible = TABS.filter(t => {
+    if (t.moduleKey && modules[t.moduleKey] !== true) return false
+    if (t.adminOnly && !isAdmin && !isDirecteur)       return false
+    return true
+  })
+
+  const current   = visible.find(t => t.id === activeTab) || visible[0]
   const Component = current?.component
 
   return (
