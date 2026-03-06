@@ -29,7 +29,6 @@ import {
   iprColor, iprLabel,
 } from '../../components/ui/premium'
 import ProfilPerformance, { getQualitativeLabel } from '../../components/ui/ProfilPerformance'
-import KPISection from '../../components/kpi/KPISection'
 
 // ─── Animations ──────────────────────────────────────────────
 const stagger = { hidden:{}, visible:{ transition:{ staggerChildren:0.065, delayChildren:0.04 } } }
@@ -317,14 +316,6 @@ export default function MonEspace() {
           )}
         </div>
       </div>
-
-      {/* ════ KPI PERSONNALISÉS — S50 ══════════════════════════ */}
-      <motion.div variants={fadeUp}>
-        <div className="p-5 rounded-2xl border border-white/5"
-          style={{ background: 'rgba(255,255,255,0.025)' }}>
-          <KPISection mode="mine" />
-        </div>
-      </motion.div>
     </motion.div>
   )
 }

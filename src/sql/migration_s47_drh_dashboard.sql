@@ -135,7 +135,7 @@ okr AS (
 eng AS (
   SELECT
     COUNT(DISTINCT sr.respondent_id)::integer AS survey_respondents,
-    NULL::integer                             AS avg_engagement
+    ROUND(AVG(sr.score))::integer             AS avg_engagement
   FROM survey_responses sr
   JOIN engagement_surveys es
     ON es.id = sr.survey_id

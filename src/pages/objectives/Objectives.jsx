@@ -9,9 +9,7 @@ import {
   TrendingUp, AlertCircle
 } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
-import { useObjectives, useUpdateKeyResult, useDeleteKeyResult, useDeleteObjective, useOKRAlignment } from '../../hooks/useObjectives'
-import OKRTreeView from '../../components/objectives/OKRTreeView'
-import EmptyState from '../../components/ui/EmptyState'
+import { useObjectives, useUpdateKeyResult, useDeleteKeyResult, useDeleteObjective } from '../../hooks/useObjectives'
 import {
   canCreateObjective, getLevelInfo, getScoreColor, formatScore,
   formatScorePercent, LEVEL_ORDER, OBJECTIVE_LEVELS
@@ -33,7 +31,7 @@ export default function Objectives() {
 
   // État
   const [selectedPeriodId, setSelectedPeriodId] = useState(null)
-  const [view, setView] = useState('list') // 'list' | 'cascade' | 'tree' | 'stats'
+  const [view, setView] = useState('list') // 'list' | 'cascade' | 'stats'
   const [filters, setFilters] = useState({ search: '', level: '', status: '' })
 
   // Modales
@@ -49,12 +47,6 @@ export default function Objectives() {
   const updateKr = useUpdateKeyResult()
   const deleteKr = useDeleteKeyResult()
   const deleteObj = useDeleteObjective()
-  const { data: alignmentData = [] } = useOKRAlignment(selectedPeriodId)
-
-  // S50 : map d'alignement parent_id → données
-  const alignmentMap = Object.fromEntries(alignmentData.map(a => [a.parent_id, a]))
-  // Nombre d'OKRs désalignés (gap > 15%)
-  const misalignedCount = alignmentData.filter(a => a.alignment_score < 0.8 && a.children_count > 0).length
 
   // Statistiques
   const stats = useMemo(() => {
@@ -175,35 +167,11 @@ export default function Objectives() {
             </div>
           )}
 
-          {/* S50 : Indicateur d'alignement OKR */}
-          {misalignedCount > 0 && (
-            <div className="flex items-center gap-3 px-4 py-3 rounded-xl border border-amber-500/25"
-              style={{ background: 'rgba(245,158,11,0.08)' }}>
-              <AlertCircle size={16} className="text-amber-400 shrink-0" />
-              <div className="flex-1 min-w-0">
-                <span className="text-sm font-medium text-amber-300">
-                  {misalignedCount} OKR parent{misalignedCount > 1 ? 's' : ''} désaligné{misalignedCount > 1 ? 's' : ''}
-                </span>
-                <span className="text-xs text-amber-400/60 ml-2">
-                  Le score déclaré diffère de &gt;15% du score calculé depuis les enfants
-                </span>
-              </div>
-              <button
-                onClick={() => setView('tree')}
-                className="text-xs px-3 py-1.5 rounded-lg font-medium transition-colors hover:opacity-90"
-                style={{ background: 'rgba(245,158,11,0.2)', color: '#FCD34D' }}
-              >
-                Voir l'arbre
-              </button>
-            </div>
-          )}
-
           {/* Barre vue + filtres */}
           <div className="flex flex-col sm:flex-row sm:items-center gap-3">
             <div className="flex items-center gap-1 p-1 rounded-xl bg-white/5">
               {[
                 { id: 'list', icon: LayoutList, label: 'Liste' },
-                { id: 'tree', icon: GitBranch, label: 'Arbre OKR' },
                 { id: 'cascade', icon: GitBranch, label: 'Cascade' },
                 { id: 'stats', icon: BarChart3, label: 'Stats' },
               ].map((v) => (
@@ -242,12 +210,7 @@ export default function Objectives() {
           {!isLoading && view === 'list' && (
             <div className="space-y-3">
               {objectives.length === 0 ? (
-                <EmptyState
-                  icon={Target}
-                  title="Aucun objectif trouvé"
-                  description="Créez votre premier objectif OKR ou ajustez vos filtres."
-                  action={canCreateObjective(profile?.role) && selectedPeriodId ? { label: 'Nouvel objectif', onClick: () => { setEditingObj(null); setShowObjForm(true) } } : undefined}
-                />
+                <EmptyState />
               ) : (
                 objectives.map((obj) => (
                   <ObjectiveCard
@@ -265,14 +228,6 @@ export default function Objectives() {
                 ))
               )}
             </div>
-          )}
-
-          {/* Vue Arbre OKR — S50 */}
-          {!isLoading && view === 'tree' && (
-            <OKRTreeView
-              objectives={objectives}
-              onSelectObjective={(obj) => setDetailObjId(obj.id)}
-            />
           )}
 
           {/* Vue Cascade */}
@@ -333,6 +288,17 @@ function StatCard({ icon: Icon, label, value, color }) {
   )
 }
 
+function EmptyState() {
+  return (
+    <div className="flex flex-col items-center justify-center py-16 text-center">
+      <div className="w-14 h-14 rounded-2xl bg-white/5 flex items-center justify-center mb-4">
+        <Target size={24} className="text-white/15" />
+      </div>
+      <p className="text-white/30 text-sm mb-1">Aucun objectif trouvé</p>
+      <p className="text-white/15 text-xs">Créez votre premier objectif pour commencer</p>
+    </div>
+  )
+}
 
 function StatsView({ objectives, stats }) {
   return (

@@ -73,7 +73,7 @@ export default function EmptyState({
           </div>
           {/* Subtle glow */}
           <div className="absolute inset-0 rounded-2xl opacity-20 blur-xl"
-            style={{ background: 'radial-gradient(circle, rgba(79,70,229,0.4), transparent)'}}/>
+            style={{ background: 'radial-gradient(circle, rgba(79,70,229,0.4), transparent)' }}/>
         </div>
       )}
 

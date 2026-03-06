@@ -12,7 +12,7 @@ import {
   Calendar, RefreshCw, AlertTriangle, Search, ChevronLeft, ChevronDown,
   LogIn, LogOut, UserPlus, UserX, UserCheck, Edit2, Trash2, Download,
   Target, FolderKanban, CheckSquare, Info, Globe, Coins, Timer, MessageSquare,
-  BarChart2, BrainCircuit, Zap, ClipboardList, TrendingUp, Plug, Plus
+  BarChart2, BrainCircuit, Zap, ClipboardList, TrendingUp, Plug
 } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
 import {
@@ -30,7 +30,6 @@ import {
   useUsersList,
 } from '../../hooks/useSettings'
 import { logAudit } from '../../lib/auditLog'
-import { supabase } from '../../lib/supabase'
 import {
   useNotificationPreferences,
   useUpdateNotificationPreferences,
@@ -752,18 +751,6 @@ function ModulesSection() {
         </SettingRow>
         <SettingRow label="Intégrations Tierces" description="Webhooks Slack, Teams, Zapier + export Google Calendar — réservé administrateurs">
           <Toggle checked={form.integrations_enabled ?? false} onChange={(v) => setForm(prev => ({ ...prev, integrations_enabled: v }))} />
-        </SettingRow>
-        <SettingRow label="Référentiel Compétences" description="Familles de métiers NITA + grilles de compétences personnalisées par poste">
-          <Toggle checked={form.competency_framework_enabled ?? false} onChange={(v) => setForm(prev => ({ ...prev, competency_framework_enabled: v }))} />
-        </SettingRow>
-        <SettingRow label="Mode Transparence" description="Chaque collaborateur voit exactement ce que son manager voit sur son profil de performance">
-          <Toggle checked={form.transparency_mode ?? false} onChange={(v) => setForm(prev => ({ ...prev, transparency_mode: v }))} />
-        </SettingRow>
-        <SettingRow label="Droit de commentaire" description="Les collaborateurs peuvent répondre et commenter chaque dimension de performance">
-          <Toggle checked={form.employee_comment_enabled ?? true} onChange={(v) => setForm(prev => ({ ...prev, employee_comment_enabled: v }))} />
-        </SettingRow>
-        <SettingRow label="Notes manager" description="Les managers peuvent ajouter des notes privées ou partagées sur leurs collaborateurs">
-          <Toggle checked={form.manager_notes_enabled ?? true} onChange={(v) => setForm(prev => ({ ...prev, manager_notes_enabled: v }))} />
         </SettingRow>
       </SectionCard>
 
@@ -1862,7 +1849,6 @@ const TABS_ADMIN = [
   { id: 'ia-coach-settings', label: 'IA Coach', icon: BrainCircuit },
   { id: 'gamification-settings', label: 'Gamification', icon: Zap },
   { id: 'review-cycles-settings', label: 'Review Cycles', icon: ClipboardList },
-  { id: 'competency-framework', label: 'Référentiel Compétences', icon: TrendingUp },
   { id: 'integrations', label: 'Intégrations', icon: Plug },
   { id: 'platform-security', label: 'Sécurité plateforme', icon: Shield },
   { id: 'audit', label: 'Journaux d\'audit', icon: FileText },
@@ -1983,239 +1969,6 @@ function ReviewCyclesSettingsSection() {
   )
 }
 
-// ─── SECTION RÉFÉRENTIEL COMPÉTENCES (Admin) ────────────────
-
-function CompetencyFrameworkSection() {
-  const [families, setFamilies] = useState([])
-  const [loading, setLoading] = useState(true)
-  const [selected, setSelected] = useState(null)
-  const [showAdd, setShowAdd] = useState(false)
-  const [draftFamily, setDraftFamily] = useState({ name:'', code:'', description:'', color:'#4F46E5', icon:'💼' })
-  const [saving, setSaving] = useState(false)
-  const [saved, setSaved] = useState(false)
-
-  useEffect(() => {
-    loadFamilies()
-  }, [])
-
-  async function loadFamilies() {
-    try {
-      const { data } = await supabase.from('job_families').select('*').order('name')
-      setFamilies(data || [])
-      if (data?.length) setSelected(prev => prev || data[0])
-    } catch {}
-    setLoading(false)
-  }
-
-  async function handleSaveFamily() {
-    if (!draftFamily.name) return
-    setSaving(true)
-    try {
-      const { data, error } = await supabase.from('job_families').insert({
-        name: draftFamily.name,
-        code: draftFamily.code?.toUpperCase() || null,
-        description: draftFamily.description,
-        color: draftFamily.color,
-        icon: draftFamily.icon,
-      }).select().single()
-      if (!error && data) {
-        setFamilies(p => [...p, data])
-        setShowAdd(false)
-        setDraftFamily({ name:'', code:'', description:'', color:'#4F46E5', icon:'💼' })
-        setSaved(true); setTimeout(() => setSaved(false), 2000)
-      }
-    } catch {}
-    setSaving(false)
-  }
-
-  return (
-    <div className="space-y-5">
-      <SectionCard title="Référentiel Compétences" description="Familles de métiers NITA et grilles d'évaluation par poste" icon={TrendingUp}>
-        {loading ? (
-          <div className="flex justify-center py-6"><RefreshCw size={18} className="animate-spin text-white/30"/></div>
-        ) : (
-          <div className="flex gap-4">
-            {/* Liste familles */}
-            <div className="w-48 flex-shrink-0">
-              <p className="text-xs text-white/30 font-medium mb-2">Familles de métiers</p>
-              <div className="space-y-1 mb-3">
-                {families.map(fam => (
-                  <button key={fam.id} onClick={()=>setSelected(fam)}
-                    className={`w-full flex items-center gap-2 px-3 py-2 rounded-xl text-left text-xs transition-all ${selected?.id===fam.id?'bg-indigo-500/15 border border-indigo-500/30 text-white':'text-white/50 hover:bg-white/5 hover:text-white/80'}`}>
-                    <span>{fam.icon}</span>
-                    <span className="flex-1 font-medium truncate">{fam.name}</span>
-                  </button>
-                ))}
-              </div>
-              <button onClick={()=>setShowAdd(o=>!o)}
-                className="w-full flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl text-xs text-indigo-400 border border-dashed border-indigo-500/30 hover:border-indigo-500/60 transition-colors">
-                <Plus size={11}/> Ajouter
-              </button>
-              {showAdd && (
-                <div className="mt-3 space-y-2 p-3 rounded-xl bg-white/[0.03] border border-white/[0.08]">
-                  <input placeholder="Nom de la famille" value={draftFamily.name} onChange={e=>setDraftFamily(p=>({...p,name:e.target.value}))}
-                    className="w-full px-2 py-1.5 text-xs rounded-lg bg-white/5 border border-white/10 text-white placeholder:text-white/25 focus:outline-none"/>
-                  <input placeholder="Code (ex: CAISSE)" value={draftFamily.code} onChange={e=>setDraftFamily(p=>({...p,code:e.target.value}))}
-                    className="w-full px-2 py-1.5 text-xs rounded-lg bg-white/5 border border-white/10 text-white placeholder:text-white/25 focus:outline-none"/>
-                  <div className="flex gap-2">
-                    <input placeholder="💼" value={draftFamily.icon} onChange={e=>setDraftFamily(p=>({...p,icon:e.target.value}))}
-                      className="w-12 px-2 py-1.5 text-xs text-center rounded-lg bg-white/5 border border-white/10 text-white placeholder:text-white/25 focus:outline-none"/>
-                    <input type="color" value={draftFamily.color} onChange={e=>setDraftFamily(p=>({...p,color:e.target.value}))}
-                      className="w-10 h-8 rounded-lg border border-white/10 bg-transparent cursor-pointer"/>
-                  </div>
-                  <button onClick={handleSaveFamily} disabled={!draftFamily.name||saving}
-                    className="w-full flex items-center justify-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg bg-indigo-500 text-white disabled:opacity-40 transition-colors">
-                    {saving?<RefreshCw size={10} className="animate-spin"/>:<Check size={10}/>} Créer
-                  </button>
-                </div>
-              )}
-            </div>
-
-            {/* Détail compétences */}
-            <div className="flex-1">
-              {selected ? (
-                <FamilyCompetencyEditor family={selected} />
-              ) : (
-                <div className="flex flex-col items-center justify-center h-32 text-white/20">
-                  <TrendingUp size={24} className="mb-2 opacity-40"/>
-                  <p className="text-xs">Sélectionnez une famille de métiers</p>
-                </div>
-              )}
-            </div>
-          </div>
-        )}
-      </SectionCard>
-
-      {/* Info conduite du changement */}
-      <SectionCard title="Conduite du Changement" description="Paramètres de transparence et droit de réponse" icon={Eye}>
-        <SettingRow label="Mode Transparence" description="Les collaborateurs voient leur profil tel que le voit leur manager">
-          <Toggle checked={false} onChange={()=>{}} disabled/>
-        </SettingRow>
-        <p className="text-[10px] text-white/25 mt-2">
-          Pour activer/désactiver le mode transparence, rendez-vous dans l'onglet <strong className="text-white/40">Modules & Cycles</strong>.
-        </p>
-      </SectionCard>
-    </div>
-  )
-}
-
-function FamilyCompetencyEditor({ family }) {
-  const [items, setItems] = useState([])
-  const [loading, setLoading] = useState(true)
-  const [editing, setEditing] = useState(null)
-  const [saving, setSaving] = useState(false)
-
-  const COMP_KEYS = [
-    { k:'quality', l:'Qualité du travail', icon:'⭐' },
-    { k:'deadlines', l:'Respect des délais', icon:'⏱️' },
-    { k:'communication', l:'Communication', icon:'💬' },
-    { k:'teamwork', l:'Esprit d\'équipe', icon:'🤝' },
-    { k:'initiative', l:'Initiative & Proactivité', icon:'🚀' },
-  ]
-
-  useEffect(() => {
-    setLoading(true)
-    supabase.from('competency_frameworks').select('*')
-      .eq('job_family_id', family.id).eq('is_active', true).order('sort_order')
-      .then(({ data }) => { setItems(data||[]); setLoading(false) })
-  }, [family.id])
-
-  async function handleSave(item) {
-    setSaving(true)
-    try {
-      const { data } = await supabase.from('competency_frameworks')
-        .upsert({ ...item, job_family_id: family.id }, { onConflict:'job_family_id,competency_key' })
-        .select().single()
-      if (data) {
-        setItems(p => { const idx=p.findIndex(i=>i.competency_key===data.competency_key); return idx>=0?p.map((i,n)=>n===idx?data:i):[...p,data] })
-      }
-    } catch {}
-    setSaving(false); setEditing(null)
-  }
-
-  if (loading) return <div className="flex justify-center py-4"><RefreshCw size={14} className="animate-spin text-white/30"/></div>
-
-  return (
-    <div>
-      <div className="flex items-center gap-2 mb-3">
-        <span className="text-lg">{family.icon}</span>
-        <span className="text-sm font-semibold text-white">{family.name}</span>
-        <span className="text-[10px] text-white/30">{family.code}</span>
-      </div>
-      <div className="space-y-2">
-        {COMP_KEYS.map(({ k, l, icon }) => {
-          const item = items.find(i=>i.competency_key===k)
-          const isEdit = editing === k
-          return (
-            <div key={k} className="rounded-xl border border-white/[0.08]"
-              style={{background: isEdit ? 'rgba(79,70,229,0.07)' : 'rgba(255,255,255,0.02)'}}>
-              <div className="flex items-center gap-2.5 px-3 py-2.5">
-                <span className="text-base">{icon}</span>
-                <span className="text-xs font-medium text-white/70 flex-1">{l}</span>
-                {item && <span className="text-[10px] font-semibold text-indigo-400">{item.weight}%</span>}
-                <button onClick={()=>setEditing(isEdit?null:k)}
-                  className="text-[10px] text-white/30 hover:text-indigo-400 transition-colors px-2 py-0.5 rounded-lg hover:bg-indigo-500/10">
-                  {isEdit ? 'Fermer' : item ? 'Modifier' : 'Configurer'}
-                </button>
-              </div>
-              {isEdit && (
-                <div className="px-3 pb-3 space-y-2 border-t border-white/[0.06] pt-2">
-                  <div className="grid grid-cols-2 gap-2">
-                    <div>
-                      <label className="block text-[10px] text-white/40 mb-1">Libellé personnalisé</label>
-                      <input defaultValue={item?.label||l}
-                        id={`label-${k}`}
-                        className="w-full px-2 py-1.5 text-xs rounded-lg bg-white/5 border border-white/10 text-white placeholder:text-white/25 focus:outline-none focus:border-indigo-500/40"/>
-                    </div>
-                    <div>
-                      <label className="block text-[10px] text-white/40 mb-1">Poids (%)</label>
-                      <input type="number" min="0" max="100" defaultValue={item?.weight||20}
-                        id={`weight-${k}`}
-                        className="w-full px-2 py-1.5 text-xs rounded-lg bg-white/5 border border-white/10 text-white focus:outline-none focus:border-indigo-500/40 text-center"/>
-                    </div>
-                  </div>
-                  <div>
-                    <label className="block text-[10px] text-white/40 mb-1">Niveau 1 — Insuffisant</label>
-                    <input defaultValue={item?.level_1_desc||''}
-                      id={`l1-${k}`} placeholder="Description du niveau insuffisant..."
-                      className="w-full px-2 py-1.5 text-xs rounded-lg bg-white/5 border border-white/10 text-white placeholder:text-white/25 focus:outline-none focus:border-indigo-500/40"/>
-                  </div>
-                  <div>
-                    <label className="block text-[10px] text-white/40 mb-1">Niveau 3 — Satisfaisant</label>
-                    <input defaultValue={item?.level_3_desc||''}
-                      id={`l3-${k}`} placeholder="Description du niveau satisfaisant..."
-                      className="w-full px-2 py-1.5 text-xs rounded-lg bg-white/5 border border-white/10 text-white placeholder:text-white/25 focus:outline-none focus:border-indigo-500/40"/>
-                  </div>
-                  <div>
-                    <label className="block text-[10px] text-white/40 mb-1">Niveau 5 — Excellent</label>
-                    <input defaultValue={item?.level_5_desc||''}
-                      id={`l5-${k}`} placeholder="Description du niveau excellent..."
-                      className="w-full px-2 py-1.5 text-xs rounded-lg bg-white/5 border border-white/10 text-white placeholder:text-white/25 focus:outline-none focus:border-indigo-500/40"/>
-                  </div>
-                  <div className="flex justify-end">
-                    <button onClick={()=>handleSave({
-                      competency_key: k,
-                      label: document.getElementById(`label-${k}`)?.value || l,
-                      weight: parseInt(document.getElementById(`weight-${k}`)?.value||'20'),
-                      level_1_desc: document.getElementById(`l1-${k}`)?.value||'',
-                      level_3_desc: document.getElementById(`l3-${k}`)?.value||'',
-                      level_5_desc: document.getElementById(`l5-${k}`)?.value||'',
-                      ...(item ? { id: item.id } : {}),
-                    })} disabled={saving}
-                      className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg bg-indigo-500 text-white hover:bg-indigo-400 disabled:opacity-40 transition-colors">
-                      {saving?<RefreshCw size={10} className="animate-spin"/>:<Check size={10}/>} Enregistrer
-                    </button>
-                  </div>
-                </div>
-              )}
-            </div>
-          )
-        })}
-      </div>
-    </div>
-  )
-}
-
 // ─── PAGE PRINCIPALE ─────────────────────────────────────────
 
 export default function SettingsPage() {
@@ -2239,7 +1992,6 @@ export default function SettingsPage() {
       case 'ia-coach-settings': return <IACoachSettingsSection />
       case 'gamification-settings': return <GamificationSettingsSection />
       case 'review-cycles-settings': return <ReviewCyclesSettingsSection />
-      case 'competency-framework': return <CompetencyFrameworkSection />
       case 'integrations': return <IntegrationsPage />
       case 'platform-security': return <PlatformSecuritySection />
       case 'audit': return <AuditLogsSection />

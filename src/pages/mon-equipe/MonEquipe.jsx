@@ -13,7 +13,6 @@ import {
   Users, AlertTriangle, X, Activity, BarChart3,
   ArrowRight, ChevronRight, Trophy, Target, MessageSquare,
   ClipboardList, TrendingUp, TrendingDown, Minus,
-  Plus, Pencil, Trash2, Check, Brain, Sparkles,
 } from 'lucide-react'
 import { useAuth }     from '../../contexts/AuthContext'
 import { useTeamIPR }  from '../../hooks/useIPR'
@@ -21,14 +20,6 @@ import {
   GaugeRing, Sparkline, TrendBadge, iprColor, iprLabel,
 } from '../../components/ui/premium'
 import { getQualitativeLabel } from '../../components/ui/ProfilPerformance'
-import {
-  useManagerNotes, useUpsertManagerNote, useDeleteManagerNote,
-  NOTE_TYPE_LABELS, currentPeriodKey,
-} from '../../hooks/useTransparency'
-import PredictiveAlerts from '../../components/ai/PredictiveAlerts'
-import AIAssistant from '../../components/ai/AIAssistant'
-import KPISection from '../../components/kpi/KPISection'
-import { AI_CONTEXT_TYPES, useGenerateManagerInsight } from '../../hooks/useGenerativeAI'
 
 // ─── Helpers ─────────────────────────────────────────────────
 const roleLabel = r => ({
@@ -146,9 +137,6 @@ export default function MonEquipe() {
         ))}
       </div>
 
-      {/* Alertes Prédictives IA — S43 */}
-      <PredictiveAlerts serviceId={profile?.service_id} />
-
       {/* Table + Panel */}
       <div className="flex gap-5 flex-1 min-h-0">
 
@@ -258,107 +246,6 @@ function TeamRow({ member: m, isSelected, onClick }) {
   )
 }
 
-// ─── Notes Manager ───────────────────────────────────────────
-function ManagerNotesPanel({ employeeId, employeeName }) {
-  const { data: notes = [], isLoading } = useManagerNotes(employeeId)
-  const upsert = useUpsertManagerNote()
-  const remove = useDeleteManagerNote()
-  const [open, setOpen] = useState(false)
-  const [draft, setDraft] = useState('')
-  const [noteType, setNoteType] = useState('general')
-  const [isShared, setIsShared] = useState(false)
-  const [editing, setEditing] = useState(null)
-  const [deleting, setDeleting] = useState(null)
-
-  async function handleSave() {
-    if (!draft.trim()) return
-    await upsert.mutateAsync({ id:editing?.id, employee_id:employeeId, note_text:draft.trim(), note_type:noteType, is_shared:isShared })
-    setOpen(false); setDraft(''); setNoteType('general'); setIsShared(false); setEditing(null)
-  }
-
-  function startEdit(note) {
-    setEditing(note); setDraft(note.note_text); setNoteType(note.note_type)
-    setIsShared(note.is_shared); setOpen(true)
-  }
-
-  async function handleDelete(id) {
-    setDeleting(id)
-    await remove.mutateAsync({ id, employee_id:employeeId })
-    setDeleting(null)
-  }
-
-  return (
-    <div>
-      <div className="flex items-center justify-between mb-2">
-        <p className="text-[10px] text-white/20 uppercase tracking-wider">Notes Manager</p>
-        <button onClick={()=>{setOpen(o=>!o);setEditing(null);setDraft('');setNoteType('general');setIsShared(false)}}
-          className="flex items-center gap-1 text-[10px] text-indigo-400 hover:text-indigo-300 transition-colors">
-          <Plus size={11}/> Ajouter
-        </button>
-      </div>
-
-      <AnimatePresence>
-        {open && (
-          <motion.div initial={{height:0,opacity:0}} animate={{height:'auto',opacity:1}} exit={{height:0,opacity:0}}
-            className="overflow-hidden mb-3">
-            <div className="space-y-2 p-3 rounded-xl" style={{background:'rgba(79,70,229,0.07)',border:'1px solid rgba(79,70,229,0.15)'}}>
-              <select value={noteType} onChange={e=>setNoteType(e.target.value)}
-                className="w-full rounded-lg border border-white/10 bg-white/5 text-xs text-white px-2 py-1.5 focus:outline-none">
-                {Object.entries(NOTE_TYPE_LABELS).map(([k,v])=><option key={k} value={k}>{v.icon} {v.label}</option>)}
-              </select>
-              <textarea value={draft} onChange={e=>setDraft(e.target.value)}
-                placeholder={`Note sur ${employeeName}...`} rows={3}
-                className="w-full px-2 py-1.5 rounded-lg text-xs bg-white/5 border border-white/10 text-white placeholder:text-white/20 focus:outline-none resize-none"/>
-              <div className="flex items-center justify-between">
-                <label className="flex items-center gap-1.5 text-[10px] text-white/40 cursor-pointer">
-                  <input type="checkbox" checked={isShared} onChange={e=>setIsShared(e.target.checked)} className="w-3 h-3 rounded"/>
-                  Partager avec l'employé
-                </label>
-                <div className="flex gap-1.5">
-                  <button onClick={()=>{setOpen(false);setEditing(null)}} className="px-2 py-1 text-[10px] text-white/30 hover:text-white/50 transition-colors">Annuler</button>
-                  <button onClick={handleSave} disabled={!draft.trim()||upsert.isPending}
-                    className="flex items-center gap-1 px-3 py-1 text-[10px] font-semibold rounded-lg bg-indigo-500 text-white hover:bg-indigo-400 disabled:opacity-40 transition-colors">
-                    <Check size={10}/> {editing ? 'Modifier' : 'Enregistrer'}
-                  </button>
-                </div>
-              </div>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {notes.length === 0 ? (
-        <p className="text-[10px] text-white/15 py-1">Aucune note pour ce collaborateur.</p>
-      ) : (
-        <div className="space-y-1.5">
-          {notes.map(note => {
-            const nt = NOTE_TYPE_LABELS[note.note_type]||NOTE_TYPE_LABELS.general
-            return (
-              <div key={note.id} className="flex items-start gap-2 p-2.5 rounded-xl"
-                style={{background:`${nt.color}06`,border:`1px solid ${nt.color}15`}}>
-                <span className="text-sm flex-shrink-0">{nt.icon}</span>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-1.5 mb-0.5">
-                    <span className="text-[9px] font-semibold" style={{color:nt.color}}>{nt.label}</span>
-                    {note.is_shared && <span className="text-[8px] text-emerald-400">• Partagé</span>}
-                    <span className="text-[8px] text-white/20 ml-auto">{note.period_key}</span>
-                  </div>
-                  <p className="text-[10px] text-white/55 leading-relaxed line-clamp-2">{note.note_text}</p>
-                </div>
-                <div className="flex gap-0.5 flex-shrink-0">
-                  <button onClick={()=>startEdit(note)} className="p-1 rounded text-white/20 hover:text-indigo-400 transition-colors"><Pencil size={9}/></button>
-                  <button onClick={()=>handleDelete(note.id)} disabled={deleting===note.id}
-                    className="p-1 rounded text-white/20 hover:text-red-400 transition-colors disabled:opacity-40"><Trash2 size={9}/></button>
-                </div>
-              </div>
-            )
-          })}
-        </div>
-      )}
-    </div>
-  )
-}
-
 // ─── Fiche Personne complète ──────────────────────────────────
 function PersonPanel({ member: m, onClose, onNavigate }) {
   const name  = `${m.firstName||''} ${m.lastName||''}`.trim()||'Inconnu'
@@ -441,14 +328,16 @@ function PersonPanel({ member: m, onClose, onNavigate }) {
           </div>
         )}
 
-        {/* S50 : KPI Personnalisés du collaborateur */}
-        <KPISection mode="team" userId={m.userId || m.id} />
-
-        {/* Notes Manager */}
-        <ManagerNotesPanel employeeId={m.id} employeeName={m.firstName} />
-
-        {/* Assistant IA Manager */}
-        <AIManagerPanel member={m} />
+        {/* Recommandation IA */}
+        <div className="rounded-xl p-4"
+          style={{ background:'rgba(79,70,229,0.07)', border:'1px solid rgba(79,70,229,0.13)' }}>
+          <p className="text-[10px] font-semibold text-indigo-400 uppercase tracking-wider mb-2 flex items-center gap-1">
+            ⚡ Recommandation IA Coach
+          </p>
+          <p className="text-[11px] text-white/55 leading-relaxed">
+            {generateRecommendation(m)}
+          </p>
+        </div>
       </div>
 
       {/* Actions */}
@@ -472,101 +361,6 @@ function PersonPanel({ member: m, onClose, onNavigate }) {
           Fermer
         </button>
       </div>
-    </div>
-  )
-}
-
-
-// ─── Panel Assistant IA Manager ─────────────────────────────
-function AIManagerPanel({ member }) {
-  const [showChat, setShowChat] = useState(false)
-  const generateInsight = useGenerateManagerInsight()
-  const [insight, setInsight] = useState(null)
-  const [loadingInsight, setLoadingInsight] = useState(false)
-
-  const memberData = {
-    name   : `${member.firstName} ${member.lastName}`,
-    role   : member.role,
-    ipr    : member.ipr,
-    pulse  : member.pulseAvg,
-    okr    : member.okrScore,
-    f360   : member.f360Score,
-    nita   : member.activiteScore,
-    alert  : member.alert,
-    trend  : member.trend,
-  }
-
-  const handleGetInsight = async () => {
-    setLoadingInsight(true)
-    try {
-      const result = await generateInsight.mutateAsync({ memberData })
-      setInsight(result)
-    } catch (err) {
-      console.error('[AIManagerPanel] Erreur:', err)
-    } finally {
-      setLoadingInsight(false)
-    }
-  }
-
-  return (
-    <div className="rounded-xl overflow-hidden"
-      style={{ background:'rgba(79,70,229,0.07)', border:'1px solid rgba(79,70,229,0.13)' }}>
-      <div className="px-4 py-3 flex items-center justify-between">
-        <p className="text-[10px] font-semibold text-indigo-400 uppercase tracking-wider flex items-center gap-1.5">
-          <Brain size={11}/> Assistant IA Manager
-        </p>
-        <div className="flex items-center gap-1.5">
-          <button
-            onClick={handleGetInsight}
-            disabled={loadingInsight}
-            className="flex items-center gap-1 text-[10px] px-2 py-1 rounded-lg transition-all disabled:opacity-40"
-            style={{ background:'rgba(79,70,229,0.15)', color:'#818CF8' }}
-          >
-            {loadingInsight
-              ? <><div className="w-2.5 h-2.5 border border-current border-t-transparent rounded-full animate-spin inline-block mr-1"/>Analyse...</>
-              : <><Sparkles size={9} className="inline mr-1"/>Insight IA</>
-            }
-          </button>
-          <button
-            onClick={() => setShowChat(v => !v)}
-            className="text-[10px] px-2 py-1 rounded-lg transition-all"
-            style={{ background: showChat ? 'rgba(79,70,229,0.25)' : 'rgba(79,70,229,0.1)', color:'#818CF8' }}
-          >
-            {showChat ? 'Fermer chat' : 'Chat IA'}
-          </button>
-        </div>
-      </div>
-
-      {/* Insight ou recommandation statique */}
-      {!insight && !loadingInsight && (
-        <div className="px-4 pb-3">
-          <p className="text-[11px] text-white/55 leading-relaxed">
-            {generateRecommendation(member)}
-          </p>
-          <p className="text-[10px] text-white/20 mt-1">
-            ↑ Cliquez "Insight IA" pour une analyse personnalisée
-          </p>
-        </div>
-      )}
-
-      {insight && (
-        <div className="px-4 pb-3">
-          <p className="text-[11px] text-white/70 leading-relaxed whitespace-pre-wrap">{insight}</p>
-        </div>
-      )}
-
-      {/* Chat contextuel */}
-      {showChat && (
-        <div className="border-t border-white/[0.07] p-3">
-          <AIAssistant
-            contextKey={`equipe_${member.id}`}
-            contextType={AI_CONTEXT_TYPES.MANAGER}
-            contextData={memberData}
-            compact={true}
-            placeholder={`Posez vos questions sur ${member.firstName}…`}
-          />
-        </div>
-      )}
     </div>
   )
 }

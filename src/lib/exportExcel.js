@@ -468,16 +468,7 @@ function buildPulseLeaderboard(scores) {
 }
 
 // ─── EXPORT TABLEAU DE BORD DRH (S47) ────────────────────────
-// buildDRHExport : transforme les données DRH en structure Excel
-// exportDRHDashboard : déclenche le téléchargement XLSX multi-feuilles
-
-/**
- * Construit les données structurées pour l'export DRH
- * @param {{ kpis, divisions, alerts, trends, monthKeys, topFlop }} param0
- * @returns {{ kpisSheet, divisionsSheet, alertsSheet, trendsSheet, topFlopSheet }}
- */
 export function buildDRHExport({ kpis = {}, divisions = [], alerts = [], trends = [], monthKeys = [], topFlop = null }) {
-  // ── Feuille KPIs globaux ──
   const kpisSheet = [
     { indicateur: 'PULSE moyen global',    valeur: kpis.avg_pulse       ?? '—', agents: kpis.pulse_agents   ?? '—', precedent: kpis.avg_pulse_prev   ?? '—' },
     { indicateur: 'NITA moyen global',     valeur: kpis.avg_nita        ?? '—', agents: kpis.nita_agents    ?? '—', precedent: kpis.avg_nita_prev    ?? '—' },
@@ -485,148 +476,81 @@ export function buildDRHExport({ kpis = {}, divisions = [], alerts = [], trends 
     { indicateur: 'OKR Progression (%)',   valeur: kpis.avg_okr_progress ?? '—', agents: kpis.total_okr      ?? '—', precedent: '—' },
     { indicateur: 'Engagement moyen',      valeur: kpis.avg_engagement  ?? '—', agents: kpis.survey_respondents ?? '—', precedent: '—' },
   ]
-
-  // ── Feuille matrice divisions ──
   const divisionsSheet = (divisions || []).map(d => ({
-    division:          d.name         || '—',
-    pulse_mois:        d.pulse_cur    ?? '—',
-    pulse_precedent:   d.pulse_prev   ?? '—',
-    delta_pulse:       (d.pulse_cur != null && d.pulse_prev != null) ? d.pulse_cur - d.pulse_prev : '—',
-    nita_mois:         d.nita_cur     ?? '—',
-    nita_precedent:    d.nita_prev    ?? '—',
-    delta_nita:        (d.nita_cur != null && d.nita_prev != null) ? d.nita_cur - d.nita_prev : '—',
-    delivery:          d.delivery     ?? '—',
-    qualite:           d.quality      ?? '—',
-    resilience:        d.avg_resilience  ?? '—',
-    fiabilite:         d.avg_reliability ?? '—',
-    endurance:         d.avg_endurance   ?? '—',
-    f360_taux:         d.f360_rate    ?? '—',
-    okr_progression:   d.okr_progress ?? '—',
-    nb_agents:         d.nb_agents    ?? '—',
-    niveau_risque:     d.riskLevel    ?? '—',
-    signaux:           (d.flags || []).map(f => f.label).join(' | ') || '—',
+    division: d.name ?? '—', pulse_mois: d.pulse_cur ?? '—', pulse_precedent: d.pulse_prev ?? '—',
+    delta_pulse: (d.pulse_cur != null && d.pulse_prev != null) ? d.pulse_cur - d.pulse_prev : '—',
+    nita_mois: d.nita_cur ?? '—', nita_precedent: d.nita_prev ?? '—',
+    delta_nita: (d.nita_cur != null && d.nita_prev != null) ? d.nita_cur - d.nita_prev : '—',
+    delivery: d.delivery ?? '—', qualite: d.quality ?? '—',
+    resilience: d.avg_resilience ?? '—', fiabilite: d.avg_reliability ?? '—', endurance: d.avg_endurance ?? '—',
+    f360_taux: d.f360_rate ?? '—', okr_progression: d.okr_progress ?? '—',
+    nb_agents: d.nb_agents ?? '—', niveau_risque: d.riskLevel ?? '—',
+    signaux: (d.flags || []).map(f => f.label).join(' | ') || '—',
   }))
-
-  // ── Feuille alertes DRH ──
   const alertsSheet = (alerts || []).map(a => ({
-    agent:       a.name     || '—',
-    division:    a.division || '—',
-    service:     a.service  || '—',
-    metrique:    a.metric   || '—',
-    type_alerte: a.type     || '—',
-    description: a.description || '—',
+    agent: a.name ?? '—', division: a.division ?? '—', service: a.service ?? '—',
+    metrique: a.metric ?? '—', type_alerte: a.type ?? '—', description: a.description ?? '—',
   }))
-
-  // ── Feuille tendances par division × mois ──
   const trendsSheet = []
   ;(trends || []).forEach(div => {
     ;(div.data || []).forEach(d => {
-      trendsSheet.push({
-        division:  div.name     || '—',
-        mois:      d.month_key  || '—',
-        pulse_moy: d.pulse      ?? '—',
-        nita_moy:  d.nita       ?? '—',
-      })
+      trendsSheet.push({ division: div.name ?? '—', mois: d.month_key ?? '—', pulse_moy: d.pulse ?? '—', nita_moy: d.nita ?? '—' })
     })
   })
   trendsSheet.sort((a, b) => (a.mois > b.mois ? 1 : -1))
-
-  // ── Feuille Top/Flop agents ──
   const topFlopSheet = []
   if (topFlop) {
-    ;(topFlop.pulseTop5 || []).forEach((a, i) => {
-      topFlopSheet.push({ rang: i + 1, categorie: 'Top PULSE', agent: a.name, division: a.division, service: a.service, score: a.score })
-    })
-    ;(topFlop.pulseFlop5 || []).forEach((a, i) => {
-      topFlopSheet.push({ rang: i + 1, categorie: 'Flop PULSE', agent: a.name, division: a.division, service: a.service, score: a.score })
-    })
-    ;(topFlop.nitaTop5 || []).forEach((a, i) => {
-      topFlopSheet.push({ rang: i + 1, categorie: 'Top NITA', agent: a.name, division: a.division, service: a.service, score: a.score })
-    })
-    ;(topFlop.nitaFlop5 || []).forEach((a, i) => {
-      topFlopSheet.push({ rang: i + 1, categorie: 'Flop NITA', agent: a.name, division: a.division, service: a.service, score: a.score })
-    })
+    ;(topFlop.pulseTop5 || []).forEach((a, i) => topFlopSheet.push({ rang: i+1, categorie:'Top PULSE', agent:a.name, division:a.division, service:a.service, score:a.score }))
+    ;(topFlop.pulseFlop5 || []).forEach((a, i) => topFlopSheet.push({ rang: i+1, categorie:'Flop PULSE', agent:a.name, division:a.division, service:a.service, score:a.score }))
+    ;(topFlop.nitaTop5 || []).forEach((a, i) => topFlopSheet.push({ rang: i+1, categorie:'Top NITA', agent:a.name, division:a.division, service:a.service, score:a.score }))
+    ;(topFlop.nitaFlop5 || []).forEach((a, i) => topFlopSheet.push({ rang: i+1, categorie:'Flop NITA', agent:a.name, division:a.division, service:a.service, score:a.score }))
   }
-
   return { kpisSheet, divisionsSheet, alertsSheet, trendsSheet, topFlopSheet }
 }
 
-/**
- * Déclenche l'export Excel complet du Tableau de Bord DRH
- */
 export function exportDRHDashboard({ kpis, divisions, alerts, trends, monthKeys, topFlop }) {
   const { kpisSheet, divisionsSheet, alertsSheet, trendsSheet, topFlopSheet } =
     buildDRHExport({ kpis, divisions, alerts, trends, monthKeys, topFlop })
-
   const wb = XLSX.utils.book_new()
-
-  // ── Feuille 1 : KPIs globaux ──
-  const wsKpis = createSheet(kpisSheet, [
-    { key: 'indicateur',  label: 'Indicateur',   width: 28 },
-    { key: 'valeur',      label: 'Valeur',        width: 12 },
-    { key: 'agents',      label: 'Nb agents',     width: 16 },
-    { key: 'precedent',   label: 'Mois préc.',    width: 14 },
+  const ws1 = createSheet(kpisSheet, [
+    { key:'indicateur', label:'Indicateur', width:28 }, { key:'valeur', label:'Valeur', width:12 },
+    { key:'agents', label:'Nb agents', width:16 }, { key:'precedent', label:'Mois préc.', width:14 },
   ])
-  XLSX.utils.book_append_sheet(wb, wsKpis, 'KPIs Globaux')
-
-  // ── Feuille 2 : Matrice divisions ──
-  const wsDivisions = createSheet(divisionsSheet, [
-    { key: 'division',        label: 'Division',         width: 24 },
-    { key: 'pulse_mois',      label: 'PULSE (mois)',      width: 14 },
-    { key: 'pulse_precedent', label: 'PULSE (préc.)',     width: 14 },
-    { key: 'delta_pulse',     label: 'Δ PULSE',           width: 10 },
-    { key: 'nita_mois',       label: 'NITA (mois)',       width: 14 },
-    { key: 'nita_precedent',  label: 'NITA (préc.)',      width: 14 },
-    { key: 'delta_nita',      label: 'Δ NITA',            width: 10 },
-    { key: 'delivery',        label: 'Delivery',          width: 12 },
-    { key: 'qualite',         label: 'Qualité',           width: 12 },
-    { key: 'resilience',      label: 'Résilience',        width: 14 },
-    { key: 'fiabilite',       label: 'Fiabilité',         width: 12 },
-    { key: 'endurance',       label: 'Endurance',         width: 12 },
-    { key: 'f360_taux',       label: 'F360 (%)',          width: 10 },
-    { key: 'okr_progression', label: 'OKR (%)',           width: 10 },
-    { key: 'nb_agents',       label: 'Effectif',          width: 10 },
-    { key: 'niveau_risque',   label: 'Risque',            width: 12 },
-    { key: 'signaux',         label: 'Signaux détectés',  width: 40 },
+  XLSX.utils.book_append_sheet(wb, ws1, 'KPIs Globaux')
+  const ws2 = createSheet(divisionsSheet, [
+    { key:'division', label:'Division', width:24 }, { key:'pulse_mois', label:'PULSE (mois)', width:14 },
+    { key:'pulse_precedent', label:'PULSE (préc.)', width:14 }, { key:'delta_pulse', label:'Δ PULSE', width:10 },
+    { key:'nita_mois', label:'NITA (mois)', width:14 }, { key:'nita_precedent', label:'NITA (préc.)', width:14 },
+    { key:'delta_nita', label:'Δ NITA', width:10 }, { key:'delivery', label:'Delivery', width:12 },
+    { key:'qualite', label:'Qualité', width:12 }, { key:'resilience', label:'Résilience', width:14 },
+    { key:'fiabilite', label:'Fiabilité', width:12 }, { key:'endurance', label:'Endurance', width:12 },
+    { key:'f360_taux', label:'F360 (%)', width:10 }, { key:'okr_progression', label:'OKR (%)', width:10 },
+    { key:'nb_agents', label:'Effectif', width:10 }, { key:'niveau_risque', label:'Risque', width:12 },
+    { key:'signaux', label:'Signaux détectés', width:40 },
   ])
-  XLSX.utils.book_append_sheet(wb, wsDivisions, 'Matrice Divisions')
-
-  // ── Feuille 3 : Alertes DRH ──
+  XLSX.utils.book_append_sheet(wb, ws2, 'Matrice Divisions')
   if (alertsSheet.length > 0) {
-    const wsAlerts = createSheet(alertsSheet, [
-      { key: 'agent',       label: 'Agent',       width: 24 },
-      { key: 'division',    label: 'Division',    width: 22 },
-      { key: 'service',     label: 'Service',     width: 22 },
-      { key: 'metrique',    label: 'Métrique',    width: 12 },
-      { key: 'type_alerte', label: 'Type',        width: 14 },
-      { key: 'description', label: 'Description', width: 40 },
+    const ws3 = createSheet(alertsSheet, [
+      { key:'agent', label:'Agent', width:24 }, { key:'division', label:'Division', width:22 },
+      { key:'service', label:'Service', width:22 }, { key:'metrique', label:'Métrique', width:12 },
+      { key:'type_alerte', label:'Type', width:14 }, { key:'description', label:'Description', width:40 },
     ])
-    XLSX.utils.book_append_sheet(wb, wsAlerts, 'Alertes DRH')
+    XLSX.utils.book_append_sheet(wb, ws3, 'Alertes DRH')
   }
-
-  // ── Feuille 4 : Tendances ──
   if (trendsSheet.length > 0) {
-    const wsTrends = createSheet(trendsSheet, [
-      { key: 'division',  label: 'Division',   width: 24 },
-      { key: 'mois',      label: 'Mois',        width: 12 },
-      { key: 'pulse_moy', label: 'PULSE moy.', width: 14 },
-      { key: 'nita_moy',  label: 'NITA moy.',  width: 14 },
+    const ws4 = createSheet(trendsSheet, [
+      { key:'division', label:'Division', width:24 }, { key:'mois', label:'Mois', width:12 },
+      { key:'pulse_moy', label:'PULSE moy.', width:14 }, { key:'nita_moy', label:'NITA moy.', width:14 },
     ])
-    XLSX.utils.book_append_sheet(wb, wsTrends, 'Tendances')
+    XLSX.utils.book_append_sheet(wb, ws4, 'Tendances')
   }
-
-  // ── Feuille 5 : Top / Flop agents ──
   if (topFlopSheet.length > 0) {
-    const wsTopFlop = createSheet(topFlopSheet, [
-      { key: 'rang',      label: 'Rang',      width: 8  },
-      { key: 'categorie', label: 'Catégorie', width: 16 },
-      { key: 'agent',     label: 'Agent',     width: 24 },
-      { key: 'division',  label: 'Division',  width: 22 },
-      { key: 'service',   label: 'Service',   width: 22 },
-      { key: 'score',     label: 'Score',     width: 10 },
+    const ws5 = createSheet(topFlopSheet, [
+      { key:'rang', label:'Rang', width:8 }, { key:'categorie', label:'Catégorie', width:16 },
+      { key:'agent', label:'Agent', width:24 }, { key:'division', label:'Division', width:22 },
+      { key:'service', label:'Service', width:22 }, { key:'score', label:'Score', width:10 },
     ])
-    XLSX.utils.book_append_sheet(wb, wsTopFlop, 'Top-Flop Agents')
+    XLSX.utils.book_append_sheet(wb, ws5, 'Top-Flop Agents')
   }
-
   downloadWorkbook(wb, 'APEX_RH_TableauBordDRH')
 }

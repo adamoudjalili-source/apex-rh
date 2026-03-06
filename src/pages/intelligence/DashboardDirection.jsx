@@ -5,12 +5,20 @@
 // Accès : isAdmin || isDirecteur || isDirection
 // Graphiques : SVG pur
 // ============================================================
+// ============================================================
+// APEX RH — src/pages/intelligence/DashboardDirection.jsx
+// Session 48 — Dashboard Direction Générale & Actionnaires
+// Session 49 — QW6 : Drill-down divisions sur clic KPI card
+// Scorecard RAG · Tendances 12 mois · OKR Strat. · ROI RH
+// Accès : isAdmin || isDirecteur || isDirection
+// Graphiques : SVG pur
+// ============================================================
 import { useState, useRef } from 'react'
-import { motion } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
 import {
   TrendingUp, TrendingDown, Minus, Target, Zap, Activity,
   Users, CheckCircle, BarChart2, Shield, RefreshCw, Calendar,
-  ChevronRight, Award,
+  ChevronRight, Award, X, ChevronDown,
 } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
 import {
@@ -20,6 +28,7 @@ import {
   useDirectionROI,
   ragStatus, RAG_COLORS, KPI_THRESHOLDS,
 } from '../../hooks/useDashboardDirection'
+import { useDivisionMatrix } from '../../hooks/useDRHDashboard'
 import { monthKeyToLabel } from '../../hooks/useAnalytics'
 
 // ─── Helpers ────────────────────────────────────────────────
@@ -60,14 +69,15 @@ function RagBadge({ status }) {
 }
 
 // ─── Scorecard KPI Card ──────────────────────────────────────
-function ScorecardCard({ icon: Icon, label, value, unit='', prev, thresholdKey, description, isLoading, large=false }) {
+function ScorecardCard({ icon: Icon, label, value, unit='', prev, thresholdKey, description, isLoading, large=false, onClick }) {
   const rag = ragStatus(value, KPI_THRESHOLDS[thresholdKey] || { green:70, amber:50 })
   const c   = RAG_COLORS[rag]
 
   return (
     <motion.div variants={fadeUp}
-      className="rounded-2xl p-5 flex flex-col gap-4 relative overflow-hidden"
-      style={{ background:'rgba(255,255,255,0.025)', border:`1px solid ${c.border}` }}>
+      onClick={onClick}
+      className={`rounded-2xl p-5 flex flex-col gap-4 relative overflow-hidden ${onClick ? 'cursor-pointer hover:brightness-110 active:scale-[0.98]' : ''}`}
+      style={{ background:'rgba(255,255,255,0.025)', border:`1px solid ${c.border}`, transition:'filter 0.15s, transform 0.1s' }}>
       {/* Glow */}
       <div className="absolute inset-0 rounded-2xl opacity-[0.06] pointer-events-none"
         style={{ background:`radial-gradient(circle at 80% 10%, ${c.text}, transparent 60%)` }}/>
@@ -77,7 +87,10 @@ function ScorecardCard({ icon: Icon, label, value, unit='', prev, thresholdKey, 
           style={{ background:`${c.bg}`, border:`1px solid ${c.border}` }}>
           <Icon size={15} style={{ color: c.text }}/>
         </div>
-        <RagBadge status={rag}/>
+        <div className="flex items-center gap-1.5">
+          <RagBadge status={rag}/>
+          {onClick && <ChevronDown size={12} className="text-white/25"/>}
+        </div>
       </div>
 
       {isLoading
@@ -98,6 +111,81 @@ function ScorecardCard({ icon: Icon, label, value, unit='', prev, thresholdKey, 
         )
       }
     </motion.div>
+  )
+}
+
+// ─── Drill-down Panel — Détail par division ───────────────────
+const KPI_DRILL_LABELS = {
+  pulse:         { label: 'PULSE par division',  field: 'pulse_cur',  unit: '/100' },
+  nita:          { label: 'NITA par division',   field: 'nita_cur',   unit: '/100' },
+  okr_progress:  { label: 'OKR par division',    field: 'okr_avg',    unit: '%'   },
+  taux_activite: { label: 'Activité par division',field: 'agents_pct', unit: '%'   },
+}
+
+function DrilldownPanel({ kpiKey, onClose }) {
+  const { data: divisions, isLoading } = useDivisionMatrix(1)
+  const conf = KPI_DRILL_LABELS[kpiKey] || {}
+
+  const rows = (divisions || [])
+    .filter(d => d[conf.field] != null)
+    .sort((a, b) => (b[conf.field] ?? 0) - (a[conf.field] ?? 0))
+
+  const max = rows.length ? Math.max(...rows.map(d => d[conf.field] ?? 0), 1) : 100
+
+  return (
+    <AnimatePresence>
+      <motion.div
+        initial={{ opacity:0, x: 24 }}
+        animate={{ opacity:1, x: 0 }}
+        exit={{ opacity:0, x: 24 }}
+        transition={{ duration: 0.25 }}
+        className="rounded-2xl p-5"
+        style={{ background:'rgba(255,255,255,0.03)', border:'1px solid rgba(255,255,255,0.09)' }}>
+
+        <div className="flex items-center justify-between mb-4">
+          <div className="text-sm font-semibold text-white/80">{conf.label}</div>
+          <button onClick={onClose}
+            className="w-7 h-7 rounded-lg flex items-center justify-center text-white/30 hover:text-white/60 hover:bg-white/[0.06] transition-all">
+            <X size={13}/>
+          </button>
+        </div>
+
+        {isLoading
+          ? [1,2,3].map(i => <Sk key={i} className="h-10 mb-2"/>)
+          : rows.length === 0
+            ? <div className="text-xs text-white/20 py-4 text-center">Aucune donnée de division disponible</div>
+            : (
+              <div className="space-y-3">
+                {rows.map(d => {
+                  const val = d[conf.field] ?? 0
+                  const rag = ragStatus(val, KPI_THRESHOLDS[kpiKey] || { green:70, amber:50 })
+                  const c   = RAG_COLORS[rag]
+                  const pct = Math.round((val / max) * 100)
+                  return (
+                    <div key={d.id}>
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="text-xs text-white/60 truncate flex-1 mr-2">{d.name}</span>
+                        <span className="text-xs font-bold flex-shrink-0" style={{ color: c.text }}>
+                          {val}{conf.unit}
+                        </span>
+                      </div>
+                      <div className="h-1.5 rounded-full overflow-hidden"
+                        style={{ background:'rgba(255,255,255,0.06)' }}>
+                        <div className="h-full rounded-full transition-all duration-700"
+                          style={{ width:`${pct}%`, background: c.text, boxShadow:`0 0 4px ${c.text}50` }}/>
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            )
+        }
+
+        <div className="mt-4 pt-3 border-t border-white/[0.05] text-[10px] text-white/20">
+          Données division — mois en cours · Cliquer hors du panneau pour fermer
+        </div>
+      </motion.div>
+    </AnimatePresence>
   )
 }
 
@@ -307,6 +395,7 @@ function ROICard({ label, value, unit='%', icon: Icon, color, description }) {
 // ─── COMPOSANT PRINCIPAL ─────────────────────────────────────
 export default function DashboardDirection() {
   const { isAdmin, isDirecteur, isDirection } = useAuth()
+  const [drillKPI, setDrillKPI] = useState(null) // QW6 — drill-down KPI actif
 
   const { data: scorecard, isLoading: scLoading } = useDirectionScorecard()
   const { data: trend12m,  isLoading: trendLoad }  = useDirectionTrend12m()
@@ -338,6 +427,8 @@ export default function DashboardDirection() {
 
   const now = new Date().toLocaleDateString('fr-FR', { month:'long', year:'numeric' })
 
+  const toggleDrill = (key) => setDrillKPI(prev => prev === key ? null : key)
+
   return (
     <div className="p-6 space-y-6 max-w-[1400px]">
 
@@ -355,7 +446,7 @@ export default function DashboardDirection() {
         </div>
         <div className="flex items-center gap-2">
           <span className="text-[10px] font-bold px-2 py-0.5 rounded-full"
-            style={{ background:'rgba(245,158,11,0.15)', color:'#F59E0B' }}>S48</span>
+            style={{ background:'rgba(245,158,11,0.15)', color:'#F59E0B' }}>S49</span>
           {scorecard?.reference_month && (
             <span className="text-xs px-3 py-1.5 rounded-xl text-white/40"
               style={{ background:'rgba(255,255,255,0.04)', border:'1px solid rgba(255,255,255,0.07)' }}>
@@ -378,7 +469,7 @@ export default function DashboardDirection() {
           </div>
         </motion.div>
 
-        {/* KPI Cards */}
+        {/* KPI Cards — cliquables pour drill-down */}
         <motion.div variants={stagger} initial="hidden" animate="visible"
           className="lg:col-span-3 grid grid-cols-2 md:grid-cols-4 gap-4">
           <ScorecardCard
@@ -386,26 +477,44 @@ export default function DashboardDirection() {
             value={scorecard?.pulse_cur} prev={scorecard?.pulse_prev}
             unit="/100"
             description={scorecard?.agents_actifs ? `${scorecard.agents_actifs} agents mesurés` : null}
-            isLoading={scLoading}/>
+            isLoading={scLoading}
+            onClick={() => toggleDrill('pulse')}/>
           <ScorecardCard
             icon={Zap} label="NITA Global" thresholdKey="nita"
             value={scorecard?.nita_cur} prev={scorecard?.nita_prev}
             unit="/100"
-            isLoading={scLoading}/>
+            isLoading={scLoading}
+            onClick={() => toggleDrill('nita')}/>
           <ScorecardCard
             icon={Target} label="OKR Strat. Avancement" thresholdKey="okr_progress"
             value={scorecard?.okr_progress} prev={null}
             unit="%"
             description={scorecard?.okr_total ? `${scorecard.okr_on_track}/${scorecard.okr_total} en bonne voie` : null}
-            isLoading={scLoading}/>
+            isLoading={scLoading}
+            onClick={() => toggleDrill('okr_progress')}/>
           <ScorecardCard
             icon={Users} label="Taux d'Activité" thresholdKey="taux_activite"
             value={scorecard?.taux_activite} prev={null}
             unit="%"
             description={scorecard?.total_agents ? `${scorecard.total_agents} collaborateurs actifs` : null}
-            isLoading={scLoading}/>
+            isLoading={scLoading}
+            onClick={() => toggleDrill('taux_activite')}/>
         </motion.div>
       </div>
+
+      {/* ── Drill-down divisions (QW6) ── */}
+      <AnimatePresence>
+        {drillKPI && (
+          <motion.div
+            key={drillKPI}
+            initial={{ opacity:0, height:0 }}
+            animate={{ opacity:1, height:'auto' }}
+            exit={{ opacity:0, height:0 }}
+            transition={{ duration:0.25 }}>
+            <DrilldownPanel kpiKey={drillKPI} onClose={() => setDrillKPI(null)}/>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* ── Tendances 12 mois + ROI ── */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -521,7 +630,7 @@ export default function DashboardDirection() {
 
       {/* ── Note accès ── */}
       <div className="text-[10px] text-white/15 text-center pb-2">
-        Dashboard Direction Générale · APEX RH S48 · Données temps réel Supabase
+        Dashboard Direction Générale · APEX RH S49 · Données temps réel Supabase
       </div>
     </div>
   )

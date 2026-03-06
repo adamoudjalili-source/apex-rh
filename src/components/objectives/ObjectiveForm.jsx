@@ -1,10 +1,9 @@
 // ============================================================
 // APEX RH — ObjectiveForm.jsx
 // Session 10 — Formulaire création / édition objectif
-// Session 50 — Ajout champ parent_id + weight (OKR cascade)
 // ============================================================
 import { useState, useEffect } from 'react'
-import { Target, X, Link2, Scale } from 'lucide-react'
+import { Target, X } from 'lucide-react'
 import Modal from '../ui/Modal'
 import { useAuth } from '../../contexts/AuthContext'
 import { useCreateObjective, useUpdateObjective, useAllUsersForOkr } from '../../hooks/useObjectives'
@@ -24,9 +23,7 @@ export default function ObjectiveForm({ isOpen, onClose, periodId, objective, pa
     description: '',
     level: allowedLevels[0] || 'individuel',
     status: 'brouillon',
-    parent_id: null,
     parent_objective_id: null,
-    weight: 1.0,
     owner_id: profile?.id || '',
     direction_id: profile?.direction_id || '',
     division_id: profile?.division_id || '',
@@ -40,9 +37,7 @@ export default function ObjectiveForm({ isOpen, onClose, periodId, objective, pa
         description: objective.description || '',
         level: objective.level || 'individuel',
         status: objective.status || 'brouillon',
-        parent_id: objective.parent_id || objective.parent_objective_id || null,
-        parent_objective_id: objective.parent_id || objective.parent_objective_id || null,
-        weight: objective.weight ?? 1.0,
+        parent_objective_id: objective.parent_objective_id || null,
         owner_id: objective.owner_id || profile?.id || '',
         direction_id: objective.direction_id || profile?.direction_id || '',
         division_id: objective.division_id || profile?.division_id || '',
@@ -55,9 +50,7 @@ export default function ObjectiveForm({ isOpen, onClose, periodId, objective, pa
         description: '',
         level: allowedLevels[0] || 'individuel',
         status: 'brouillon',
-        parent_id: null,
         parent_objective_id: null,
-        weight: 1.0,
         owner_id: profile?.id || '',
       }))
     }
@@ -67,26 +60,35 @@ export default function ObjectiveForm({ isOpen, onClose, periodId, objective, pa
     e.preventDefault()
     if (!form.title.trim()) return
 
-    const parentId = form.parent_id || null
-    const payload = {
-      title: form.title.trim(),
-      description: form.description.trim() || null,
-      level: form.level,
-      status: form.status,
-      parent_id: parentId,
-      parent_objective_id: parentId,
-      weight: parseFloat(form.weight) || 1.0,
-      owner_id: form.owner_id,
-      direction_id: form.direction_id || null,
-      division_id: form.division_id || null,
-      service_id: form.service_id || null,
-    }
-
     try {
       if (isEdit) {
-        await updateObj.mutateAsync({ id: objective.id, updates: payload })
+        await updateObj.mutateAsync({
+          id: objective.id,
+          updates: {
+            title: form.title.trim(),
+            description: form.description.trim() || null,
+            level: form.level,
+            status: form.status,
+            parent_objective_id: form.parent_objective_id || null,
+            owner_id: form.owner_id,
+            direction_id: form.direction_id || null,
+            division_id: form.division_id || null,
+            service_id: form.service_id || null,
+          },
+        })
       } else {
-        await createObj.mutateAsync({ ...payload, period_id: periodId })
+        await createObj.mutateAsync({
+          title: form.title.trim(),
+          description: form.description.trim() || null,
+          level: form.level,
+          status: form.status,
+          period_id: periodId,
+          parent_objective_id: form.parent_objective_id || null,
+          owner_id: form.owner_id,
+          direction_id: form.direction_id || null,
+          division_id: form.division_id || null,
+          service_id: form.service_id || null,
+        })
       }
       onClose()
     } catch (err) {
@@ -94,13 +96,14 @@ export default function ObjectiveForm({ isOpen, onClose, periodId, objective, pa
     }
   }
 
+  // Parents possibles : objectifs de niveau supérieur
   const levelIndex = LEVEL_ORDER.indexOf(form.level)
   const possibleParents = parentObjectives.filter((o) => {
-    if (isEdit && o.id === objective?.id) return false
     const parentIndex = LEVEL_ORDER.indexOf(o.level)
     return parentIndex < levelIndex
   })
 
+  // Filtrer les propriétaires selon le niveau
   const filteredOwners = users.filter((u) => {
     if (form.level === 'strategique') return u.role === 'directeur'
     if (form.level === 'division') return u.role === 'chef_division'
@@ -110,13 +113,13 @@ export default function ObjectiveForm({ isOpen, onClose, periodId, objective, pa
   })
 
   const isPending = createObj.isPending || updateObj.isPending
-  const selectedParent = possibleParents.find(p => p.id === form.parent_id)
 
   if (!isOpen) return null
 
   return (
     <Modal onClose={onClose}>
       <div className="w-full max-w-lg">
+        {/* En-tête */}
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-indigo-500/20 flex items-center justify-center">
@@ -124,7 +127,7 @@ export default function ObjectiveForm({ isOpen, onClose, periodId, objective, pa
             </div>
             <div>
               <h2 className="text-lg font-bold text-white">
-                {isEdit ? "Modifier l'objectif" : 'Nouvel objectif'}
+                {isEdit ? 'Modifier l\'objectif' : 'Nouvel objectif'}
               </h2>
               <p className="text-xs text-white/30">
                 {isEdit ? 'Mettre à jour les informations' : 'Définir un nouvel objectif OKR'}
@@ -137,8 +140,9 @@ export default function ObjectiveForm({ isOpen, onClose, periodId, objective, pa
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
+          {/* Titre */}
           <div>
-            <label className="block text-xs font-medium text-white/50 mb-1.5">Titre *</label>
+            <label className="block text-xs font-medium text-white/50 mb-1.5">Titre de l'objectif *</label>
             <input
               type="text"
               value={form.title}
@@ -149,6 +153,7 @@ export default function ObjectiveForm({ isOpen, onClose, periodId, objective, pa
             />
           </div>
 
+          {/* Description */}
           <div>
             <label className="block text-xs font-medium text-white/50 mb-1.5">Description</label>
             <textarea
@@ -160,12 +165,13 @@ export default function ObjectiveForm({ isOpen, onClose, periodId, objective, pa
             />
           </div>
 
+          {/* Ligne : Niveau + Statut */}
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="block text-xs font-medium text-white/50 mb-1.5">Niveau *</label>
               <select
                 value={form.level}
-                onChange={(e) => setForm({ ...form, level: e.target.value, parent_id: null, parent_objective_id: null })}
+                onChange={(e) => setForm({ ...form, level: e.target.value, parent_objective_id: null })}
                 className="w-full px-3 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white text-sm focus:outline-none focus:border-indigo-500/50"
               >
                 {allowedLevels.map((lvl) => (
@@ -183,69 +189,34 @@ export default function ObjectiveForm({ isOpen, onClose, periodId, objective, pa
                 className="w-full px-3 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white text-sm focus:outline-none focus:border-indigo-500/50"
               >
                 {Object.entries(OBJECTIVE_STATUS).map(([key, val]) => (
-                  <option key={key} value={key} className="bg-[#1a1a35]">{val.label}</option>
+                  <option key={key} value={key} className="bg-[#1a1a35]">
+                    {val.label}
+                  </option>
                 ))}
               </select>
             </div>
           </div>
 
-          {/* S50 : Cascade OKR */}
+          {/* Objectif parent */}
           {possibleParents.length > 0 && (
-            <div className="p-3 rounded-xl border border-indigo-500/20" style={{ background: 'rgba(79,70,229,0.06)' }}>
-              <div className="flex items-center gap-2 mb-3">
-                <Link2 size={13} className="text-indigo-400" />
-                <span className="text-xs font-semibold text-indigo-300">Cascade OKR</span>
-              </div>
-              <div className="space-y-3">
-                <div>
-                  <label className="block text-xs font-medium text-white/50 mb-1.5">Objectif parent</label>
-                  <select
-                    value={form.parent_id || ''}
-                    onChange={(e) => setForm({ ...form, parent_id: e.target.value || null, parent_objective_id: e.target.value || null })}
-                    className="w-full px-3 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white text-sm focus:outline-none focus:border-indigo-500/50"
-                  >
-                    <option value="" className="bg-[#1a1a35]">— Aucun parent (OKR racine) —</option>
-                    {possibleParents.map((p) => (
-                      <option key={p.id} value={p.id} className="bg-[#1a1a35]">
-                        {OBJECTIVE_LEVELS[p.level]?.icon} {p.title}
-                      </option>
-                    ))}
-                  </select>
-                  {selectedParent && (
-                    <p className="text-[10px] text-indigo-300/60 mt-1 pl-1">
-                      Contribue à : {OBJECTIVE_LEVELS[selectedParent.level]?.icon} {selectedParent.title}
-                    </p>
-                  )}
-                </div>
-
-                {form.parent_id && (
-                  <div>
-                    <label className="block text-xs font-medium text-white/50 mb-1.5">
-                      Poids dans le calcul du parent
-                    </label>
-                    <div className="flex items-center gap-3">
-                      <input
-                        type="range"
-                        min="0.1"
-                        max="3.0"
-                        step="0.1"
-                        value={form.weight}
-                        onChange={(e) => setForm({ ...form, weight: parseFloat(e.target.value) })}
-                        className="flex-1 accent-indigo-500"
-                      />
-                      <div className="w-14 px-2 py-1.5 rounded-lg bg-white/5 border border-white/10 text-center">
-                        <span className="text-sm font-bold text-indigo-300">{parseFloat(form.weight).toFixed(1)}</span>
-                      </div>
-                    </div>
-                    <p className="text-[10px] text-white/25 mt-1">
-                      1.0 = normal · &gt;1 = renforcé · &lt;1 = réduit
-                    </p>
-                  </div>
-                )}
-              </div>
+            <div>
+              <label className="block text-xs font-medium text-white/50 mb-1.5">Objectif parent (alignement)</label>
+              <select
+                value={form.parent_objective_id || ''}
+                onChange={(e) => setForm({ ...form, parent_objective_id: e.target.value || null })}
+                className="w-full px-3 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white text-sm focus:outline-none focus:border-indigo-500/50"
+              >
+                <option value="" className="bg-[#1a1a35]">— Aucun parent —</option>
+                {possibleParents.map((p) => (
+                  <option key={p.id} value={p.id} className="bg-[#1a1a35]">
+                    {OBJECTIVE_LEVELS[p.level]?.icon} {p.title}
+                  </option>
+                ))}
+              </select>
             </div>
           )}
 
+          {/* Propriétaire */}
           {form.level === 'individuel' && (
             <div>
               <label className="block text-xs font-medium text-white/50 mb-1.5">Propriétaire</label>
@@ -263,8 +234,13 @@ export default function ObjectiveForm({ isOpen, onClose, periodId, objective, pa
             </div>
           )}
 
+          {/* Boutons */}
           <div className="flex justify-end gap-3 pt-2">
-            <button type="button" onClick={onClose} className="px-4 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-white/50 text-sm font-medium transition-colors">
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-4 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-white/50 text-sm font-medium transition-colors"
+            >
               Annuler
             </button>
             <button
@@ -272,7 +248,7 @@ export default function ObjectiveForm({ isOpen, onClose, periodId, objective, pa
               disabled={isPending || !form.title.trim()}
               className="px-6 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {isPending ? 'Enregistrement…' : isEdit ? "Modifier" : "Créer l'objectif"}
+              {isPending ? 'Enregistrement…' : isEdit ? 'Modifier' : 'Créer l\'objectif'}
             </button>
           </div>
         </form>

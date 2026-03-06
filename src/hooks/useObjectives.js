@@ -2,10 +2,6 @@
 // APEX RH — useObjectives.js
 // Session 19 — Fix useLinkTaskToKr / useUnlinkTaskFromKr :
 //   invalidation ciblée ['objective', objectiveId] au lieu de ['objective'] (trop large)
-// Session 50 — OKR Enterprise : cascade parent_id + weight
-//   - OBJECTIVE_SELECT enrichi avec parent_id, weight, children count
-//   - useObjectivesCascade : arbre complet via v_okr_cascade
-//   - useOKRAlignment     : v_okr_alignment pour indicateur d'alignement
 // ============================================================
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '../lib/supabase'
@@ -14,8 +10,6 @@ import { logAudit } from '../lib/auditLog'
 
 const OBJECTIVE_SELECT = `
   *,
-  parent_id,
-  weight,
   owner:users!objectives_owner_id_fkey(id, first_name, last_name, role),
   period:okr_periods!objectives_period_id_fkey(id, name, start_date, end_date),
   key_results(
@@ -50,15 +44,11 @@ export function useObjectives(periodId, filters = {}) {
 
       const list = data || []
 
-      // S50 : résoudre parent via parent_id (nouveau) ou parent_objective_id (legacy)
       const objMap = new Map(list.map((o) => [o.id, o]))
-      return list.map((o) => {
-        const parentId = o.parent_id || o.parent_objective_id
-        return {
-          ...o,
-          parent: parentId ? objMap.get(parentId) || null : null,
-        }
-      })
+      return list.map((o) => ({
+        ...o,
+        parent: o.parent_objective_id ? objMap.get(o.parent_objective_id) || null : null,
+      }))
     },
     enabled: !!periodId,
     staleTime: 30000,
@@ -367,53 +357,6 @@ export function useTasksForLinking() {
       if (error) throw error
       return data || []
     },
-    staleTime: 30000,
-  })
-}
-// ─── S50 : FETCH CASCADE VIA VUE v_okr_cascade ──────────────
-// Retourne l'arbre complet depuis la vue SQL récursive
-export function useObjectivesCascade(periodId) {
-  return useQuery({
-    queryKey: ['objectives-cascade', periodId],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('v_okr_cascade')
-        .select('*')
-        .eq('period_id', periodId)
-        .order('depth', { ascending: true })
-        .order('root_id', { ascending: true })
-      if (error) throw error
-      return data || []
-    },
-    enabled: !!periodId,
-    staleTime: 30000,
-  })
-}
-
-// ─── S50 : FETCH ALIGNEMENT v_okr_alignment ─────────────────
-// Retourne pour chaque parent l'écart entre son score et le score calculé
-export function useOKRAlignment(periodId) {
-  return useQuery({
-    queryKey: ['okr-alignment', periodId],
-    queryFn: async () => {
-      // Récupère les IDs de la période puis filtre dans la vue
-      const { data: objs } = await supabase
-        .from('objectives')
-        .select('id')
-        .eq('period_id', periodId)
-
-      if (!objs?.length) return []
-      const ids = objs.map(o => o.id)
-
-      const { data, error } = await supabase
-        .from('v_okr_alignment')
-        .select('*')
-        .in('parent_id', ids)
-
-      if (error) throw error
-      return data || []
-    },
-    enabled: !!periodId,
     staleTime: 30000,
   })
 }

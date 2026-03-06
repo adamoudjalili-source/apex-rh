@@ -2,12 +2,13 @@
 // APEX RH — IntelligenceRH.jsx  ·  Session 47
 // + Tableau de Bord DRH (S47) : vue consolidée stratégique
 //   KPIs globaux, matrice divisions, alertes, export Excel
+// + Cartographie Talents / Succession Planning (S51) : 9-Box, postes clés
 // ============================================================
 import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { useAppSettings } from '../../hooks/useSettings'
 import { useAuth } from '../../contexts/AuthContext'
-import { BarChart3, MessageSquare, ClipboardList, Activity, Wifi, TrendingUp, GitBranch, LayoutDashboard, Building2 } from 'lucide-react'
+import { BarChart3, MessageSquare, ClipboardList, Activity, Wifi, TrendingUp, GitBranch, LayoutDashboard, Building2, Grid3x3 } from 'lucide-react'
 
 import BoardPage             from '../pulse/Board'
 import AnalyticsPage         from '../pulse/Analytics'
@@ -18,6 +19,7 @@ import ActiviteReelle        from './ActiviteReelle'
 import AnalyticsPredictifs   from './AnalyticsPredictifs'
 import TableauBordDRH        from './TableauBordDRH'
 import DashboardDirection    from './DashboardDirection'
+import TalentMapping         from './TalentMapping'
 
 const TABS = [
   { id:'performance',          label:'Performance PULSE',   icon:Activity,         component:BoardPage,          color:'#4F46E5', moduleKey:null },
@@ -27,20 +29,24 @@ const TABS = [
   { id:'surveys',              label:'Surveys',             icon:TrendingUp,       component:SurveysPage,        color:'#10B981', moduleKey:'surveys_engagement_enabled' },
   { id:'review_cycles',        label:'Review Cycles',       icon:ClipboardList,    component:ReviewCyclesPage,   color:'#C9A227', moduleKey:'review_cycles_enabled' },
   { id:'activite',             label:'Activité Réelle',     icon:Wifi,             component:ActiviteReelle,     color:'#F59E0B', moduleKey:null, badge:'S37' },
+  { id:'talents',              label:'Talents',             icon:Grid3x3,          component:TalentMapping,      color:'#F59E0B', moduleKey:null, badge:'S51', managerOnly:true },
   { id:'drh',                  label:'Tableau DRH',         icon:LayoutDashboard,  component:TableauBordDRH,     color:'#EC4899', moduleKey:null, badge:'S47', adminOnly:true },
   { id:'direction',             label:'Direction Générale',  icon:Building2,        component:DashboardDirection, color:'#C9A227', moduleKey:null, badge:'S48', directionOnly:true },
 ]
 
 export default function IntelligenceRH() {
   const { data: settings }    = useAppSettings()
-  const { isAdmin, isDirecteur, isDirection } = useAuth()
+  const { isAdmin, isDirecteur, isDirection, isChefDivision, isChefService } = useAuth()
   const modules                = settings?.modules || {}
   const [activeTab, setActive] = useState('performance')
 
+  const isManager = isAdmin || isDirecteur || isChefDivision || isChefService
+
   const visible = TABS.filter(t => {
     if (t.moduleKey && modules[t.moduleKey] !== true) return false
-    if (t.adminOnly && !isAdmin && !isDirecteur)                    return false
-    if (t.directionOnly && !isAdmin && !isDirecteur && !isDirection)  return false
+    if (t.managerOnly  && !isManager)                                  return false
+    if (t.adminOnly    && !isAdmin && !isDirecteur)                    return false
+    if (t.directionOnly && !isAdmin && !isDirecteur && !isDirection)   return false
     return true
   })
 
