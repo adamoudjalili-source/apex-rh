@@ -1040,7 +1040,7 @@ export default function ApiManager() {
   const [tab, setTab] = useState('keys')
 
   // Accès : administrateur uniquement
-  if (!['administrateur'].includes(user?.role)) {
+  if (!['administrateur'].includes(user?.role?.toLowerCase())) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] text-gray-500">
         <Icon name="key" className="w-12 h-12 text-gray-300 mb-3" />
