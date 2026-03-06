@@ -19,6 +19,8 @@ import ForceChangePassword from './pages/auth/ForceChangePassword'
 const UsersPage      = lazy(() => import('./pages/admin/Users'))
 const Organisation   = lazy(() => import('./pages/admin/Organisation'))
 const SettingsPage   = lazy(() => import('./pages/admin/Settings'))
+const SuperAdmin     = lazy(() => import('./pages/admin/SuperAdmin'))   // S52
+const ApiManager     = lazy(() => import('./pages/admin/ApiManager'))   // S53
 
 const Dashboard      = lazy(() => import('./pages/dashboard/Dashboard'))
 const MonEspace      = lazy(() => import('./pages/mon-espace/MonEspace'))
@@ -38,6 +40,8 @@ function PageLoader() {
   )
 }
 
+const S = ({ children }) => <Suspense fallback={<PageLoader />}>{children}</Suspense>
+
 export default function App() {
   return (
     <Routes>
@@ -53,34 +57,34 @@ export default function App() {
         <Route element={<AppLayout />}>
           <Route path="/" element={<Navigate to="/dashboard" replace />} />
 
-          <Suspense fallback={<PageLoader />}>
-            {/* Principal */}
-            <Route path="/dashboard"  element={<Dashboard />} />
-            <Route path="/mon-espace" element={<MonEspace />} />
-            <Route path="/mon-equipe" element={<MonEquipe />} />
+          {/* Principal */}
+          <Route path="/dashboard"  element={<S><Dashboard /></S>} />
+          <Route path="/mon-espace" element={<S><MonEspace /></S>} />
+          <Route path="/mon-equipe" element={<S><MonEquipe /></S>} />
 
-            {/* Travail */}
-            <Route path="/travail/taches"    element={<Tasks />} />
-            <Route path="/travail/projets"   element={<ProjectsPage />} />
-            <Route path="/travail/objectifs" element={<ObjectivesPage />} />
+          {/* Travail */}
+          <Route path="/travail/taches"    element={<S><Tasks /></S>} />
+          <Route path="/travail/projets"   element={<S><ProjectsPage /></S>} />
+          <Route path="/travail/objectifs" element={<S><ObjectivesPage /></S>} />
 
-            {/* Mesure & Analyse */}
-            <Route path="/intelligence" element={<IntelligenceRH />} />
-            <Route path="/engagement"   element={<EngagementHub />} />
+          {/* Mesure & Analyse */}
+          <Route path="/intelligence" element={<S><IntelligenceRH /></S>} />
+          <Route path="/engagement"   element={<S><EngagementHub /></S>} />
 
-            {/* Administration */}
-            <Route path="/admin/users"        element={<UsersPage />} />
-            <Route path="/admin/organisation" element={<Organisation />} />
-            <Route path="/admin/settings"     element={<SettingsPage />} />
+          {/* Administration */}
+          <Route path="/admin/users"        element={<S><UsersPage /></S>} />
+          <Route path="/admin/organisation" element={<S><Organisation /></S>} />
+          <Route path="/admin/settings"     element={<S><SettingsPage /></S>} />
+          <Route path="/admin/super-admin"  element={<S><SuperAdmin /></S>} />   {/* S52 */}
+          <Route path="/admin/api-manager"  element={<S><ApiManager /></S>} />   {/* S53 */}
 
-            {/* Rétrocompatibilité — anciennes URLs */}
-            <Route path="/tasks"      element={<Navigate to="/travail/taches"    replace />} />
-            <Route path="/objectives" element={<Navigate to="/travail/objectifs" replace />} />
-            <Route path="/projects"   element={<Navigate to="/travail/projets"   replace />} />
-            <Route path="/pulse/*"    element={<Navigate to="/intelligence"       replace />} />
+          {/* Rétrocompatibilité — anciennes URLs */}
+          <Route path="/tasks"      element={<Navigate to="/travail/taches"    replace />} />
+          <Route path="/objectives" element={<Navigate to="/travail/objectifs" replace />} />
+          <Route path="/projects"   element={<Navigate to="/travail/projets"   replace />} />
+          <Route path="/pulse/*"    element={<Navigate to="/intelligence"       replace />} />
 
-            <Route path="*" element={<Navigate to="/dashboard" replace />} />
-          </Suspense>
+          <Route path="*" element={<Navigate to="/dashboard" replace />} />
         </Route>
       </Route>
     </Routes>

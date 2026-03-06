@@ -55,6 +55,7 @@ const TRAVAIL_ITEMS = [
 const GESTION_ITEMS = [
   { label:'Utilisateurs', icon:UserCog,   path:'/admin/users',        roles:['administrateur'] },
   { label:'Organisation', icon:Building2, path:'/admin/organisation', roles:['administrateur'] },
+  { label:'API & Connecteurs', icon:Settings, path:'/admin/api-manager', roles:['administrateur'] },  /* S53 */
   { label:'Paramètres',   icon:Settings,  path:'/admin/settings' },
 ]
 
