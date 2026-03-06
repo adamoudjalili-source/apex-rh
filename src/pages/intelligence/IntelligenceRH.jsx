@@ -1,32 +1,33 @@
 // ============================================================
-// APEX RH — IntelligenceRH.jsx  ·  Session 37
-// Activité Réelle disponible — plus de comingSoon pour cet onglet
+// APEX RH — IntelligenceRH.jsx  ·  Session 46
+// + Analytics Prédictifs (S46) : corrélations NITA↔PULSE↔F360
 // ============================================================
 import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { useAppSettings } from '../../hooks/useSettings'
 import { useAuth } from '../../contexts/AuthContext'
-import { BarChart3, MessageSquare, ClipboardList, Activity, Wifi, TrendingUp, Users } from 'lucide-react'
+import { BarChart3, MessageSquare, ClipboardList, Activity, Wifi, TrendingUp, Users, GitBranch, FileText } from 'lucide-react'
 
-import BoardPage        from '../pulse/Board'
-import AnalyticsPage    from '../pulse/Analytics'
-import Feedback360Page  from '../pulse/Feedback360'
-import SurveysPage      from '../pulse/EngagementSurveys'
-import ReviewCyclesPage from '../pulse/ReviewCycles'
-import ActiviteReelle   from './ActiviteReelle'
-import AdoptionDashboard from './AdoptionDashboard'
-import ReportingIA       from './ReportingIA'
-import { FileText } from 'lucide-react'
+import BoardPage             from '../pulse/Board'
+import AnalyticsPage         from '../pulse/Analytics'
+import Feedback360Page       from '../pulse/Feedback360'
+import SurveysPage           from '../pulse/EngagementSurveys'
+import ReviewCyclesPage      from '../pulse/ReviewCycles'
+import ActiviteReelle        from './ActiviteReelle'
+import AdoptionDashboard     from './AdoptionDashboard'
+import ReportingIA           from './ReportingIA'
+import AnalyticsPredictifs   from './AnalyticsPredictifs'
 
 const TABS = [
-  { id:'performance',   label:'Performance PULSE', icon:Activity,      component:BoardPage,          color:'#4F46E5', moduleKey:null },
-  { id:'analytics',     label:'Analytics',         icon:BarChart3,     component:AnalyticsPage,      color:'#8B5CF6', moduleKey:'analytics_enabled' },
-  { id:'feedback360',   label:'Feedback 360°',     icon:MessageSquare, component:Feedback360Page,    color:'#3B82F6', moduleKey:'feedback360_enabled' },
-  { id:'surveys',       label:'Surveys',           icon:TrendingUp,    component:SurveysPage,        color:'#10B981', moduleKey:'surveys_engagement_enabled' },
-  { id:'review_cycles', label:'Review Cycles',     icon:ClipboardList, component:ReviewCyclesPage,   color:'#C9A227', moduleKey:'review_cycles_enabled' },
-  { id:'activite',      label:'Activité Réelle',   icon:Wifi,          component:ActiviteReelle,     color:'#F59E0B', moduleKey:null, badge:'S37' },
-  { id:'adoption',      label:'Adoption',          icon:Users,         component:AdoptionDashboard,  color:'#10B981', moduleKey:null, badge:'S40', adminOnly:true },
-  { id:'reporting',     label:'Rapports IA',       icon:FileText,      component:ReportingIA,        color:'#818CF8', moduleKey:null, badge:'S44', adminOnly:false },
+  { id:'performance',          label:'Performance PULSE', icon:Activity,      component:BoardPage,           color:'#4F46E5', moduleKey:null },
+  { id:'analytics',            label:'Analytics',         icon:BarChart3,     component:AnalyticsPage,       color:'#8B5CF6', moduleKey:'analytics_enabled' },
+  { id:'analytics_predictifs', label:'Prédictifs',        icon:GitBranch,     component:AnalyticsPredictifs, color:'#A78BFA', moduleKey:null, badge:'S46' },
+  { id:'feedback360',          label:'Feedback 360°',     icon:MessageSquare, component:Feedback360Page,     color:'#3B82F6', moduleKey:'feedback360_enabled' },
+  { id:'surveys',              label:'Surveys',           icon:TrendingUp,    component:SurveysPage,         color:'#10B981', moduleKey:'surveys_engagement_enabled' },
+  { id:'review_cycles',        label:'Review Cycles',     icon:ClipboardList, component:ReviewCyclesPage,    color:'#C9A227', moduleKey:'review_cycles_enabled' },
+  { id:'activite',             label:'Activité Réelle',   icon:Wifi,          component:ActiviteReelle,      color:'#F59E0B', moduleKey:null, badge:'S37' },
+  { id:'adoption',             label:'Adoption',          icon:Users,         component:AdoptionDashboard,   color:'#10B981', moduleKey:null, badge:'S40', adminOnly:true },
+  { id:'reporting',            label:'Rapports IA',       icon:FileText,      component:ReportingIA,         color:'#818CF8', moduleKey:null, badge:'S44', adminOnly:false },
 ]
 
 export default function IntelligenceRH() {
