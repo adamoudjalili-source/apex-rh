@@ -27,6 +27,7 @@ import {
 } from '../../hooks/useTransparency'
 import PredictiveAlerts from '../../components/ai/PredictiveAlerts'
 import AIAssistant from '../../components/ai/AIAssistant'
+import KPISection from '../../components/kpi/KPISection'
 import { AI_CONTEXT_TYPES, useGenerateManagerInsight } from '../../hooks/useGenerativeAI'
 
 // ─── Helpers ─────────────────────────────────────────────────
@@ -439,6 +440,9 @@ function PersonPanel({ member: m, onClose, onNavigate }) {
             </div>
           </div>
         )}
+
+        {/* S50 : KPI Personnalisés du collaborateur */}
+        <KPISection mode="team" userId={m.userId || m.id} />
 
         {/* Notes Manager */}
         <ManagerNotesPanel employeeId={m.id} employeeName={m.firstName} />
