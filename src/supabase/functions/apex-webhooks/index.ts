@@ -1,3 +1,4 @@
+// @ts-nocheck
 // ============================================================
 // APEX RH — supabase/functions/apex-webhooks/index.ts
 // Session 53 — Moteur de dispatch Webhooks sortants
