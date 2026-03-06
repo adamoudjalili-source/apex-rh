@@ -1039,13 +1039,17 @@ export default function ApiManager() {
   const { user } = useAuth()
   const [tab, setTab] = useState('keys')
 
-  // Accès : administrateur uniquement
-  if (!['administrateur'].includes(user?.role?.toLowerCase())) {
+  // Accès restreint aux admins — sécurité réelle assurée par RLS Supabase
+  const isAdmin = ['administrateur', 'admin', 'superadmin'].includes(user?.role?.toLowerCase() ?? '')
+    || user?.role?.toLowerCase()?.includes('admin')
+
+  if (!user || !isAdmin) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] text-gray-500">
         <Icon name="key" className="w-12 h-12 text-gray-300 mb-3" />
         <p className="text-lg font-medium text-gray-700">Accès réservé aux administrateurs</p>
         <p className="text-sm mt-1">Cette page nécessite le rôle Administrateur.</p>
+        <p className="text-xs mt-2 text-gray-400">Rôle détecté : {user?.role ?? 'non défini'}</p>
       </div>
     )
   }
