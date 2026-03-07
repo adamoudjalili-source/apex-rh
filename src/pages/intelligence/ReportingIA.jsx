@@ -19,7 +19,7 @@ import {
 } from 'lucide-react'
 
 // ─── Constantes ───────────────────────────────────────────────
-const MANAGER_ROLES = ['chef_service','chef_division','directeur','administrateur']
+import { MANAGER_ROLES } from '../../lib/roles'
 
 const HIGHLIGHT_ICONS = {
   pulse   : BarChart3,

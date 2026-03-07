@@ -29,7 +29,7 @@ import TeamDayView from '../../components/pulse/TeamDayView'
 import ManagerReviewPanel from '../../components/pulse/ManagerReviewPanel'
 import AlertBadge from '../../components/pulse/AlertBadge'
 
-const MANAGER_ROLES = ['administrateur', 'directeur', 'chef_division', 'chef_service']
+import { MANAGER_ROLES } from '../../lib/roles'
 
 export default function Team() {
   const { profile } = useAuth()

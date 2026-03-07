@@ -23,35 +23,48 @@ import DashboardDirection        from './DashboardDirection'
 import TalentMapping             from './TalentMapping'
 import BehavioralIntelligence    from './BehavioralIntelligence'   // S54
 import ENPSPage                  from './ENPSPage'                  // S55
+import AdoptionDashboard          from './AdoptionDashboard'           // S40 — Étape 8
+import CartographieCharges        from './CartographieCharges'          // S42 — Étape 8
 
+// Groupes sémantiques (pour documentation) :
+//   Mesure    : performance, analytics, analytics_predictifs, activite, cartographie_charges
+//   Évaluation: feedback360, surveys, review_cycles, enps
+//   Talent    : talents, behavioral
+//   Stratégie : drh, direction, adoption
 const TABS = [
+  // ─── Groupe Mesure ───────────────────────────────────────────
   { id:'performance',          label:'Performance PULSE',   icon:Activity,         component:BoardPage,               color:'#4F46E5', moduleKey:null },
   { id:'analytics',            label:'Analytics',           icon:BarChart3,        component:AnalyticsPage,           color:'#8B5CF6', moduleKey:'analytics_enabled' },
   { id:'analytics_predictifs', label:'Prédictifs',          icon:GitBranch,        component:AnalyticsPredictifs,     color:'#A78BFA', moduleKey:null },
-  { id:'feedback360',          label:'Feedback 360°',       icon:MessageSquare,    component:Feedback360Page,         color:'#3B82F6', moduleKey:'feedback360_enabled' },
-  { id:'surveys',              label:'Surveys',             icon:TrendingUp,       component:SurveysPage,             color:'#10B981', moduleKey:'surveys_engagement_enabled' },
-  { id:'review_cycles',        label:'Review Cycles',       icon:ClipboardList,    component:ReviewCyclesPage,        color:'#C9A227', moduleKey:'review_cycles_enabled' },
   { id:'activite',             label:'Activité Réelle',     icon:Wifi,             component:ActiviteReelle,          color:'#F59E0B', moduleKey:null },
+  { id:'cartographie_charges', label:'Charges',             icon:BarChart3,        component:CartographieCharges,     color:'#F97316', moduleKey:null, managerOnly:true },  // S42 — Étape 8
+  // ─── Groupe Évaluation ───────────────────────────────────────
+  { id:'feedback360',          label:'Évaluations 360°',   icon:MessageSquare,    component:Feedback360Page,         color:'#3B82F6', moduleKey:'feedback360_enabled' },  // renommé Étape 10
+  { id:'surveys',              label:'Enquêtes',            icon:TrendingUp,       component:SurveysPage,             color:'#10B981', moduleKey:'surveys_engagement_enabled' },  // Étape 22
+  { id:'review_cycles',        label:'Campagnes',           icon:ClipboardList,    component:ReviewCyclesPage,        color:'#C9A227', moduleKey:'review_cycles_enabled' },  // Étape 22
+  { id:'enps',                 label:'eNPS',                icon:Star,             component:ENPSPage,                color:'#10B981', moduleKey:'surveys_engagement_enabled' },
+  // ─── Groupe Talent ───────────────────────────────────────────
   { id:'talents',              label:'Talents',             icon:Grid3x3,          component:TalentMapping,           color:'#F59E0B', moduleKey:null, managerOnly:true },
-  { id:'behavioral',           label:'Comportemental',      icon:Brain,            component:BehavioralIntelligence,  color:'#EF4444', moduleKey:null, managerOnly:true },  // S54
-  { id:'enps',                 label:'eNPS',                icon:Star,             component:ENPSPage,                color:'#10B981', moduleKey:'surveys_engagement_enabled' },  // S55
+  { id:'behavioral',           label:'Comportemental',      icon:Brain,            component:BehavioralIntelligence,  color:'#EF4444', moduleKey:null, managerOnly:true },
+  // ─── Groupe Stratégie ────────────────────────────────────────
   { id:'drh',                  label:'Tableau DRH',         icon:LayoutDashboard,  component:TableauBordDRH,          color:'#EC4899', moduleKey:null, adminOnly:true },
-  { id:'direction',             label:'Direction Générale',  icon:Building2,        component:DashboardDirection,      color:'#C9A227', moduleKey:null, directionOnly:true },
+  { id:'direction',            label:'Direction Générale',  icon:Building2,        component:DashboardDirection,      color:'#C9A227', moduleKey:null, adminOnly:true },  // directionOnly→adminOnly (B-1) — Étape 15
+  { id:'adoption',             label:'Adoption',            icon:Star,             component:AdoptionDashboard,       color:'#818CF8', moduleKey:null, adminOnly:true },  // S40 — Étape 8
 ]
 
 export default function IntelligenceRH() {
   const { data: settings }    = useAppSettings()
-  const { isAdmin, isDirecteur, isDirection, isChefDivision, isChefService } = useAuth()
+  const { isAdminOrAbove, isManagerOrAbove } = useAuth()
   const modules                = settings?.modules || {}
   const [activeTab, setActive] = useState('performance')
 
-  const isManager = isAdmin || isDirecteur || isChefDivision || isChefService
+  const isAdmin = isAdminOrAbove
+  const isManager = isManagerOrAbove
 
   const visible = TABS.filter(t => {
     if (t.moduleKey && modules[t.moduleKey] !== true) return false
-    if (t.managerOnly  && !isManager)                                  return false
-    if (t.adminOnly    && !isAdmin && !isDirecteur)                    return false
-    if (t.directionOnly && !isAdmin && !isDirecteur && !isDirection)   return false
+    if (t.managerOnly && !isManager)  return false
+    if (t.adminOnly   && !isAdmin)    return false  // adminOnly = isAdminOrAbove (adminstr. + directeur)
     return true
   })
 

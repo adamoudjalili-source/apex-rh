@@ -394,7 +394,7 @@ function ROICard({ label, value, unit='%', icon: Icon, color, description }) {
 
 // ─── COMPOSANT PRINCIPAL ─────────────────────────────────────
 export default function DashboardDirection() {
-  const { isAdmin, isDirecteur, isDirection } = useAuth()
+  const { isAdmin, isDirecteur } = useAuth()  // isDirection supprimé B-1
   const [drillKPI, setDrillKPI] = useState(null) // QW6 — drill-down KPI actif
 
   const { data: scorecard, isLoading: scLoading } = useDirectionScorecard()
@@ -402,7 +402,7 @@ export default function DashboardDirection() {
   const { data: okrList,   isLoading: okrLoading }  = useDirectionOKR()
   const { data: roi,       isLoading: roiLoading }  = useDirectionROI()
 
-  if (!isAdmin && !isDirecteur && !isDirection) {
+  if (!isAdmin && !isDirecteur) {  // isDirection supprimé B-1
     return (
       <div className="flex flex-col items-center justify-center h-full gap-4 p-8">
         <Shield size={40} className="text-white/20"/>

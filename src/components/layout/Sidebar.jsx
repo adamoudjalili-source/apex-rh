@@ -7,7 +7,7 @@
 //   2. Mon Travail ▾        → Tâches · Projets · Objectifs
 //   3. Ma Performance       → /ma-performance
 //   4. Mon Développement    → /mon-developpement
-//   5. Mes Reconnaissances  → /mes-reconnaissances
+//   5. Mes Récompenses     → /mes-reconnaissances
 //
 // VUE MANAGER (+ sections) :
 //   + Mon Équipe            → /mon-equipe
@@ -35,16 +35,7 @@ import { useTodayScore }  from '../../hooks/usePulse'
 import { getScoreColor, isPulseEnabled } from '../../lib/pulseHelpers'
 import logoNita from '../../assets/logo-nita.png'
 
-const ROLE_COLORS = {
-  administrateur:'#EF4444', directeur:'#C9A227',
-  chef_division:'#8B5CF6',  chef_service:'#3B82F6', collaborateur:'#10B981',
-}
-const ROLE_LABELS = {
-  administrateur:'Administrateur', directeur:'Directeur',
-  chef_division:'Chef de Division', chef_service:'Chef de Service', collaborateur:'Collaborateur',
-}
-const MANAGERS = ['administrateur','directeur','chef_division','chef_service']
-const ADMINS   = ['administrateur','directeur','direction']
+import { ROLE_COLORS, ROLE_LABELS, MANAGER_ROLES as MANAGERS, ADMIN_ROLES as ADMINS } from '../../lib/roles'
 
 const TRAVAIL_ITEMS = [
   { label:'Tâches',        icon:CheckSquare,  path:'/travail/taches',    moduleKey:'tasks_enabled' },
@@ -148,10 +139,10 @@ export default function Sidebar() {
             <Divider label="Analyse" collapsed={collapsed}/>
             <NavItem icon={BarChart3} label="Intelligence RH"  path="/intelligence" color="#8B5CF6" collapsed={collapsed}/>
             <NavItem icon={Trophy}   label="Engagement & Rapports" path="/engagement" color="#C9A227" collapsed={collapsed}/>
-            <NavItem icon={GraduationCap} label="Formation & Certifications" path="/formation" color="#10B981" collapsed={collapsed}/> {/* S57 */}
-            <NavItem icon={DollarSign}    label="Compensation & Benchmark"   path="/compensation" color="#34D399" collapsed={collapsed}/> {/* S58 */}
-            <NavItem icon={BriefcaseIcon} label="Recrutement"                 path="/recrutement"  color="#818CF8" collapsed={collapsed}/> {/* S59 */}
-            <NavItem icon={ClipboardList} label="Entretiens Annuels"          path="/entretiens"   color="#A78BFA" collapsed={collapsed}/> {/* S60 */}
+            {modules.formation_enabled !== false && <NavItem icon={GraduationCap} label="Formation & Certifications" path="/formation" color="#10B981" collapsed={collapsed}/>} {/* S57 */}
+            {modules.compensation_enabled !== false && <NavItem icon={DollarSign} label="Compensation & Benchmark" path="/compensation" color="#34D399" collapsed={collapsed}/>} {/* S58 */}
+            {modules.recrutement_enabled !== false && <NavItem icon={BriefcaseIcon} label="Recrutement" path="/recrutement" color="#818CF8" collapsed={collapsed}/>} {/* S59 */}
+            {modules.entretiens_enabled !== false && <NavItem icon={ClipboardList} label="Entretiens Annuels" path="/entretiens" color="#A78BFA" collapsed={collapsed}/>} {/* S60 */}
             <GroupItem label="Gestion" icon={Building2}
               open={gestionOpen || isGestionActive}
               onToggle={() => setGestionOpen(o=>!o)}
@@ -205,10 +196,10 @@ export default function Sidebar() {
             <NavItem icon={Users}    label="Mon Équipe"         path="/mon-equipe"    color="#3B82F6" collapsed={collapsed}/>
             <NavItem icon={BarChart3} label="Intelligence RH"   path="/intelligence"  color="#8B5CF6" collapsed={collapsed}/>
             <NavItem icon={Trophy}   label="Engagement équipe"  path="/engagement"    color="#C9A227" collapsed={collapsed}/>
-            <NavItem icon={GraduationCap} label="Formation"     path="/formation"     color="#10B981" collapsed={collapsed}/> {/* S57 */}
-            <NavItem icon={DollarSign}    label="Compensation"   path="/compensation"  color="#34D399" collapsed={collapsed}/> {/* S58 */}
-            <NavItem icon={BriefcaseIcon} label="Recrutement"    path="/recrutement"   color="#818CF8" collapsed={collapsed}/> {/* S59 */}
-            <NavItem icon={ClipboardList} label="Entretiens"      path="/entretiens"    color="#A78BFA" collapsed={collapsed}/> {/* S60 */}
+            {modules.formation_enabled !== false && <NavItem icon={GraduationCap} label="Formation" path="/formation" color="#10B981" collapsed={collapsed}/>} {/* S57 */
+            {modules.compensation_enabled !== false && <NavItem icon={DollarSign} label="Compensation" path="/compensation" color="#34D399" collapsed={collapsed}/>} {/* S58 */
+            {modules.recrutement_enabled !== false && <NavItem icon={BriefcaseIcon} label="Recrutement" path="/recrutement" color="#818CF8" collapsed={collapsed}/>} {/* S59 */
+            {modules.entretiens_enabled !== false && <NavItem icon={ClipboardList} label="Entretiens" path="/entretiens" color="#A78BFA" collapsed={collapsed}/>} {/* S60 */
             <NavItem icon={Settings} label="Paramètres" path="/admin/settings" collapsed={collapsed}/>
           </>
 
@@ -252,16 +243,16 @@ export default function Sidebar() {
             <NavItem icon={BookOpen} label="Mon Développement" path="/mon-developpement" color="#10B981" collapsed={collapsed}/>
 
             {/* 4b — Formation */}
-            <NavItem icon={GraduationCap} label="Formation" path="/formation" color="#6366F1" collapsed={collapsed}/> {/* S57 */}
+            {modules.formation_enabled !== false && <NavItem icon={GraduationCap} label="Formation" path="/formation" color="#6366F1" collapsed={collapsed}/>} {/* S57 */
 
             {/* 4c — Compensation */}
-            <NavItem icon={DollarSign} label="Compensation" path="/compensation" color="#34D399" collapsed={collapsed}/> {/* S58 */}
+            {modules.compensation_enabled !== false && <NavItem icon={DollarSign} label="Compensation" path="/compensation" color="#34D399" collapsed={collapsed}/>} {/* S58 */
 
             {/* 4d — Recrutement */}
-            <NavItem icon={BriefcaseIcon} label="Recrutement" path="/recrutement" color="#818CF8" collapsed={collapsed}/> {/* S59 */}
-            <NavItem icon={ClipboardList} label="Entretiens" path="/entretiens" color="#A78BFA" collapsed={collapsed}/> {/* S60 */}
+            {modules.recrutement_enabled !== false && <NavItem icon={BriefcaseIcon} label="Recrutement" path="/recrutement" color="#818CF8" collapsed={collapsed}/>} {/* S59 */
+            {modules.entretiens_enabled !== false && <NavItem icon={ClipboardList} label="Entretiens" path="/entretiens" color="#A78BFA" collapsed={collapsed}/>} {/* S60 */
             <Divider label="Reconnaissances" collapsed={collapsed}/>
-            <NavItem icon={Trophy} label="Mes Reconnaissances" path="/mes-reconnaissances" color="#C9A227" collapsed={collapsed}/>
+            <NavItem icon={Trophy} label="Mes Récompenses" path="/mes-reconnaissances" color="#C9A227" collapsed={collapsed}/>
 
             {/* Paramètres */}
             <Divider label="Administration" collapsed={collapsed}/>

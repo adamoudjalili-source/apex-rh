@@ -27,9 +27,10 @@ import AnnualReviewDashboard         from '../../components/entretiens/AnnualRev
 import AnnualReviewAdmin             from '../../components/entretiens/AnnualReviewAdmin'
 import AnnualReviewHistory           from '../../components/entretiens/AnnualReviewHistory'
 import AnnualReviewEnrichedDashboard from '../../components/entretiens/AnnualReviewEnrichedDashboard'
+import { lazy, Suspense } from 'react'
+const CalibrationPage = lazy(() => import('../intelligence/CalibrationPage'))  // Étape 16
 
-const MANAGERS = ['administrateur', 'directeur', 'chef_division', 'chef_service']
-const ADMINS   = ['administrateur', 'directeur']
+import { MANAGER_ROLES as MANAGERS, ADMIN_ROLES as ADMINS } from '../../lib/roles'
 
 // ─── Mon entretien (tab collaborateur) ───────────────────────
 
@@ -229,6 +230,30 @@ function MyReviewTab() {
 
 // ─── Page principale ──────────────────────────────────────────
 
+
+// ─── QuickStats entretiens (Étape 21) ────────────────────────
+function QuickStatsEntretiens() {
+  const { data: campaigns = [] } = useActiveCampaigns()
+  const activeCampaign = campaigns[0]
+  const { data: pending = [] } = useManagerPendingReviews(activeCampaign?.id)
+  const stats = [
+    { label: 'Campagne active',  value: activeCampaign ? 1 : 0, color: '#4F46E5' },
+    { label: 'En attente',       value: pending.filter(r => ['pending','self_in_progress'].includes(r.status)).length, color: '#F59E0B' },
+    { label: 'Complétés',        value: pending.filter(r => r.status === 'completed').length, color: '#10B981' },
+    { label: 'Signés',           value: pending.filter(r => r.employee_signed_at && r.manager_signed_at).length, color: '#8B5CF6' },
+  ]
+  return (
+    <div className="flex flex-wrap gap-3 px-4 sm:px-6 py-3" style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+      {stats.map(s => (
+        <div key={s.label} className="flex items-center gap-2 px-3 py-1.5 rounded-lg" style={{ background: 'rgba(255,255,255,0.03)' }}>
+          <span className="text-base font-bold" style={{ color: s.color }}>{s.value}</span>
+          <span className="text-xs text-white/35">{s.label}</span>
+        </div>
+      ))}
+    </div>
+  )
+}
+
 export default function EntretiensAnnuels() {
   const { profile, isAdmin } = useAuth()
   const { data: settings }   = useAppSettings()
@@ -329,6 +354,11 @@ export default function EntretiensAnnuels() {
             {validTab === 'history' && <AnnualReviewHistory/>}
             {validTab === 'team'    && <AnnualReviewDashboard/>}
             {validTab === 'admin'   && <AnnualReviewAdmin/>}
+        {validTab === 'calibration' && (
+          <Suspense fallback={<div className="flex items-center justify-center py-12"><span className="text-white/30 text-sm">Chargement calibration...</span></div>}>
+            <CalibrationPage/>
+          </Suspense>
+        )}  {/* Étape 16 */}
             {validTab === 'tableau' && <AnnualReviewEnrichedDashboard/>}
           </motion.div>
         </AnimatePresence>

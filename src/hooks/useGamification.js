@@ -207,8 +207,7 @@ function computeMaxStreak(sortedDates) {
   return Math.max(max, streak)
 }
 
-const MANAGER_ROLES = ['chef_service', 'chef_division', 'directeur', 'administrateur']
-export function isManagerRole(role) { return MANAGER_ROLES.includes(role) }
+import { MANAGER_ROLES, isManagerRole } from '../lib/roles'
 
 // ─── MON STREAK (calculé live depuis pulse_daily_logs) ───────
 

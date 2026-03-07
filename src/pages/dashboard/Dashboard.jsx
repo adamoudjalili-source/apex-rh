@@ -1,3 +1,4 @@
+import { MANAGER_ROLES } from '../../lib/roles'
 // ============================================================
 // APEX RH — Dashboard.jsx  ·  Session 36 v3
 // Dashboard repensé — répond à : "Qui est en difficulté aujourd'hui ?"
@@ -39,7 +40,7 @@ export default function Dashboard() {
   const navigate    = useNavigate()
   const { data: settings }    = useAppSettings()
   const pulseOn                = isPulseEnabled(settings)
-  const isManager = ['administrateur','directeur','chef_division','chef_service'].includes(profile?.role)
+  const isManager = MANAGER_ROLES.includes(profile?.role)
 
   const taskStats    = useTaskStats()
   const okrStats     = useOkrStats()

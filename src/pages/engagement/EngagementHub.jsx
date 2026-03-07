@@ -5,7 +5,7 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { useAppSettings } from '../../hooks/useSettings'
-import { Trophy, Zap, BrainCircuit, FileText } from 'lucide-react'
+import { Trophy, Zap, BrainCircuit, FileText, Sparkles } from 'lucide-react'
 
 import AwardsPage       from '../pulse/Awards'
 import GamificationPage from '../pulse/Gamification'
@@ -13,10 +13,11 @@ import AICoachPage      from '../pulse/AICoach'
 import ReportsPage      from '../pulse/Reports'
 
 const TABS = [
-  { id:'awards',       label:'Awards',       icon:Trophy,       component:AwardsPage,       color:'#C9A227', moduleKey:null },
-  { id:'gamification', label:'Classements',  icon:Zap,          component:GamificationPage, color:'#F59E0B', moduleKey:'gamification_enabled' },
-  { id:'ia_coach',     label:'IA Coach',     icon:BrainCircuit, component:AICoachPage,      color:'#8B5CF6', moduleKey:'ia_coach_enabled' },
-  { id:'rapports',     label:'Rapports',     icon:FileText,     component:ReportsPage,      color:'#3B82F6', moduleKey:null },
+  { id:'awards',       label:'Récompenses',       icon:Trophy,       component:AwardsPage,       color:'#C9A227', moduleKey:null },         // Étape 22
+  { id:'gamification', label:'Classements',        icon:Zap,          component:GamificationPage, color:'#F59E0B', moduleKey:'gamification_enabled' },
+  { id:'ia_coach',     label:'IA Coach Perso',     icon:BrainCircuit, component:AICoachPage,      color:'#8B5CF6', moduleKey:'ia_coach_enabled' },  // Étape 12 — IA coaching individuel
+  { id:'ia_reporting', label:'Rapports IA',        icon:Sparkles,     component:ReportingIA,      color:'#A78BFA', moduleKey:null },                // Étape 11+12 — IA génération rapports
+  { id:'rapports',     label:'Rapports PULSE',     icon:FileText,     component:ReportsPage,      color:'#3B82F6', moduleKey:null },                // Étape 11
 ]
 
 export default function EngagementHub() {

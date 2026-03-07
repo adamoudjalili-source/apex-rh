@@ -1,3 +1,4 @@
+import { MANAGER_ROLES } from '../../lib/roles'
 // ============================================================
 // APEX RH — MonEquipe.jsx  ·  Session 36 v3
 // Vue manager complète :
@@ -14,6 +15,7 @@ import {
   ArrowRight, ChevronRight, Trophy, Target, MessageSquare,
   ClipboardList, TrendingUp, TrendingDown, Minus,
 } from 'lucide-react'
+import { OVERALL_RATING_LABELS } from '../../hooks/useAnnualReviews'
 import { useAuth }     from '../../contexts/AuthContext'
 import { useTeamIPR }  from '../../hooks/useIPR'
 import {
@@ -32,16 +34,13 @@ const ROLE_COLORS = {
   chef_service:'#3B82F6', collaborateur:'#10B981',
 }
 
-const OVERALL_RATING_LABELS = {
-  insuffisant:'Insuffisant', a_ameliorer:'À améliorer',
-  satisfaisant:'Satisfaisant', bien:'Bien', excellent:'Excellent',
-}
+// OVERALL_RATING_LABELS importé depuis useAnnualReviews (Étape 17)
 
 // ─── Composant principal ─────────────────────────────────────
 export default function MonEquipe() {
   const { profile } = useAuth()
   const navigate    = useNavigate()
-  const isManager   = ['administrateur','directeur','chef_division','chef_service'].includes(profile?.role)
+  const isManager   = MANAGER_ROLES.includes(profile?.role)
 
   const [selected, setSelected] = useState(null)
   const [sortKey,  setSortKey]  = useState('ipr')

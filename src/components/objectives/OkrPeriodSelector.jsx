@@ -1,3 +1,4 @@
+import { ADMIN_ROLES } from '../../lib/roles'
 // ============================================================
 // APEX RH — OkrPeriodSelector.jsx
 // Session 10 — Sélecteur + gestion des périodes OKR
@@ -17,7 +18,7 @@ export default function OkrPeriodSelector({ selectedPeriodId, onSelect }) {
   const [showForm, setShowForm] = useState(false)
   const [form, setForm] = useState({ name: '', start_date: '', end_date: '' })
 
-  const canManage = ['administrateur', 'directeur'].includes(profile?.role)
+  const canManage = ADMIN_ROLES.includes(profile?.role)
 
   const handleCreate = async (e) => {
     e.preventDefault()

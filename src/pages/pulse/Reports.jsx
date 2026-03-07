@@ -37,7 +37,7 @@ import {
   SATISFACTION_LABELS,
 } from '../../lib/pulseHelpers'
 
-const MANAGER_ROLES = ['administrateur', 'directeur', 'chef_division', 'chef_service']
+import { MANAGER_ROLES } from '../../lib/roles'
 
 // ─── TYPES DE RAPPORTS ────────────────────────────────────────
 const REPORT_TYPES = [

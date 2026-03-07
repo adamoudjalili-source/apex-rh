@@ -1,3 +1,4 @@
+import { MANAGER_ROLES } from '../../lib/roles'
 // ============================================================
 // APEX RH — pages/formation/Formation.jsx
 // Session 57 — Module Formation & Certifications
@@ -61,7 +62,7 @@ function QuickStats() {
 export default function Formation() {
   const { profile, isAdmin } = useAuth()
   const role = profile?.role
-  const isManager = ['administrateur', 'directeur', 'chef_division', 'chef_service'].includes(role)
+  const isManager = MANAGER_ROLES.includes(role)
 
   const TABS = useMemo(() => {
     const base = [

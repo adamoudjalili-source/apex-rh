@@ -22,7 +22,7 @@ import { useLeaderboard, useTeamScoreHistory, buildLeaderboard, getPeriodDates }
 import { isPulseEnabled, PULSE_COLORS } from '../../lib/pulseHelpers'
 import { AwardCard } from '../../components/pulse/AwardBadge'
 
-const MANAGER_ROLES = ['administrateur', 'directeur', 'chef_division', 'chef_service']
+import { MANAGER_ROLES } from '../../lib/roles'
 
 // ─── PAGE PRINCIPALE ─────────────────────────────────────────
 export default function Awards() {

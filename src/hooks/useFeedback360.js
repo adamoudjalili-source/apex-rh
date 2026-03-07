@@ -1,3 +1,4 @@
+import { MANAGER_ROLES } from '../lib/roles'
 // ============================================================
 // APEX RH — src/hooks/useFeedback360.js
 // Session 28 — Module Feedback 360° — Hook TanStack Query
@@ -58,7 +59,7 @@ export function useMyCampaigns() {
  */
 export function useAllCampaigns() {
   const { profile } = useAuth()
-  const isManager = ['administrateur', 'directeur', 'chef_division', 'chef_service'].includes(profile?.role)
+  const isManager = MANAGER_ROLES.includes(profile?.role)
 
   return useQuery({
     queryKey: ['feedback-campaigns-all', profile?.id],

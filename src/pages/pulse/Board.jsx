@@ -37,7 +37,7 @@ import ScoreCard from '../../components/pulse/ScoreCard'
 import ScoreBar from '../../components/pulse/ScoreBar'
 import PerformanceChart from '../../components/pulse/PerformanceChart'
 
-const MANAGER_ROLES = ['administrateur', 'directeur', 'chef_division', 'chef_service']
+import { MANAGER_ROLES } from '../../lib/roles'
 
 const PERIODS = [
   { key: 'week',    label: 'Cette semaine' },

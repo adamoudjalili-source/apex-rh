@@ -1278,7 +1278,7 @@ function PulseSettingsSection() {
 
 // ─── SECTION : NOTIFICATIONS PULSE ──────────────────────────
 
-const MANAGER_ROLES = ['chef_service', 'chef_division', 'directeur', 'administrateur']
+import { MANAGER_ROLES } from '../../lib/roles'
 
 function PulseNotificationsSection() {
   const { profile } = useAuth()

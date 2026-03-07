@@ -11,7 +11,7 @@ import {
   isBriefDeadlinePassed,
 } from '../lib/pulseHelpers'
 
-const MANAGER_ROLES = ['administrateur', 'directeur', 'chef_division', 'chef_service']
+import { MANAGER_ROLES } from '../lib/roles'
 
 // ─── TYPES D'ALERTES ─────────────────────────────────────────
 export const ALERT_TYPES = {

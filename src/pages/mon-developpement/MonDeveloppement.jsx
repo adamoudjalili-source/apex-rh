@@ -365,8 +365,8 @@ function TabFeedbacks({ profile }) {
     <motion.div variants={fadeUp} initial="hidden" animate="visible"
       className="rounded-2xl border border-dashed border-white/10 p-10 flex flex-col items-center text-center mt-4">
       <div className="w-12 h-12 rounded-2xl flex items-center justify-center mb-4" style={{background:'rgba(79,70,229,0.1)',border:'1px solid rgba(79,70,229,0.2)'}}><MessageSquare size={20} style={{color:'#4F46E5'}}/></div>
-      <h3 className="text-base font-semibold text-white/70 mb-1">Aucun feedback validé</h3>
-      <p className="text-xs text-white/30 max-w-xs">Vos feedbacks 360° apparaîtront ici une fois validés par votre manager.</p>
+      <h3 className="text-base font-semibold text-white/70 mb-1">Aucune évaluation 360° reçue</h3>
+      <p className="text-xs text-white/30 max-w-xs">Vos évaluations 360° apparaîtront ici une fois validés par votre manager.</p>
     </motion.div>
   )
 
@@ -692,7 +692,7 @@ export default function MonDeveloppement() {
     { id:'pdi',       label:'Mon PDI',         icon:BookOpen,       color:ACCENT    },
     { id:'feedbacks', label:'Feedbacks reçus',  icon:MessageSquare,  color:'#4F46E5' },
     { id:'boucle',    label:'Boucle & Reviews', icon:RefreshCw,      color:'#F59E0B' },
-    { id:'ia',        label:'IA Coach',         icon:Brain,          color:'#10B981' },
+    { id:'ia',        label:'IA Coach Perso',         icon:Brain,          color:'#10B981' },
   ]
 
   return (

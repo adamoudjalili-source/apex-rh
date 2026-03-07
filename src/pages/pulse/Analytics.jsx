@@ -1,3 +1,4 @@
+import { MANAGER_ROLES, isAdminRole as isDirectionRole } from '../../lib/roles'
 // ============================================================
 // APEX RH — src/pages/pulse/Analytics.jsx
 // Session 33 — Module Analytics Avancés & Prédictif
@@ -32,13 +33,7 @@ const IconTarget   = () => <svg className="w-4 h-4" fill="none" stroke="currentC
 
 // ─── HELPERS LOCAUX ───────────────────────────────────────────
 
-function isManagerRole(role) {
-  return ['administrateur', 'directeur', 'chef_division', 'chef_service'].includes(role)
-}
-
-function isDirectionRole(role) {
-  return ['administrateur', 'directeur'].includes(role)
-}
+// isManagerRole and isDirectionRole moved to top-level imports — Étape 14+15
 
 function scoreLabel(score) {
   if (score == null) return '—'
@@ -717,7 +712,7 @@ export default function Analytics() {
   const { data: kpis, isLoading: kpisLoading } = useAnalyticsKpis()
 
   const isManager   = isManagerRole(profile?.role)
-  const isDirection = isDirectionRole(profile?.role)
+  const isDirection = isDirectionRole(profile?.role)  // local: administrateur + directeur (= isAdminOrAbove)
 
   // Accès interdit aux collaborateurs
   if (!isManager) {

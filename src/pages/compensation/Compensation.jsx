@@ -9,8 +9,9 @@
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { DollarSign, BarChart3, Clock, Users, Settings, Lock } from 'lucide-react'
-import { useAuth }        from '../../contexts/AuthContext'
-import { useAppSettings } from '../../hooks/useSettings'
+import { useAuth }               from '../../contexts/AuthContext'
+import { useAppSettings }         from '../../hooks/useSettings'
+import { useOrgCompensationStats, formatSalaryShort } from '../../hooks/useCompensation'  // Étape 21
 
 import MyCompensation           from '../../components/compensation/MyCompensation'
 import SalaryBenchmarkPanel     from '../../components/compensation/SalaryBenchmarkPanel'
@@ -18,8 +19,30 @@ import CompensationHistory      from '../../components/compensation/Compensation
 import TeamCompensationDashboard from '../../components/compensation/TeamCompensationDashboard'
 import CompensationAdminPanel   from '../../components/compensation/CompensationAdminPanel'
 
-const MANAGERS = ['administrateur', 'directeur', 'chef_division', 'chef_service']
-const ADMINS   = ['administrateur', 'directeur']
+import { MANAGER_ROLES as MANAGERS, ADMIN_ROLES as ADMINS } from '../../lib/roles'
+
+
+// ─── QuickStats compensation (Étape 21) ─────────────────────
+function QuickStatsCompensation() {
+  const { data: stats } = useOrgCompensationStats()
+  if (!stats) return null
+  const items = [
+    { label: 'Collaborateurs',    value: stats.count,                                              color: '#4F46E5' },
+    { label: 'Masse salariale',   value: formatSalaryShort(stats.total_mass),                      color: '#10B981' },
+    { label: 'Salaire moyen',     value: formatSalaryShort(stats.avg_salary),                      color: '#F59E0B' },
+    { label: 'Comp. total moy.',  value: stats.avg_total_comp ? formatSalaryShort(stats.avg_total_comp) : '—', color: '#8B5CF6' },
+  ]
+  return (
+    <div className="flex flex-wrap gap-3 px-4 sm:px-6 py-3" style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+      {items.map(s => (
+        <div key={s.label} className="flex items-center gap-2 px-3 py-1.5 rounded-lg" style={{ background: 'rgba(255,255,255,0.03)' }}>
+          <span className="text-sm font-bold" style={{ color: s.color }}>{s.value}</span>
+          <span className="text-xs text-white/35">{s.label}</span>
+        </div>
+      ))}
+    </div>
+  )
+}
 
 export default function Compensation() {
   const { profile, isAdmin } = useAuth()
@@ -60,6 +83,9 @@ export default function Compensation() {
 
   return (
     <div className="flex flex-col h-full min-h-0">
+
+      {/* ── QuickStats (Étape 21) ── */}
+      {isAdm && <QuickStatsCompensation/>}
 
       {/* ── Header ── */}
       <div className="flex-shrink-0 px-4 sm:px-6 pt-5 pb-4"

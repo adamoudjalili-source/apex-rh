@@ -15,6 +15,7 @@ import {
   PIPELINE_STAGES,
 } from '../../hooks/useRecruitment'
 import { useAuth } from '../../contexts/AuthContext'
+import CVParserPanel from './CVParserPanel'  // Étape 13
 
 // ─── Carte candidat ───────────────────────────────────────────
 function CandidateCard({ app, onSelect }) {
@@ -64,6 +65,21 @@ function CandidateCard({ app, onSelect }) {
 function PipelineColumn({ stage, apps, onSelect }) {
   return (
     <div className="flex-shrink-0 w-52">
+      {/* ─── Parser CV IA (Étape 13) ─────────────────────────────── */}
+      <div className="flex justify-end px-4 pt-3">
+        <button
+          onClick={() => setShowParser(s => !s)}
+          className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-all"
+          style={{ background: showParser ? 'rgba(99,102,241,0.15)' : 'rgba(255,255,255,0.05)', color: showParser ? '#818CF8' : 'rgba(255,255,255,0.5)' }}>
+          <UploadCloud size={13}/>
+          Parser CV IA
+        </button>
+      </div>
+      {showParser && (
+        <div className="px-4 pb-2">
+          <CVParserPanel embedded/>
+        </div>
+      )}
       <div className="flex items-center gap-2 mb-3">
         <div className="w-2 h-2 rounded-full" style={{ background: stage.color }}/>
         <span className="text-[11px] font-bold text-white/60 uppercase tracking-wider">{stage.label}</span>

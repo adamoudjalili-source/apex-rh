@@ -7,7 +7,7 @@ import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
 import { getTodayString } from '../lib/pulseHelpers'
 
-const MANAGER_ROLES = ['administrateur', 'directeur', 'chef_division', 'chef_service']
+import { MANAGER_ROLES } from '../lib/roles'
 
 // ─── LOGS DE L'ÉQUIPE POUR UNE DATE ──────────────────────────
 /**

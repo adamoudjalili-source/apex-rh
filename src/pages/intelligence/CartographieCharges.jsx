@@ -1,3 +1,4 @@
+import { MANAGER_ROLES } from '../../lib/roles'
 // ============================================================
 // APEX RH — CartographieCharges.jsx  ·  Session 42
 // Cartographie des charges + corrélations NITA avancées
@@ -37,7 +38,7 @@ const CORR_LABELS = {
 
 export default function CartographieCharges() {
   const { profile } = useAuth()
-  const isManager   = ['administrateur','directeur','chef_division','chef_service'].includes(profile?.role)
+  const isManager   = MANAGER_ROLES.includes(profile?.role)
 
   const { data: workload = [],   isLoading: wLoading  } = useWorkloadSummary()
   const { data: correlation,     isLoading: cLoading  } = useNitaWorkloadCorrelation()

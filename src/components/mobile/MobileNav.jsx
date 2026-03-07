@@ -13,7 +13,7 @@ import { isPulseEnabled } from '../../lib/pulseHelpers'
 import MobileTaskQuick from './MobileTaskQuick'
 import MobileHome from './MobileHome'
 
-const MANAGERS = ['administrateur','directeur','chef_division','chef_service']
+import { MANAGER_ROLES as MANAGERS } from '../../lib/roles'
 
 export default function MobileNav() {
   const { profile } = useAuth()

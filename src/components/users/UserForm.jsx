@@ -4,7 +4,7 @@ import { supabase } from '../../lib/supabase'
 const ROLES = [
   { value: 'administrateur', label: 'Administrateur' },
   { value: 'directeur', label: 'Directeur' },
-  { value: 'direction', label: 'Direction Générale' },
+          {/* direction supprimé — décision B-1 */}
   { value: 'chef_division', label: 'Chef de Division' },
   { value: 'chef_service', label: 'Chef de Service' },
   { value: 'collaborateur', label: 'Collaborateur' },
@@ -194,7 +194,7 @@ export default function UserForm({ user, onSuccess, onCancel }) {
   const labelClass = 'block text-xs font-medium text-white/60 mb-1.5'
 
   // ── Raccourcis booléens pour l'affichage conditionnel ──────────
-  const showDirection = ['directeur','direction'].includes(form.role)
+  const showDirection = form.role === 'directeur'  // 'direction' supprimé B-1
   const showDivision = ['chef_division', 'chef_service', 'collaborateur'].includes(form.role)
   const showService = ['chef_service', 'collaborateur'].includes(form.role)
 

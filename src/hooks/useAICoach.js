@@ -38,7 +38,7 @@ export const AI_COACH_AXES = [
 
 // ─── HELPERS ────────────────────────────────────────────────
 
-const MANAGER_ROLES = ['chef_service', 'chef_division', 'directeur', 'administrateur']
+import { MANAGER_ROLES } from '../lib/roles'
 
 export function isManagerRole(role) {
   return MANAGER_ROLES.includes(role)

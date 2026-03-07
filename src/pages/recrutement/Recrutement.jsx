@@ -11,6 +11,7 @@ import {
   Briefcase, Send, Users, Calendar, Settings,
   TrendingUp, Clock, CheckCircle2, Brain, FileSearch,
 } from 'lucide-react'
+import { isManagerRole } from '../../lib/roles'
 import { useAuth }             from '../../contexts/AuthContext'
 import { useRecruitmentStats } from '../../hooks/useRecruitment'
 
@@ -63,7 +64,7 @@ function QuickStats() {
 export default function Recrutement() {
   const { profile, isAdmin } = useAuth()
   const role = profile?.role
-  const isManager = ['administrateur', 'directeur', 'chef_division', 'chef_service'].includes(role)
+  const isManager = isManagerRole(role)
 
   const TABS = useMemo(() => {
     const base = [
