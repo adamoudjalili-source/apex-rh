@@ -252,3 +252,12 @@ export function useAssignJobFamily() {
     },
   })
 }
+
+// ─── Stubs pour CartographieCharges (Étape 8) ────────────────
+// Ces hooks seront implémentés en S64+ avec les vraies tables Supabase
+export function useWorkloadSummary() {
+  return { data: [], isLoading: false, error: null }
+}
+export function useNitaWorkloadCorrelation() {
+  return { data: null, isLoading: false, error: null }
+}
