@@ -146,7 +146,6 @@ export default function IntelligenceRH() {
           })}
         </div>
       </div>
-      </div>
       <div className="flex-1 min-h-0 overflow-y-auto">
         {Component ? (
           <motion.div key={activeTab} initial={{opacity:0,y:6}} animate={{opacity:1,y:0}} transition={{duration:0.22}} className="h-full">
