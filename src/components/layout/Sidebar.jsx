@@ -21,7 +21,7 @@ import {
   LayoutDashboard, Users, BarChart3,
   ChevronLeft, ChevronRight, LogOut,
   BriefcaseIcon, ClipboardList, Settings,
-  Home, ShieldCheck, MessageCircle, Clock,
+  Home, ShieldCheck, MessageCircle, Clock, CalendarOff,
 } from 'lucide-react'
 import { useAuth }        from '../../contexts/AuthContext'
 import { useAppSettings } from '../../hooks/useSettings'
@@ -148,6 +148,7 @@ export default function Sidebar() {
             <NavItem icon={BriefcaseIcon}    label="Recrutement"        path="/recrutement"    color="#818CF8" collapsed={collapsed}/>
             <NavItem icon={ClipboardList}    label="Entretiens annuels" path="/entretiens"     color="#A78BFA" collapsed={collapsed}/>
             <NavItem icon={Clock}            label="Gestion des Temps"  path="/temps"          color="#F59E0B" collapsed={collapsed}/>
+            <NavItem icon={CalendarOff}      label="Congés & Absences"  path="/conges"         color="#8B5CF6" collapsed={collapsed}/>
             <Section label="Communication" collapsed={collapsed}/>            <NavItem icon={MessageCircle}    label="Communication"      path="/communication"  color="#06B6D4" badge={unreadCount || null} collapsed={collapsed}/>
             <Section label="Admin" collapsed={collapsed}/>
             <NavItem icon={ShieldCheck}      label="Administration"     path="/administration" color="#EF4444" collapsed={collapsed}/>
@@ -168,6 +169,7 @@ export default function Sidebar() {
             <NavItem icon={BriefcaseIcon}   label="Recrutement"         path="/recrutement"    color="#818CF8" collapsed={collapsed}/>
             <NavItem icon={ClipboardList}   label="Entretiens annuels"  path="/entretiens"     color="#A78BFA" collapsed={collapsed}/>
             <NavItem icon={Clock}           label="Gestion des Temps"   path="/temps"          color="#F59E0B" collapsed={collapsed}/>
+            <NavItem icon={CalendarOff}     label="Congés & Absences"   path="/conges"         color="#8B5CF6" collapsed={collapsed}/>
             <Section label="Communication" collapsed={collapsed}/>
             <NavItem icon={MessageCircle}   label="Communication"        path="/communication"  color="#06B6D4" badge={unreadCount || null} collapsed={collapsed}/>
             <Section label="Paramètres" collapsed={collapsed}/>
@@ -185,6 +187,7 @@ export default function Sidebar() {
             <NavItem icon={BriefcaseIcon}   label="Recrutement"          path="/recrutement"         color="#818CF8" collapsed={collapsed}/>
             <NavItem icon={ClipboardList}   label="Mon entretien"        path="/entretiens"          color="#A78BFA" collapsed={collapsed}/>
             <NavItem icon={Clock}           label="Mes Temps"            path="/temps"               color="#F59E0B" collapsed={collapsed}/>
+            <NavItem icon={CalendarOff}     label="Mes Congés"           path="/conges"              color="#8B5CF6" collapsed={collapsed}/>
             <Section label="Communication" collapsed={collapsed}/>
             <NavItem icon={MessageCircle}   label="Communication"         path="/communication"       color="#06B6D4" badge={unreadCount || null} collapsed={collapsed}/>
             <Section label="Paramètres" collapsed={collapsed}/>
