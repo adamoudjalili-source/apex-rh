@@ -35,6 +35,12 @@ const Compensation   = lazy(() => import('./pages/compensation/Compensation')) /
 const Recrutement    = lazy(() => import('./pages/recrutement/Recrutement'))  // S59
 const EntretiensAnnuels = lazy(() => import('./pages/entretiens/EntretiensAnnuels')) // S60
 
+// ── Espace Collaborateur (S61-S62) — C-01 routes manquantes ──
+const MaPerformance      = lazy(() => import('./pages/ma-performance/MaPerformance'))           // S61
+const MonDeveloppement   = lazy(() => import('./pages/mon-developpement/MonDeveloppement'))     // S61
+const MesReconnaissances = lazy(() => import('./pages/mes-reconnaissances/MesReconnaissances')) // S62
+const MonTableauDeBord   = lazy(() => import('./pages/mon-tableau-de-bord/MonTableauDeBord'))   // S62
+
 // ── Fallback Suspense ─────────────────────────────────────────
 function PageLoader() {
   return (
@@ -65,6 +71,12 @@ export default function App() {
           <Route path="/dashboard"  element={<S><Dashboard /></S>} />
           <Route path="/mon-espace" element={<S><MonEspace /></S>} />
           <Route path="/mon-equipe" element={<S><MonEquipe /></S>} />
+
+          {/* Espace Collaborateur — C-01 routes manquantes (S61-S62) */}
+          <Route path="/ma-performance"      element={<S><MaPerformance /></S>} />      {/* S61 */}
+          <Route path="/mon-developpement"   element={<S><MonDeveloppement /></S>} />   {/* S61 */}
+          <Route path="/mes-reconnaissances" element={<S><MesReconnaissances /></S>} /> {/* S62 */}
+          <Route path="/mon-tableau-de-bord" element={<S><MonTableauDeBord /></S>} />   {/* S62 */}
 
           {/* Travail */}
           <Route path="/travail/taches"    element={<S><Tasks /></S>} />
