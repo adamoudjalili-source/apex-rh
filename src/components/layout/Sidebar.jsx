@@ -21,16 +21,17 @@ import {
   LayoutDashboard, Users, BarChart3,
   ChevronLeft, ChevronRight, LogOut,
   BriefcaseIcon, ClipboardList, Settings,
-  Home, ShieldCheck,
+  Home, ShieldCheck, MessageCircle,
 } from 'lucide-react'
 import { useAuth }        from '../../contexts/AuthContext'
 import { useAppSettings } from '../../hooks/useSettings'
 import { useTodayScore }  from '../../hooks/usePulse'
+import { useUnreadCount } from '../../hooks/useCommunication'
 import { getScoreColor, isPulseEnabled } from '../../lib/pulseHelpers'
 import { ROLE_COLORS, ROLE_LABELS, MANAGER_ROLES as MANAGERS, ADMIN_ROLES as ADMINS } from '../../lib/roles'
 import logoNita from '../../assets/logo-nita.png'
 
-function NavItem({ icon: Icon, label, path, collapsed, color }) {
+function NavItem({ icon: Icon, label, path, collapsed, color, badge }) {
   return (
     <NavLink to={path}
       className={({ isActive }) =>
@@ -52,14 +53,28 @@ function NavItem({ icon: Icon, label, path, collapsed, color }) {
               style={{ background: color || '#6366F1' }}
               transition={{ type:'spring', stiffness:500, damping:30 }}/>
           )}
-          <Icon size={17} className="flex-shrink-0 relative z-10"
-            style={isActive && color ? { color } : undefined}/>
+          <div className="relative flex-shrink-0 z-10">
+            <Icon size={17} style={isActive && color ? { color } : undefined}/>
+            {badge > 0 && collapsed && (
+              <span className="absolute -top-1.5 -right-1.5 min-w-[14px] h-[14px] rounded-full flex items-center justify-center text-[9px] font-bold text-white"
+                style={{ background: '#06B6D4', padding: '0 2px' }}>
+                {badge > 99 ? '99+' : badge}
+              </span>
+            )}
+          </div>
           <AnimatePresence>
             {!collapsed && (
               <motion.span initial={{opacity:0}} animate={{opacity:1}} exit={{opacity:0}} transition={{duration:0.15}}
                 className="text-sm font-medium truncate flex-1 relative z-10">{label}</motion.span>
             )}
           </AnimatePresence>
+          {!collapsed && badge > 0 && (
+            <motion.span initial={{scale:0}} animate={{scale:1}}
+              className="ml-auto min-w-[18px] h-[18px] rounded-full flex items-center justify-center text-[10px] font-bold text-white flex-shrink-0 relative z-10"
+              style={{ background: 'linear-gradient(135deg,#06B6D4,#0891B2)', padding: '0 4px' }}>
+              {badge > 99 ? '99+' : badge}
+            </motion.span>
+          )}
         </>
       )}
     </NavLink>
@@ -78,6 +93,7 @@ export default function Sidebar() {
   const navigate               = useNavigate()
   const { data: settings }    = useAppSettings()
   const { data: todayScore }  = useTodayScore()
+  const { data: unreadCount = 0 } = useUnreadCount()
 
   const pulseOn   = isPulseEnabled(settings)
   const role      = profile?.role
@@ -131,6 +147,8 @@ export default function Sidebar() {
             <Section label="RH Opérationnel" collapsed={collapsed}/>
             <NavItem icon={BriefcaseIcon}    label="Recrutement"        path="/recrutement"    color="#818CF8" collapsed={collapsed}/>
             <NavItem icon={ClipboardList}    label="Entretiens annuels" path="/entretiens"     color="#A78BFA" collapsed={collapsed}/>
+            <Section label="Communication" collapsed={collapsed}/>
+            <NavItem icon={MessageCircle}    label="Communication"      path="/communication"  color="#06B6D4" badge={unreadCount || null} collapsed={collapsed}/>
             <Section label="Admin" collapsed={collapsed}/>
             <NavItem icon={ShieldCheck}      label="Administration"     path="/administration" color="#EF4444" collapsed={collapsed}/>
           </>
@@ -149,6 +167,8 @@ export default function Sidebar() {
             <Section label="RH Opérationnel" collapsed={collapsed}/>
             <NavItem icon={BriefcaseIcon}   label="Recrutement"         path="/recrutement"    color="#818CF8" collapsed={collapsed}/>
             <NavItem icon={ClipboardList}   label="Entretiens annuels"  path="/entretiens"     color="#A78BFA" collapsed={collapsed}/>
+            <Section label="Communication" collapsed={collapsed}/>
+            <NavItem icon={MessageCircle}   label="Communication"        path="/communication"  color="#06B6D4" badge={unreadCount || null} collapsed={collapsed}/>
             <Section label="Paramètres" collapsed={collapsed}/>
             <NavItem icon={Settings}        label="Paramètres"          path="/admin/settings" collapsed={collapsed}/>
           </>
@@ -163,6 +183,8 @@ export default function Sidebar() {
             <Section label="RH" collapsed={collapsed}/>
             <NavItem icon={BriefcaseIcon}   label="Recrutement"          path="/recrutement"         color="#818CF8" collapsed={collapsed}/>
             <NavItem icon={ClipboardList}   label="Mon entretien"        path="/entretiens"          color="#A78BFA" collapsed={collapsed}/>
+            <Section label="Communication" collapsed={collapsed}/>
+            <NavItem icon={MessageCircle}   label="Communication"         path="/communication"       color="#06B6D4" badge={unreadCount || null} collapsed={collapsed}/>
             <Section label="Paramètres" collapsed={collapsed}/>
             <NavItem icon={Settings}        label="Paramètres"           path="/admin/settings"      collapsed={collapsed}/>
           </>
