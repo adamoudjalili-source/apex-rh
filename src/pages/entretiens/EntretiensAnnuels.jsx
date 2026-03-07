@@ -9,7 +9,7 @@
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
-  ClipboardList, History, Users, Settings,
+  ClipboardList, History, Users, Settings, BarChart3,
   Clock, CheckCircle, AlertCircle, Star,
   ChevronRight, Calendar, Loader2, Lock,
 } from 'lucide-react'
@@ -22,10 +22,11 @@ import {
   getReviewProgress, isDeadlineSoon, isDeadlineOverdue,
 } from '../../hooks/useAnnualReviews'
 
-import AnnualReviewForm       from '../../components/entretiens/AnnualReviewForm'
-import AnnualReviewDashboard  from '../../components/entretiens/AnnualReviewDashboard'
-import AnnualReviewAdmin      from '../../components/entretiens/AnnualReviewAdmin'
-import AnnualReviewHistory    from '../../components/entretiens/AnnualReviewHistory'
+import AnnualReviewForm              from '../../components/entretiens/AnnualReviewForm'
+import AnnualReviewDashboard         from '../../components/entretiens/AnnualReviewDashboard'
+import AnnualReviewAdmin             from '../../components/entretiens/AnnualReviewAdmin'
+import AnnualReviewHistory           from '../../components/entretiens/AnnualReviewHistory'
+import AnnualReviewEnrichedDashboard from '../../components/entretiens/AnnualReviewEnrichedDashboard'
 
 const MANAGERS = ['administrateur', 'directeur', 'chef_division', 'chef_service']
 const ADMINS   = ['administrateur', 'directeur']
@@ -265,6 +266,7 @@ export default function EntretiensAnnuels() {
       roles: MANAGERS,
     }] : []),
     ...(isAdm ? [{ id: 'admin', label: 'Campagnes', icon: Settings, roles: ADMINS }] : []),
+    ...(isAdm ? [{ id: 'tableau', label: 'Tableau de bord', icon: BarChart3, roles: ADMINS }] : []),
   ]
 
   const validTab = TABS.find(t => t.id === tab) ? tab : 'mine'
@@ -327,6 +329,7 @@ export default function EntretiensAnnuels() {
             {validTab === 'history' && <AnnualReviewHistory/>}
             {validTab === 'team'    && <AnnualReviewDashboard/>}
             {validTab === 'admin'   && <AnnualReviewAdmin/>}
+            {validTab === 'tableau' && <AnnualReviewEnrichedDashboard/>}
           </motion.div>
         </AnimatePresence>
       </div>
