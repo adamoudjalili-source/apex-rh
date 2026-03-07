@@ -1,4 +1,4 @@
-import { MANAGER_ROLES } from '../../lib/roles'
+// S69 — MANAGER_ROLES remplacé par canManageTeam
 // ============================================================
 // APEX RH — src/pages/pulse/Feedback360.jsx
 // Session 28 — Page principale du module Feedback 360°
@@ -877,8 +877,8 @@ function TeamSummaryTab({ teamSummary, isLoading }) {
 // ─── PAGE PRINCIPALE ─────────────────────────────────────────
 
 export default function Feedback360() {
-  const { profile } = useAuth()
-  const isManager = MANAGER_ROLES.includes(profile?.role)
+  const { profile, canManageTeam } = useAuth()
+  const isManager = canManageTeam
   const { data: toGive = [] } = useFeedbackToGive()
 
   return (

@@ -137,15 +137,14 @@ function AdminOnglet() {
 
 // ─── PAGE PRINCIPALE ──────────────────────────────────────────
 export default function GestionTemps() {
-  const { profile, isAdmin } = useAuth()
+  const { profile, canAdmin, canManageTeam } = useAuth()
   const role = profile?.role
-  const isManager = ['chef_division','chef_service','administrateur','directeur','direction'].includes(role)
 
   const TABS = [
-    { key: 'moi',    label: 'Ma Feuille',   icon: Clock,     always: true },
-    { key: 'equipe', label: 'Mon Équipe',   icon: Users,     manager: true },
-    { key: 'admin',  label: 'Administration', icon: Settings, admin: true },
-  ].filter(t => t.always || (t.manager && isManager) || (t.admin && isAdmin))
+    { key: 'moi',    label: 'Ma Feuille',    icon: Clock,     always: true },
+    { key: 'equipe', label: 'Mon Équipe',    icon: Users,     show: canManageTeam },
+    { key: 'admin',  label: 'Administration', icon: Settings, show: canAdmin },
+  ].filter(t => t.always || t.show)
 
   const [activeTab, setActiveTab] = useState(TABS[0].key)
 
@@ -184,8 +183,8 @@ export default function GestionTemps() {
 
       {/* Contenu */}
       {activeTab === 'moi'    && <MonOnglet/>}
-      {activeTab === 'equipe' && <EquipeOnglet/>}
-      {activeTab === 'admin'  && <AdminOnglet/>}
+      {activeTab === 'equipe' && canManageTeam && <EquipeOnglet/>}
+      {activeTab === 'admin'  && canAdmin      && <AdminOnglet/>}
     </div>
   )
 }

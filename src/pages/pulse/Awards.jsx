@@ -22,14 +22,14 @@ import { useLeaderboard, useTeamScoreHistory, buildLeaderboard, getPeriodDates }
 import { isPulseEnabled, PULSE_COLORS } from '../../lib/pulseHelpers'
 import { AwardCard } from '../../components/pulse/AwardBadge'
 
-import { MANAGER_ROLES } from '../../lib/roles'
+// S69 — MANAGER_ROLES remplacé par canManageTeam
 
 // ─── PAGE PRINCIPALE ─────────────────────────────────────────
 export default function Awards() {
-  const { profile, role } = useAuth()
+  const { profile, role, canManageTeam } = useAuth()
   const { data: settings, isLoading: settingsLoading } = useAppSettings()
 
-  const isManager = MANAGER_ROLES.includes(role)
+  const isManager = canManageTeam
   const today = new Date()
 
   const [activeTab, setActiveTab]   = useState('current')   // 'current' | 'halloffame'

@@ -19,7 +19,7 @@ import {
 } from 'lucide-react'
 
 // ─── Constantes ───────────────────────────────────────────────
-import { MANAGER_ROLES } from '../../lib/roles'
+// S69 — MANAGER_ROLES remplacé par canManageTeam
 
 const HIGHLIGHT_ICONS = {
   pulse   : BarChart3,
@@ -356,8 +356,8 @@ function ReportGenerator({ serviceId, isManager }) {
 
 // ─── COMPOSANT PRINCIPAL ──────────────────────────────────────
 export default function ReportingIA() {
-  const { profile } = useAuth()
-  const isManager   = MANAGER_ROLES.includes(profile?.role ?? '')
+  const { profile, canManageTeam } = useAuth()
+  const isManager   = canManageTeam
   const serviceId   = profile?.service_id
 
   const deleteReport = useDeleteReport()

@@ -13,7 +13,7 @@ export const ADMIN_ROLES = ['administrateur', 'directeur']
 export const MANAGER_ROLES = ['administrateur', 'directeur', 'chef_division', 'chef_service']
 
 /** Tous les rôles valides de la plateforme */
-export const ALL_ROLES = ['administrateur', 'directeur', 'chef_division', 'chef_service', 'collaborateur']
+export const ALL_ROLES = ['super_admin', 'administrateur', 'directeur', 'chef_division', 'chef_service', 'collaborateur']
 
 // ---------------------------------------------------------------------------
 // Guards — fonctions pures (acceptent un string `role`)
@@ -76,6 +76,7 @@ export const hasRole = (role, allowedRoles) => Array.isArray(allowedRoles) && al
 
 /** Labels affichés dans l'UI (Sidebar, profils, badges) */
 export const ROLE_LABELS = {
+  super_admin:    'Super Administrateur',
   administrateur: 'Administrateur',
   directeur:      'Directeur',
   chef_division:  'Chef de Division',
@@ -85,6 +86,7 @@ export const ROLE_LABELS = {
 
 /** Couleurs associées aux rôles (identiques au design system Sidebar) */
 export const ROLE_COLORS = {
+  super_admin:    '#C9A227',
   administrateur: '#EF4444',
   directeur:      '#C9A227',
   chef_division:  '#8B5CF6',

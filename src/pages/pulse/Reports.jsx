@@ -37,7 +37,7 @@ import {
   SATISFACTION_LABELS,
 } from '../../lib/pulseHelpers'
 
-import { MANAGER_ROLES } from '../../lib/roles'
+// S69 — MANAGER_ROLES remplacé par canManageTeam
 
 // ─── TYPES DE RAPPORTS ────────────────────────────────────────
 const REPORT_TYPES = [
@@ -198,7 +198,7 @@ function buildPrintHTML({ subtitle, leaderboard, myScores, myLog, selectedType }
 
 // ─── COMPOSANT PRINCIPAL ──────────────────────────────────────
 export default function Reports() {
-  const { profile }  = useAuth()
+  const { profile, canManageTeam }  = useAuth()
   const { data: settings, isLoading: settingsLoading } = useAppSettings()
 
   const [selectedType, setSelectedType]   = useState('daily_individual')
@@ -206,7 +206,7 @@ export default function Reports() {
   const [generating, setGenerating]       = useState(null) // 'PDF' | 'Excel' | null
   const [lastGenerated, setLastGenerated] = useState(null)
 
-  const isManager = MANAGER_ROLES.includes(profile?.role)
+  const isManager = canManageTeam
 
   // ─── Guard PULSE ──────────────────────────────────────────
   if (!settingsLoading && !isPulseEnabled(settings)) {

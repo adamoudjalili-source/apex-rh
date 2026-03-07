@@ -13,7 +13,7 @@ import {
   formatDate,
 } from '../../hooks/useConges'
 import { useAuth } from '../../contexts/AuthContext'
-import { ADMIN_ROLES as ADMINS } from '../../lib/roles'
+// S69 — guards via AuthContext helpers
 
 function RejectModal({ onConfirm, onCancel, loading }) {
   const [reason, setReason] = useState('')
@@ -162,9 +162,9 @@ function RequestRow({ request, approveLevel, onApprove, onReject, approving, rej
 }
 
 export default function LeaveApprovalPanel() {
-  const { profile, isAdmin } = useAuth()
+  const { profile, canAdmin } = useAuth()
   const role = profile?.role
-  const isHR = ADMINS.includes(role)
+  const isHR = canAdmin
 
   // Managers voient les 'submitted', RH/admin voient aussi les 'manager_approved'
   const statusFilter = isHR ? undefined : 'submitted'

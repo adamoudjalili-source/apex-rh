@@ -1,4 +1,4 @@
-import { MANAGER_ROLES } from '../../lib/roles'
+// S69 — guards via AuthContext helpers
 // ============================================================
 // APEX RH — Dashboard.jsx  ·  Session 36 v3
 // Dashboard repensé — répond à : "Qui est en difficulté aujourd'hui ?"
@@ -36,11 +36,11 @@ const fadeUp = {
 
 // ─── Composant principal ─────────────────────────────────────
 export default function Dashboard() {
-  const { profile } = useAuth()
+  const { profile, canManageTeam } = useAuth()
   const navigate    = useNavigate()
   const { data: settings }    = useAppSettings()
   const pulseOn                = isPulseEnabled(settings)
-  const isManager = MANAGER_ROLES.includes(profile?.role)
+  const isManager = canManageTeam
 
   const taskStats    = useTaskStats()
   const okrStats     = useOkrStats()

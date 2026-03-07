@@ -9,7 +9,7 @@ import {
   RefreshCw, AlertCircle,
 } from 'lucide-react'
 import { useAuth }             from '../../contexts/AuthContext'
-import { MANAGER_ROLES as MANAGERS, ADMIN_ROLES as ADMINS } from '../../lib/roles'
+// S69 — helpers individuels depuis AuthContext (MANAGERS/ADMINS locaux supprimés)
 
 import LeaveBalanceCard     from '../../components/conges/LeaveBalanceCard'
 import LeaveRequestCard     from '../../components/conges/LeaveRequestCard'
@@ -306,15 +306,13 @@ function Administration() {
 
 // ─── HUB PRINCIPAL ────────────────────────────────────────────
 export default function GestionConges() {
-  const { profile } = useAuth()
+  const { profile, canAdmin, canManageTeam } = useAuth()
   const role        = profile?.role
-  const isManager   = MANAGERS.includes(role)
-  const isAdmin     = ADMINS.includes(role)
 
   const tabs = [
-    { key: 'mes-conges', label: 'Mes Congés',   icon: CalendarOff, show: true },
-    { key: 'mon-equipe', label: 'Mon Équipe',    icon: Users,       show: isManager || isAdmin },
-    { key: 'admin',      label: 'Administration', icon: Settings2,   show: isAdmin },
+    { key: 'mes-conges', label: 'Mes Congés',     icon: CalendarOff, show: true },
+    { key: 'mon-equipe', label: 'Mon Équipe',      icon: Users,       show: canManageTeam },
+    { key: 'admin',      label: 'Administration',  icon: Settings2,   show: canAdmin },
   ].filter(t => t.show)
 
   const [activeTab, setActiveTab] = useState(tabs[0].key)
@@ -359,8 +357,8 @@ export default function GestionConges() {
       {/* Contenu scrollable */}
       <div className="flex-1 overflow-y-auto px-6 py-6">
         {activeTab === 'mes-conges' && <MesConges/>}
-        {activeTab === 'mon-equipe' && (isManager || isAdmin) && <MonEquipe/>}
-        {activeTab === 'admin'      && isAdmin                 && <Administration/>}
+        {activeTab === 'mon-equipe' && canManageTeam && <MonEquipe/>}
+        {activeTab === 'admin'      && canAdmin       && <Administration/>}
       </div>
     </div>
   )

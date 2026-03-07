@@ -1,4 +1,4 @@
-import { MANAGER_ROLES } from '../../lib/roles'
+// S69 — guards via AuthContext helpers
 // ============================================================
 // APEX RH — MonEquipe.jsx  ·  Session 36 v3
 // Vue manager complète :
@@ -38,9 +38,9 @@ const ROLE_COLORS = {
 
 // ─── Composant principal ─────────────────────────────────────
 export default function MonEquipe() {
-  const { profile } = useAuth()
+  const { profile, canManageTeam } = useAuth()
   const navigate    = useNavigate()
-  const isManager   = MANAGER_ROLES.includes(profile?.role)
+  const isManager   = canManageTeam
 
   const [selected, setSelected] = useState(null)
   const [sortKey,  setSortKey]  = useState('ipr')

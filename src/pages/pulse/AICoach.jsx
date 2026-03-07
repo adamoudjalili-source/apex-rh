@@ -14,7 +14,6 @@ import {
   useGenerateIndividualAnalysis,
   useGenerateTeamAnalysis,
   AI_COACH_AXES,
-  isManagerRole,
   formatAnalysisDate,
   formatPeriod,
 } from '../../hooks/useAICoach'
@@ -528,8 +527,7 @@ function ManagerView() {
 
 // ─── COMPOSANT PRINCIPAL ─────────────────────────────────────
 export default function AICoach() {
-  const { profile } = useAuth()
-  const isManager   = isManagerRole(profile?.role)
+  const { profile, canManageTeam } = useAuth()
 
   return (
     <div className="space-y-6 pb-8">

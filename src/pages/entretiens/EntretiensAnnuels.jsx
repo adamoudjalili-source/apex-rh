@@ -30,7 +30,7 @@ import AnnualReviewEnrichedDashboard from '../../components/entretiens/AnnualRev
 import { lazy, Suspense } from 'react'
 const CalibrationPage = lazy(() => import('../intelligence/CalibrationPage'))  // Étape 16
 
-import { MANAGER_ROLES as MANAGERS, ADMIN_ROLES as ADMINS } from '../../lib/roles'
+// S69 — guards via AuthContext helpers (MANAGERS/ADMINS locaux supprimés)
 
 // ─── Mon entretien (tab collaborateur) ───────────────────────
 
@@ -255,13 +255,11 @@ function QuickStatsEntretiens() {
 }
 
 export default function EntretiensAnnuels() {
-  const { profile, isAdmin } = useAuth()
+  const { profile, canAdmin, hasStrategic, canManageTeam } = useAuth()
   const { data: settings }   = useAppSettings()
   const [tab, setTab]        = useState('mine')
 
-  const role      = profile?.role
-  const isManager = MANAGERS.includes(role)
-  const isAdm     = ADMINS.includes(role) || isAdmin
+  const role = profile?.role
 
   const moduleEnabled = settings?.modules?.entretiens_annuels_enabled !== false
 
@@ -281,17 +279,17 @@ export default function EntretiensAnnuels() {
   }
 
   const TABS = [
-    { id: 'mine',    label: 'Mon entretien',    icon: ClipboardList, roles: null },
-    { id: 'history', label: 'Historique',        icon: History,       roles: null },
-    ...(isManager ? [{
+    { id: 'mine',    label: 'Mon entretien',   icon: ClipboardList },
+    { id: 'history', label: 'Historique',       icon: History },
+    ...(canManageTeam ? [{
       id: 'team',
       label: 'Mon équipe',
       icon: Users,
       badge: pendingReviews.length > 0 ? pendingReviews.length : null,
-      roles: MANAGERS,
     }] : []),
-    ...(isAdm ? [{ id: 'admin', label: 'Campagnes', icon: Settings, roles: ADMINS }] : []),
-    ...(isAdm ? [{ id: 'tableau', label: 'Tableau de bord', icon: BarChart3, roles: ADMINS }] : []),
+    ...(hasStrategic ? [{ id: 'calibration', label: 'Calibration', icon: Settings }] : []),
+    ...(canAdmin ? [{ id: 'admin',   label: 'Campagnes',      icon: Settings }] : []),
+    ...(hasStrategic ? [{ id: 'tableau', label: 'Tableau de bord', icon: BarChart3 }] : []),
   ]
 
   const validTab = TABS.find(t => t.id === tab) ? tab : 'mine'
@@ -350,16 +348,16 @@ export default function EntretiensAnnuels() {
           <motion.div key={validTab}
             initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -6 }} transition={{ duration: 0.2 }}>
-            {validTab === 'mine'    && <MyReviewTab/>}
-            {validTab === 'history' && <AnnualReviewHistory/>}
-            {validTab === 'team'    && <AnnualReviewDashboard/>}
-            {validTab === 'admin'   && <AnnualReviewAdmin/>}
-        {validTab === 'calibration' && (
-          <Suspense fallback={<div className="flex items-center justify-center py-12"><span className="text-white/30 text-sm">Chargement calibration...</span></div>}>
-            <CalibrationPage/>
-          </Suspense>
-        )}  {/* Étape 16 */}
-            {validTab === 'tableau' && <AnnualReviewEnrichedDashboard/>}
+            {validTab === 'mine'        && <MyReviewTab/>}
+            {validTab === 'history'     && <AnnualReviewHistory/>}
+            {validTab === 'team'        && canManageTeam && <AnnualReviewDashboard/>}
+            {validTab === 'admin'       && canAdmin      && <AnnualReviewAdmin/>}
+            {validTab === 'calibration' && hasStrategic  && (
+              <Suspense fallback={<div className="flex items-center justify-center py-12"><span className="text-white/30 text-sm">Chargement calibration...</span></div>}>
+                <CalibrationPage/>
+              </Suspense>
+            )}
+            {validTab === 'tableau'     && hasStrategic  && <AnnualReviewEnrichedDashboard/>}
           </motion.div>
         </AnimatePresence>
       </div>

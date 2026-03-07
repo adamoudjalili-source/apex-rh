@@ -8,6 +8,7 @@ import { motion } from 'framer-motion'
 import {
   UserCog, Building2, Plug, Settings, ShieldCheck, ArrowRight,
 } from 'lucide-react'
+import { useAuth } from '../../contexts/AuthContext'
 
 const stagger = { hidden: {}, visible: { transition: { staggerChildren: 0.07, delayChildren: 0.05 } } }
 const fadeUp  = { hidden: { opacity: 0, y: 18 }, visible: { opacity: 1, y: 0, transition: { duration: 0.38, ease: [0.4, 0, 0.2, 1] } } }
@@ -46,6 +47,7 @@ function HubCard({ icon: Icon, label, description, path, color, badge }) {
 }
 
 export default function AdministrationHub() {
+  const { isSuperAdmin } = useAuth()
   return (
     <motion.div
       variants={stagger} initial="hidden" animate="visible"
@@ -97,12 +99,14 @@ export default function AdministrationHub() {
             path="/admin/settings"
           />
 
-          <HubCard
-            icon={ShieldCheck} label="Super Admin" color="#C9A227"
-            description="Gestion multi-tenant, organisations et configuration avancée."
-            path="/admin/super-admin"
-            badge="Multi-tenant"
-          />
+          {isSuperAdmin && (
+            <HubCard
+              icon={ShieldCheck} label="Super Admin" color="#C9A227"
+              description="Gestion multi-tenant, organisations et configuration avancée."
+              path="/admin/super-admin"
+              badge="Multi-tenant"
+            />
+          )}
 
         </div>
       </div>

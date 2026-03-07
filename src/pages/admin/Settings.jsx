@@ -1292,11 +1292,11 @@ function PulseSettingsSection() {
 
 // ─── SECTION : NOTIFICATIONS PULSE ──────────────────────────
 
-import { MANAGER_ROLES } from '../../lib/roles'
+// S69 — MANAGER_ROLES remplacé par canManageTeam
 
 function PulseNotificationsSection() {
-  const { profile } = useAuth()
-  const isManager = MANAGER_ROLES.includes(profile?.role)
+  const { profile, canManageTeam } = useAuth()
+  const isManager = canManageTeam
 
   const { data: settings, isLoading } = useNotificationSettings()
   const updateSettings = useUpdateNotificationSettings()

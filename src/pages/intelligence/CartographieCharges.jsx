@@ -1,4 +1,4 @@
-import { MANAGER_ROLES } from '../../lib/roles'
+// S69 — MANAGER_ROLES remplacé par canManageTeam
 // ============================================================
 // APEX RH — CartographieCharges.jsx  ·  Session 42
 // Cartographie des charges + corrélations NITA avancées
@@ -37,8 +37,8 @@ const CORR_LABELS = {
 }
 
 export default function CartographieCharges() {
-  const { profile } = useAuth()
-  const isManager   = MANAGER_ROLES.includes(profile?.role)
+  const { profile, canManageTeam } = useAuth()
+  const isManager   = canManageTeam
 
   const { data: workload = [],   isLoading: wLoading  } = useWorkloadSummary()
   const { data: correlation,     isLoading: cLoading  } = useNitaWorkloadCorrelation()

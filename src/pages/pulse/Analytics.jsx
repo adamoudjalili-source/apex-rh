@@ -1,4 +1,4 @@
-import { MANAGER_ROLES, isAdminRole as isDirectionRole } from '../../lib/roles'
+// S69 — MANAGER_ROLES/isAdminRole remplacés par canManageTeam/canManageOrg
 // ============================================================
 // APEX RH — src/pages/pulse/Analytics.jsx
 // Session 33 — Module Analytics Avancés & Prédictif
@@ -707,12 +707,12 @@ const TABS = [
 ]
 
 export default function Analytics() {
-  const { profile } = useAuth()
+  const { profile, canManageTeam, canManageOrg } = useAuth()
   const [activeTab, setActiveTab] = useState('heatmap')
   const { data: kpis, isLoading: kpisLoading } = useAnalyticsKpis()
 
-  const isManager   = isManagerRole(profile?.role)
-  const isDirection = isDirectionRole(profile?.role)  // local: administrateur + directeur (= isAdminOrAbove)
+  const isManager   = canManageTeam
+  const isDirection = canManageOrg  // administrateur + directeur + super_admin
 
   // Accès interdit aux collaborateurs
   if (!isManager) {

@@ -1,4 +1,4 @@
-import { MANAGER_ROLES } from '../../lib/roles'
+// S69 — guards via AuthContext helpers
 // ============================================================
 // APEX RH — pages/formation/Formation.jsx
 // Session 57 — Module Formation & Certifications
@@ -60,9 +60,8 @@ function QuickStats() {
 
 // ─── Page principale ─────────────────────────────────────────
 export default function Formation() {
-  const { profile, isAdmin } = useAuth()
+  const { profile, canAdmin, canManageTeam } = useAuth()
   const role = profile?.role
-  const isManager = MANAGER_ROLES.includes(role)
 
   const TABS = useMemo(() => {
     const base = [
@@ -71,15 +70,15 @@ export default function Formation() {
       { id: 'certs',   label: 'Mes certifications', icon: Award },
       { id: 'plan',    label: 'Mon plan',           icon: Target },
     ]
-    if (isManager && !isAdmin) {
+    if (canManageTeam && !canAdmin) {
       base.push({ id: 'team', label: 'Mon équipe', icon: Users })
     }
-    if (isAdmin) {
+    if (canAdmin) {
       base.push({ id: 'team',  label: 'Équipe',      icon: Users })
       base.push({ id: 'admin', label: 'Administration', icon: Settings })
     }
     return base
-  }, [role, isManager, isAdmin])
+  }, [role, canManageTeam, canAdmin])
 
   const [activeTab, setActiveTab] = useState('catalog')
 

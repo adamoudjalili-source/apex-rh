@@ -37,7 +37,7 @@ import ScoreCard from '../../components/pulse/ScoreCard'
 import ScoreBar from '../../components/pulse/ScoreBar'
 import PerformanceChart from '../../components/pulse/PerformanceChart'
 
-import { MANAGER_ROLES } from '../../lib/roles'
+// S69 — MANAGER_ROLES remplacé par canManageTeam
 
 const PERIODS = [
   { key: 'week',    label: 'Cette semaine' },
@@ -46,14 +46,14 @@ const PERIODS = [
 ]
 
 export default function Board() {
-  const { profile } = useAuth()
+  const { profile, canManageTeam } = useAuth()
   const { data: settings, isLoading: settingsLoading } = useAppSettings()
 
   const [period, setPeriod]         = useState('month')
   const [selectedUser, setSelectedUser] = useState(null) // null = vue globale
   const [viewMode, setViewMode]     = useState('ranking') // 'ranking' | 'analytics'
 
-  const isManager = MANAGER_ROLES.includes(profile?.role)
+  const isManager = canManageTeam
 
   // ─── Guards ───────────────────────────────────────────────
   if (!settingsLoading && !isPulseEnabled(settings)) {

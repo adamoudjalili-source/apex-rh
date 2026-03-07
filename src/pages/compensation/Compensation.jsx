@@ -19,7 +19,7 @@ import CompensationHistory      from '../../components/compensation/Compensation
 import TeamCompensationDashboard from '../../components/compensation/TeamCompensationDashboard'
 import CompensationAdminPanel   from '../../components/compensation/CompensationAdminPanel'
 
-import { MANAGER_ROLES as MANAGERS, ADMIN_ROLES as ADMINS } from '../../lib/roles'
+// S69 — guards via AuthContext helpers (MANAGERS/ADMINS locaux supprimés)
 
 
 // ─── QuickStats compensation (Étape 21) ─────────────────────
@@ -45,13 +45,11 @@ function QuickStatsCompensation() {
 }
 
 export default function Compensation() {
-  const { profile, isAdmin } = useAuth()
+  const { profile, canAdmin, canManageTeam } = useAuth()
   const { data: settings }   = useAppSettings()
   const [tab, setTab]        = useState('my')
 
-  const role      = profile?.role
-  const isManager = MANAGERS.includes(role)
-  const isAdm     = ADMINS.includes(role) || isAdmin
+  const role = profile?.role
 
   // Vérification module activé
   const moduleEnabled = settings?.modules?.compensation_enabled !== false
@@ -74,8 +72,8 @@ export default function Compensation() {
     { id: 'my',       label: 'Ma rémunération', icon: DollarSign, roles: null },
     { id: 'benchmark',label: 'Benchmark marché', icon: BarChart3,  roles: null },
     { id: 'history',  label: 'Historique',       icon: Clock,      roles: null },
-    ...(isManager ? [{ id: 'team',  label: 'Mon équipe',    icon: Users,    roles: MANAGERS }] : []),
-    ...(isAdm     ? [{ id: 'admin', label: 'Administration', icon: Settings, roles: ADMINS   }] : []),
+    ...(canManageTeam ? [{ id: 'team',  label: 'Mon équipe',    icon: Users    }] : []),
+    ...(canAdmin      ? [{ id: 'admin', label: 'Administration', icon: Settings }] : []),
   ]
 
   // Si l'onglet courant n'est plus accessible après changement de rôle, reset
@@ -85,7 +83,7 @@ export default function Compensation() {
     <div className="flex flex-col h-full min-h-0">
 
       {/* ── QuickStats (Étape 21) ── */}
-      {isAdm && <QuickStatsCompensation/>}
+      {canAdmin && <QuickStatsCompensation/>}
 
       {/* ── Header ── */}
       <div className="flex-shrink-0 px-4 sm:px-6 pt-5 pb-4"

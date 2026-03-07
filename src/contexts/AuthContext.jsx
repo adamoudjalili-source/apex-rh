@@ -197,6 +197,21 @@ export const AuthProvider = ({ children }) => {
 
   const role = profile?.role || null
 
+  // ── Helpers individuels S69 — valeurs exactes en DB ──────────────
+  const isSuperAdmin   = role === 'super_admin'
+  const isAdmin        = role === 'administrateur'
+  const isDirecteur    = role === 'directeur'
+  const isChefDivision = role === 'chef_division'
+  const isChefService  = role === 'chef_service'
+  const isCollab       = role === 'collaborateur'
+
+  // ── Groupes fonctionnels S69 ──────────────────────────────────────
+  const canAdmin      = isSuperAdmin || isAdmin                                   // config technique
+  const canManageOrg  = canAdmin || isDirecteur                                   // vue org complète
+  const canManageTeam = canManageOrg || isChefDivision || isChefService           // vue équipe
+  const canValidate   = canAdmin || isChefDivision || isChefService               // validation congés/temps
+  const hasStrategic  = canManageOrg || isChefDivision                            // Intelligence RH
+
   const value = {
     user,
     profile,
@@ -206,13 +221,23 @@ export const AuthProvider = ({ children }) => {
     signOut,
     resetPassword,
     updatePassword,
-    isAdmin: profile?.role === 'administrateur',
-    isDirecteur: profile?.role === 'directeur',
-    isChefDivision: profile?.role === 'chef_division',
-    isChefService: profile?.role === 'chef_service',
-    isCollaborateur: profile?.role === 'collaborateur',
-    isAdminOrAbove: isAdminRole(profile?.role),
-    isManagerOrAbove: isManagerRole(profile?.role),
+    // Helpers individuels
+    isSuperAdmin,
+    isAdmin,
+    isDirecteur,
+    isChefDivision,
+    isChefService,
+    isCollab,
+    // Groupes fonctionnels
+    canAdmin,
+    canManageOrg,
+    canManageTeam,
+    canValidate,
+    hasStrategic,
+    // Aliases de compatibilité (conservés pour ne pas casser les composants existants)
+    isCollaborateur: isCollab,
+    isAdminOrAbove:  isAdminRole(role),
+    isManagerOrAbove: isManagerRole(role),
   }
 
   return (

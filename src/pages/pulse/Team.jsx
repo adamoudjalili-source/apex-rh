@@ -29,10 +29,10 @@ import TeamDayView from '../../components/pulse/TeamDayView'
 import ManagerReviewPanel from '../../components/pulse/ManagerReviewPanel'
 import AlertBadge from '../../components/pulse/AlertBadge'
 
-import { MANAGER_ROLES } from '../../lib/roles'
+// S69 — guards via AuthContext helpers
 
 export default function Team() {
-  const { profile } = useAuth()
+  const { profile, canManageTeam } = useAuth()
   const { data: settings, isLoading: settingsLoading } = useAppSettings()
   const { data: teamMembers = [] } = useTeamMembers()
   const { data: alerts = [] } = useTeamAlerts(settings)
@@ -44,7 +44,7 @@ export default function Team() {
   if (!settingsLoading && !isPulseEnabled(settings)) {
     return <Navigate to="/dashboard" replace />
   }
-  if (!settingsLoading && !MANAGER_ROLES.includes(profile?.role)) {
+  if (!settingsLoading && !canManageTeam) {
     return <Navigate to="/tasks" replace />
   }
 

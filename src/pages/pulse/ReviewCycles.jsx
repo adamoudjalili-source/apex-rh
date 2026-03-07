@@ -15,7 +15,6 @@ import {
   OVERALL_RATING_LABELS,
   OVERALL_RATING_COLORS,
   CYCLE_STATUS_LABELS,
-  isManagerRole,
   computeAverageScore,
   formatCyclePeriod,
   countEvalStatuses,
@@ -1261,8 +1260,7 @@ const CalibrationPage = lazy(() => import('../intelligence/CalibrationPage'))
 // ─── PAGE PRINCIPALE ─────────────────────────────────────────
 
 export default function ReviewCycles() {
-  const { profile } = useAuth()
-  const isManager = isManagerRole(profile?.role)
+  const { profile, canManageTeam } = useAuth()
 
   return (
     <div className="space-y-6 pb-8">

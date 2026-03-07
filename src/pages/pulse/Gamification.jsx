@@ -13,7 +13,6 @@ import {
   POINTS_CONFIG,
   getBadgeByKey,
   computeLevel,
-  isManagerRole,
   useMyStreak,
   useMyPoints,
   useMyBadges,
@@ -741,8 +740,7 @@ function ManagerView({ profile }) {
 // ─── PAGE PRINCIPALE ─────────────────────────────────────────
 
 export default function GamificationPage() {
-  const { profile } = useAuth()
-  const isManager = isManagerRole(profile?.role)
+  const { profile, canManageTeam } = useAuth()
 
   return (
     <div className="min-h-full">

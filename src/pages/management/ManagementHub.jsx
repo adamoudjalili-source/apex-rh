@@ -49,8 +49,18 @@ function HubCard({ icon: Icon, label, description, path, color, badge }) {
 }
 
 export default function ManagementHub() {
-  const { profile } = useAuth()
+  const { profile, canManageOrg, hasStrategic, isChefDivision, isChefService, isAdmin, isSuperAdmin } = useAuth()
   const firstName   = profile?.first_name || ''
+  const role        = profile?.role
+
+  // Label adapté au rôle
+  const teamLabel = isChefDivision ? 'Ma Division'
+    : isChefService ? 'Mon Service'
+    : 'Mon Équipe'
+
+  // Formation admin & comp admin : canManageOrg + chef_division
+  const canFormationAdmin   = canManageOrg || isChefDivision
+  const canCompensationAdmin = canManageOrg
 
   return (
     <motion.div
@@ -79,30 +89,36 @@ export default function ManagementHub() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
 
           <HubCard
-            icon={Users} label="Mon Équipe" color="#3B82F6"
+            icon={Users} label={teamLabel} color="#3B82F6"
             description="Vue complète des collaborateurs : performance, objectifs, feedbacks et suivi individuel."
             path="/mon-equipe"
           />
 
-          <HubCard
-            icon={GraduationCap} label="Formation équipe" color="#10B981"
-            description="Catalogue, plans de formation, certifications et tableau de bord équipe."
-            path="/formation"
-            badge="Équipe"
-          />
+          {canFormationAdmin && (
+            <HubCard
+              icon={GraduationCap} label="Formation équipe" color="#10B981"
+              description="Catalogue, plans de formation, certifications et tableau de bord équipe."
+              path="/formation"
+              badge="Équipe"
+            />
+          )}
 
-          <HubCard
-            icon={DollarSign} label="Compensation équipe" color="#34D399"
-            description="Rémunérations, benchmark marché et gestion des révisions salariales."
-            path="/compensation"
-            badge="Équipe"
-          />
+          {canCompensationAdmin && (
+            <HubCard
+              icon={DollarSign} label="Compensation équipe" color="#34D399"
+              description="Rémunérations, benchmark marché et gestion des révisions salariales."
+              path="/compensation"
+              badge="Équipe"
+            />
+          )}
 
-          <HubCard
-            icon={TrendingUp} label="Intelligence RH" color="#8B5CF6"
-            description="Analytiques d'équipe, prédictifs, évaluations 360° et cartographie des talents."
-            path="/intelligence"
-          />
+          {hasStrategic && (
+            <HubCard
+              icon={TrendingUp} label="Intelligence RH" color="#8B5CF6"
+              description="Analytiques d'équipe, prédictifs, évaluations 360° et cartographie des talents."
+              path="/intelligence"
+            />
+          )}
 
         </div>
       </div>

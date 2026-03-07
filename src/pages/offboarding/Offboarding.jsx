@@ -184,7 +184,7 @@ function ProcessDetail({ processId, onBack }) {
   const { data: process, isLoading } = useOffboardingProcess(processId)
   const cancelOffboarding = useCancelOffboarding()
   const completeOffboarding = useUpdateOffboardingProcess()
-  const { isAdmin } = useAuth()
+  const { canAdmin } = useAuth()
   const [detailTab, setDetailTab] = useState('checklist')
 
   if (isLoading || !process) {
@@ -242,7 +242,7 @@ function ProcessDetail({ processId, onBack }) {
           </div>
 
           {/* Actions */}
-          {process.status === 'in_progress' && isAdmin && (
+          {process.status === 'in_progress' && canAdmin && (
             <div className="flex gap-2 flex-shrink-0">
               <button
                 onClick={() => { if (confirm('Marquer cet offboarding comme terminé ?'))
@@ -319,7 +319,7 @@ function ProcessDetail({ processId, onBack }) {
 // ─── Main Page ─────────────────────────────────────────────────
 
 export default function Offboarding() {
-  const { isAdmin } = useAuth()
+  const { canAdmin } = useAuth()
   const { data: processes = [], isLoading } = useOffboardingProcesses()
 
   const [tab, setTab]               = useState('active')
@@ -358,7 +358,7 @@ export default function Offboarding() {
             <p className="text-xs text-white/40">Gestion des départs collaborateurs</p>
           </div>
         </div>
-        {isAdmin && (
+        {canAdmin && (
           <button onClick={() => setShowCreate(true)}
             className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all"
             style={{ background: 'rgba(239,68,68,0.15)', color: '#F87171', border: '1px solid rgba(239,68,68,0.25)' }}>
@@ -369,7 +369,7 @@ export default function Offboarding() {
 
       {/* Tabs */}
       <div className="flex gap-1">
-        {TABS.filter(t => isAdmin || t.id !== 'admin').map(t => (
+        {TABS.filter(t => canAdmin || t.id !== 'admin').map(t => (
           <button key={t.id}
             onClick={() => setTab(t.id)}
             className="px-4 py-2 rounded-xl text-sm font-medium transition-all"
@@ -403,7 +403,7 @@ export default function Offboarding() {
               <div className="text-center py-16">
                 <DoorOpen size={40} className="text-white/10 mx-auto mb-3"/>
                 <p className="text-white/30 text-sm">Aucun offboarding en cours</p>
-                {isAdmin && (
+                {canAdmin && (
                   <button onClick={() => setShowCreate(true)}
                     className="mt-3 text-xs text-red-400 hover:text-red-300 transition-colors flex items-center gap-1 mx-auto">
                     <Plus size={12}/> Démarrer un premier offboarding
@@ -438,7 +438,7 @@ export default function Offboarding() {
           </motion.div>
         )}
 
-        {tab === 'admin' && isAdmin && (
+        {tab === 'admin' && canAdmin && (
           <motion.div key="admin" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
             className="space-y-8">
             <OffboardingStats/>

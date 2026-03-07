@@ -1,4 +1,4 @@
-import { ADMIN_ROLES } from '../../lib/roles'
+// S69 — ADMIN_ROLES remplacé par canAdmin
 // ============================================================
 // APEX RH — OkrPeriodSelector.jsx
 // Session 10 — Sélecteur + gestion des périodes OKR
@@ -11,14 +11,14 @@ import { useAuth } from '../../contexts/AuthContext'
 import { formatDateFr } from '../../lib/objectiveHelpers'
 
 export default function OkrPeriodSelector({ selectedPeriodId, onSelect }) {
-  const { profile } = useAuth()
+  const { profile, canAdmin } = useAuth()
   const { data: periods = [], isLoading } = useOkrPeriods()
   const createPeriod = useCreatePeriod()
   const deletePeriod = useDeletePeriod()
   const [showForm, setShowForm] = useState(false)
   const [form, setForm] = useState({ name: '', start_date: '', end_date: '' })
 
-  const canManage = ADMIN_ROLES.includes(profile?.role)
+  const canManage = canAdmin
 
   const handleCreate = async (e) => {
     e.preventDefault()

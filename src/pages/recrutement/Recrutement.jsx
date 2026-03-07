@@ -11,7 +11,7 @@ import {
   Briefcase, Send, Users, Calendar, Settings,
   TrendingUp, Clock, CheckCircle2, Brain, FileSearch,
 } from 'lucide-react'
-import { isManagerRole } from '../../lib/roles'
+// S69 — guards via AuthContext helpers (isManagerRole local supprimé)
 import { useAuth }             from '../../contexts/AuthContext'
 import { useRecruitmentStats } from '../../hooks/useRecruitment'
 
@@ -62,30 +62,30 @@ function QuickStats() {
 
 // ─── Page principale ─────────────────────────────────────────
 export default function Recrutement() {
-  const { profile, isAdmin } = useAuth()
+  const { profile, canAdmin, canManageOrg, hasStrategic, canManageTeam } = useAuth()
   const role = profile?.role
-  const isManager = isManagerRole(role)
+
+  // Pipeline & outils IA : canManageOrg (super_admin, admin, directeur) + chef_division
+  const canPipeline = canManageOrg || role === 'chef_division'
+  // Admin recrutement : canManageOrg uniquement
+  const canRecruitAdmin = canManageOrg
 
   const TABS = useMemo(() => {
     const base = [
-      { id: 'board',      label: 'Offres',            icon: Briefcase },
-      { id: 'mine',       label: 'Mes candidatures',  icon: Send },
+      { id: 'board',      label: 'Offres',           icon: Briefcase },
+      { id: 'mine',       label: 'Mes candidatures', icon: Send },
     ]
-    if (isManager && !isAdmin) {
-      base.push({ id: 'pipeline',   label: 'Mon pipeline',    icon: Users })
-      base.push({ id: 'interviews', label: 'Entretiens',       icon: Calendar })
-      base.push({ id: 'ai',         label: 'IA Matching',      icon: Brain })   // S61
-      base.push({ id: 'cvparser',   label: 'Parser CV',        icon: FileSearch }) // S63
+    if (canPipeline) {
+      base.push({ id: 'pipeline',   label: 'Pipeline',     icon: Users })
+      base.push({ id: 'interviews', label: 'Entretiens',   icon: Calendar })
+      base.push({ id: 'ai',         label: 'IA Matching',  icon: Brain })
+      base.push({ id: 'cvparser',   label: 'Parser CV',    icon: FileSearch })
     }
-    if (isAdmin) {
-      base.push({ id: 'pipeline',   label: 'Pipeline',         icon: Users })
-      base.push({ id: 'interviews', label: 'Entretiens',        icon: Calendar })
-      base.push({ id: 'ai',         label: 'IA Matching',       icon: Brain })  // S61
-      base.push({ id: 'cvparser',   label: 'Parser CV',         icon: FileSearch }) // S63
-      base.push({ id: 'admin',      label: 'Administration',   icon: Settings })
+    if (canRecruitAdmin) {
+      base.push({ id: 'admin', label: 'Administration', icon: Settings })
     }
     return base
-  }, [role, isManager, isAdmin])
+  }, [role, canPipeline, canRecruitAdmin])
 
   const [activeTab, setActiveTab] = useState('board')
 
@@ -113,7 +113,7 @@ export default function Recrutement() {
       </motion.div>
 
       {/* ════ STATS ═════════════════════════════════════════ */}
-      {(isManager || isAdmin) && (
+      {canPipeline && (
         <motion.div variants={fadeUp}>
           <QuickStats/>
         </motion.div>

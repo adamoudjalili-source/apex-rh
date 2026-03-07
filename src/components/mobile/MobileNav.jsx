@@ -13,13 +13,12 @@ import { isPulseEnabled } from '../../lib/pulseHelpers'
 import MobileTaskQuick from './MobileTaskQuick'
 import MobileHome from './MobileHome'
 
-import { MANAGER_ROLES as MANAGERS } from '../../lib/roles'
+// S69 — guards via AuthContext helpers
 
 export default function MobileNav() {
-  const { profile } = useAuth()
+  const { profile, canManageTeam } = useAuth()
   const { data: settings } = useAppSettings()
   const pulseOn = isPulseEnabled(settings)
-  const isManager = MANAGERS.includes(profile?.role)
 
   const [showTaskQuick, setShowTaskQuick] = useState(false)
   const [showHome, setShowHome] = useState(false)
