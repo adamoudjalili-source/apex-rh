@@ -27,12 +27,13 @@ import {
   LayoutDashboard, CheckSquare, Target, FolderKanban,
   Activity, BookOpen, Trophy, Users, BarChart3,
   ChevronLeft, ChevronRight, ChevronDown,
-  LogOut, Settings, Building2, UserCog, GraduationCap, DollarSign, BriefcaseIcon, ClipboardList,
+  LogOut, Settings, Building2, UserCog, GraduationCap, DollarSign, BriefcaseIcon, ClipboardList, MessageCircle,
 } from 'lucide-react'
 import { useAuth }        from '../../contexts/AuthContext'
 import { useAppSettings } from '../../hooks/useSettings'
 import { useTodayScore }  from '../../hooks/usePulse'
 import { getScoreColor, isPulseEnabled } from '../../lib/pulseHelpers'
+import { useUnreadCount } from '../../hooks/useCommunication'
 import logoNita from '../../assets/logo-nita.png'
 
 const ROLE_COLORS = {
@@ -75,6 +76,7 @@ export default function Sidebar() {
   const isManager = MANAGERS.includes(profile?.role)
   const isAdmin   = ADMINS.includes(profile?.role)
   const role      = profile?.role
+  const { data: unreadCount = 0 } = useUnreadCount()
 
   const initiale = profile?.first_name?.charAt(0) || profile?.last_name?.charAt(0) || 'U'
   const fullName = [profile?.first_name, profile?.last_name].filter(Boolean).join(' ') || 'Utilisateur'
@@ -152,7 +154,9 @@ export default function Sidebar() {
             <NavItem icon={DollarSign}    label="Compensation & Benchmark"   path="/compensation" color="#34D399" collapsed={collapsed}/> {/* S58 */}
             <NavItem icon={BriefcaseIcon} label="Recrutement"                 path="/recrutement"  color="#818CF8" collapsed={collapsed}/> {/* S59 */}
             <NavItem icon={ClipboardList} label="Entretiens Annuels"          path="/entretiens"   color="#A78BFA" collapsed={collapsed}/> {/* S60 */}
-            <GroupItem label="Gestion" icon={Building2}
+            <Divider label="Communication" collapsed={collapsed}/>
+            <NavItem icon={MessageCircle} label="Communication" path="/communication" color="#06B6D4"
+              badge={unreadCount || null} collapsed={collapsed}/> {/* S65 */}
               open={gestionOpen || isGestionActive}
               onToggle={() => setGestionOpen(o=>!o)}
               collapsed={collapsed} active={isGestionActive}/>
@@ -209,6 +213,9 @@ export default function Sidebar() {
             <NavItem icon={DollarSign}    label="Compensation"   path="/compensation"  color="#34D399" collapsed={collapsed}/> {/* S58 */}
             <NavItem icon={BriefcaseIcon} label="Recrutement"    path="/recrutement"   color="#818CF8" collapsed={collapsed}/> {/* S59 */}
             <NavItem icon={ClipboardList} label="Entretiens"      path="/entretiens"    color="#A78BFA" collapsed={collapsed}/> {/* S60 */}
+            <Divider label="Communication" collapsed={collapsed}/>
+            <NavItem icon={MessageCircle} label="Communication" path="/communication" color="#06B6D4"
+              badge={unreadCount || null} collapsed={collapsed}/> {/* S65 */}
             <NavItem icon={Settings} label="Paramètres" path="/admin/settings" collapsed={collapsed}/>
           </>
 
@@ -262,6 +269,11 @@ export default function Sidebar() {
             <NavItem icon={ClipboardList} label="Entretiens" path="/entretiens" color="#A78BFA" collapsed={collapsed}/> {/* S60 */}
             <Divider label="Reconnaissances" collapsed={collapsed}/>
             <NavItem icon={Trophy} label="Mes Reconnaissances" path="/mes-reconnaissances" color="#C9A227" collapsed={collapsed}/>
+
+            {/* Communication S65 */}
+            <Divider label="Communication" collapsed={collapsed}/>
+            <NavItem icon={MessageCircle} label="Communication" path="/communication" color="#06B6D4"
+              badge={unreadCount || null} collapsed={collapsed}/>
 
             {/* Paramètres */}
             <Divider label="Administration" collapsed={collapsed}/>
@@ -321,7 +333,7 @@ export default function Sidebar() {
   )
 }
 
-function NavItem({ icon: Icon, label, path, collapsed, color }) {
+function NavItem({ icon: Icon, label, path, collapsed, color, badge }) {
   return (
     <NavLink to={path}
       className={({ isActive }) =>
@@ -336,14 +348,28 @@ function NavItem({ icon: Icon, label, path, collapsed, color }) {
               className="absolute left-0 top-0 bottom-0 w-[3px] bg-indigo-500 rounded-r"
               transition={{ type:'spring', stiffness:500, damping:30 }}/>
           )}
-          <Icon size={17} className="flex-shrink-0"
-            style={color && isActive ? { color } : undefined}/>
+          <div className="relative flex-shrink-0">
+            <Icon size={17} style={color && isActive ? { color } : undefined}/>
+            {badge > 0 && (
+              <span className="absolute -top-1.5 -right-1.5 min-w-[14px] h-[14px] rounded-full flex items-center justify-center text-[9px] font-bold text-white"
+                style={{ background: '#06B6D4', padding: '0 2px', boxShadow: '0 0 6px rgba(6,182,212,0.5)' }}>
+                {badge > 99 ? '99+' : badge}
+              </span>
+            )}
+          </div>
           <AnimatePresence>
             {!collapsed && (
               <motion.span initial={{opacity:0}} animate={{opacity:1}} exit={{opacity:0}} transition={{duration:0.18}}
                 className="text-sm font-medium truncate flex-1">{label}</motion.span>
             )}
           </AnimatePresence>
+          {!collapsed && badge > 0 && (
+            <motion.span initial={{scale:0}} animate={{scale:1}} exit={{scale:0}}
+              className="ml-auto min-w-[18px] h-[18px] rounded-full flex items-center justify-center text-[10px] font-bold text-white flex-shrink-0"
+              style={{ background: 'linear-gradient(135deg,#06B6D4,#0891B2)', padding: '0 4px' }}>
+              {badge > 99 ? '99+' : badge}
+            </motion.span>
+          )}
         </>
       )}
     </NavLink>

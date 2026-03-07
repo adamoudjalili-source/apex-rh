@@ -40,6 +40,12 @@ const Compensation   = lazy(() => import('./pages/compensation/Compensation'))
 const Recrutement    = lazy(() => import('./pages/recrutement/Recrutement'))
 const EntretiensAnnuels = lazy(() => import('./pages/entretiens/EntretiensAnnuels'))
 
+// ── Communication S65 ─────────────────────────────────────────
+const CommunicationPage = lazy(() => import('./pages/communication/CommunicationPage'))
+const MessagesPage      = lazy(() => import('./pages/communication/Messages'))
+const AnnoncesPage      = lazy(() => import('./pages/communication/Annonces'))
+const FilsPage          = lazy(() => import('./pages/communication/Fils'))
+
 // ── Espace Collaborateur ──────────────────────────────────────
 const MaPerformance      = lazy(() => import('./pages/ma-performance/MaPerformance'))
 const MonDeveloppement   = lazy(() => import('./pages/mon-developpement/MonDeveloppement'))
@@ -101,6 +107,12 @@ export default function App() {
           {/* ── RH Opérationnel (sidebar directe) ── */}
           <Route path="/recrutement" element={<S><Recrutement /></S>} />
           <Route path="/entretiens"  element={<S><EntretiensAnnuels /></S>} />
+
+          {/* ── Communication S65 ── */}
+          <Route path="/communication"          element={<S><CommunicationPage /></S>} />
+          <Route path="/communication/messages" element={<S><MessagesPage /></S>} />
+          <Route path="/communication/annonces" element={<S><AnnoncesPage /></S>} />
+          <Route path="/communication/fils"     element={<S><FilsPage /></S>} />
 
           {/* ── Administration (sous-pages depuis AdminHub) ── */}
           <Route path="/admin/users"        element={<S><UsersPage /></S>} />

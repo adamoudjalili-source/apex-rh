@@ -1,0 +1,303 @@
+// ============================================================
+// APEX RH — hooks/useCommunication.js
+// Session S65 — Communication Interne
+// Gestion des canaux + compteur non-lus global (badge Sidebar)
+// ============================================================
+import { useEffect, useCallback } from 'react'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { supabase } from '../lib/supabase'
+import { useAuth } from '../contexts/AuthContext'
+
+// ─── CANAUX ──────────────────────────────────────────────────
+
+export function useChannels() {
+  const { profile } = useAuth()
+  const orgId = profile?.org_id
+
+  return useQuery({
+    queryKey: ['communication-channels', orgId],
+    enabled: !!orgId,
+    staleTime: 30_000,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('communication_channels')
+        .select(`
+          *,
+          author:profiles!communication_channels_created_by_fkey(
+            id, first_name, last_name, avatar_url
+          )
+        `)
+        .eq('org_id', orgId)
+        .eq('is_archived', false)
+        .order('last_msg_at', { ascending: false, nullsFirst: false })
+
+      if (error) throw error
+      return data || []
+    },
+  })
+}
+
+export function useChannel(channelId) {
+  const { profile } = useAuth()
+  const orgId = profile?.org_id
+
+  return useQuery({
+    queryKey: ['communication-channel', channelId],
+    enabled: !!channelId && !!orgId,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('communication_channels')
+        .select('*')
+        .eq('id', channelId)
+        .single()
+
+      if (error) throw error
+      return data
+    },
+  })
+}
+
+export function useCreateChannel() {
+  const { profile } = useAuth()
+  const qc = useQueryClient()
+
+  return useMutation({
+    mutationFn: async ({ name, description, type = 'thematic', members = [], color, is_private = false }) => {
+      const { data, error } = await supabase
+        .from('communication_channels')
+        .insert({
+          org_id: profile.org_id,
+          name,
+          description,
+          type,
+          members: is_private ? members : [],
+          color: color || '#06B6D4',
+          is_private,
+          created_by: profile.id,
+        })
+        .select()
+        .single()
+
+      if (error) throw error
+      return data
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['communication-channels'] })
+    },
+  })
+}
+
+export function useUpdateChannel() {
+  const qc = useQueryClient()
+
+  return useMutation({
+    mutationFn: async ({ id, ...updates }) => {
+      const { data, error } = await supabase
+        .from('communication_channels')
+        .update(updates)
+        .eq('id', id)
+        .select()
+        .single()
+
+      if (error) throw error
+      return data
+    },
+    onSuccess: (data) => {
+      qc.invalidateQueries({ queryKey: ['communication-channels'] })
+      qc.invalidateQueries({ queryKey: ['communication-channel', data.id] })
+    },
+  })
+}
+
+// ─── BADGE NON-LUS GLOBAL ────────────────────────────────────
+
+export function useUnreadCount() {
+  const { profile } = useAuth()
+  const orgId = profile?.org_id
+  const userId = profile?.id
+
+  return useQuery({
+    queryKey: ['communication-unread', userId],
+    enabled: !!userId && !!orgId,
+    staleTime: 10_000,
+    refetchInterval: 30_000,
+    queryFn: async () => {
+      // Compte les messages non lus dans tous les canaux accessibles
+      const { count, error } = await supabase
+        .from('communication_messages')
+        .select('id', { count: 'exact', head: true })
+        .eq('org_id', orgId)
+        .is('deleted_at', null)
+        .not('author_id', 'eq', userId)
+        .not('read_by', 'cs', `{${userId}}`)
+
+      if (error) return 0
+      return count || 0
+    },
+  })
+}
+
+// ─── REALTIME : subscriptions canaux ─────────────────────────
+
+export function useChannelsRealtime() {
+  const { profile } = useAuth()
+  const qc = useQueryClient()
+  const orgId = profile?.org_id
+
+  useEffect(() => {
+    if (!orgId) return
+
+    const channel = supabase
+      .channel('communication-channels-realtime')
+      .on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'communication_channels',
+        filter: `org_id=eq.${orgId}`,
+      }, () => {
+        qc.invalidateQueries({ queryKey: ['communication-channels', orgId] })
+      })
+      .subscribe()
+
+    return () => { supabase.removeChannel(channel) }
+  }, [orgId, qc])
+}
+
+// ─── STATUT UTILISATEUR ──────────────────────────────────────
+
+export function useUserStatus(userId) {
+  return useQuery({
+    queryKey: ['user-status', userId],
+    enabled: !!userId,
+    staleTime: 60_000,
+    queryFn: async () => {
+      const { data } = await supabase
+        .from('communication_user_status')
+        .select('*')
+        .eq('user_id', userId)
+        .maybeSingle()
+
+      return data
+    },
+  })
+}
+
+export function useSetMyStatus() {
+  const { profile } = useAuth()
+  const qc = useQueryClient()
+
+  return useMutation({
+    mutationFn: async ({ status, status_msg = '' }) => {
+      const { data, error } = await supabase
+        .from('communication_user_status')
+        .upsert({
+          user_id: profile.id,
+          org_id: profile.org_id,
+          status,
+          status_msg,
+          last_seen_at: new Date().toISOString(),
+        })
+        .select()
+        .single()
+
+      if (error) throw error
+      return data
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['user-status', profile?.id] })
+    },
+  })
+}
+
+// ─── RECHERCHE ───────────────────────────────────────────────
+
+export function useSearch(query) {
+  const { profile } = useAuth()
+
+  return useQuery({
+    queryKey: ['communication-search', query],
+    enabled: !!query && query.length >= 2,
+    staleTime: 15_000,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .rpc('search_communication', {
+          p_org_id: profile.org_id,
+          p_query: query,
+          p_limit: 20,
+        })
+
+      if (error) throw error
+      return data || []
+    },
+  })
+}
+
+// ─── RÉSUMÉ IA ───────────────────────────────────────────────
+
+export function useAISummary(channelId) {
+  const { profile } = useAuth()
+
+  return useQuery({
+    queryKey: ['communication-ai-summary', channelId],
+    enabled: !!channelId,
+    staleTime: 5 * 60_000,
+    queryFn: async () => {
+      const { data } = await supabase
+        .from('communication_ai_summaries')
+        .select('*')
+        .eq('channel_id', channelId)
+        .eq('org_id', profile.org_id)
+        .order('generated_at', { ascending: false })
+        .limit(1)
+        .maybeSingle()
+
+      return data
+    },
+  })
+}
+
+export function useGenerateAISummary() {
+  const { profile } = useAuth()
+  const qc = useQueryClient()
+
+  return useMutation({
+    mutationFn: async ({ channelId, messages }) => {
+      // Appel Edge Function pour génération IA
+      const { data, error } = await supabase.functions.invoke('generate-ai-response', {
+        body: {
+          type: 'communication_summary',
+          channel_id: channelId,
+          org_id: profile.org_id,
+          messages: messages.map(m => ({
+            author: `${m.author?.first_name} ${m.author?.last_name}`,
+            content: m.content,
+            at: m.created_at,
+          })),
+        },
+      })
+
+      if (error) throw error
+
+      // Sauvegarder le résumé en BDD
+      const summary = data?.summary || 'Résumé non disponible'
+      const { data: saved, error: saveErr } = await supabase
+        .from('communication_ai_summaries')
+        .insert({
+          channel_id: channelId,
+          org_id: profile.org_id,
+          summary,
+          msg_count: messages.length,
+          from_date: messages[0]?.created_at,
+          to_date: messages[messages.length - 1]?.created_at,
+        })
+        .select()
+        .single()
+
+      if (saveErr) throw saveErr
+      return saved
+    },
+    onSuccess: (data) => {
+      qc.invalidateQueries({ queryKey: ['communication-ai-summary', data.channel_id] })
+    },
+  })
+}
