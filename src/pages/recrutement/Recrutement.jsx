@@ -2,13 +2,14 @@
 // APEX RH — pages/recrutement/Recrutement.jsx
 // Session 59 — Portail Candidats & Recrutement Light
 // Session 61 — + Onglet IA Matching (matching automatique, scoring candidats)
-// Onglets adaptatifs : Offres · Mes candidatures · Pipeline (mgr) · Entretiens (mgr) · IA Matching (mgr) · Admin
+// Session 63 — + Onglet Parser CV (upload PDF + extraction IA structurée)
+// Onglets adaptatifs : Offres · Mes candidatures · Pipeline (mgr) · Entretiens (mgr) · IA Matching (mgr) · Parser CV (mgr) · Admin
 // ============================================================
 import { useState, useMemo } from 'react'
 import { motion } from 'framer-motion'
 import {
   Briefcase, Send, Users, Calendar, Settings,
-  TrendingUp, Clock, CheckCircle2, Brain,
+  TrendingUp, Clock, CheckCircle2, Brain, FileSearch,
 } from 'lucide-react'
 import { useAuth }             from '../../contexts/AuthContext'
 import { useRecruitmentStats } from '../../hooks/useRecruitment'
@@ -19,6 +20,7 @@ import CandidatePipeline     from '../../components/recrutement/CandidatePipelin
 import InterviewPanel        from '../../components/recrutement/InterviewPanel'
 import RecruitmentAdminPanel from '../../components/recrutement/RecruitmentAdminPanel'
 import AIMatchingPanel       from '../../components/recrutement/AIMatchingPanel'   // S61
+import CVParserPanel         from '../../components/recrutement/CVParserPanel'     // S63
 
 // ─── Animations ───────────────────────────────────────────────
 const stagger = {
@@ -72,11 +74,13 @@ export default function Recrutement() {
       base.push({ id: 'pipeline',   label: 'Mon pipeline',    icon: Users })
       base.push({ id: 'interviews', label: 'Entretiens',       icon: Calendar })
       base.push({ id: 'ai',         label: 'IA Matching',      icon: Brain })   // S61
+      base.push({ id: 'cvparser',   label: 'Parser CV',        icon: FileSearch }) // S63
     }
     if (isAdmin) {
       base.push({ id: 'pipeline',   label: 'Pipeline',         icon: Users })
       base.push({ id: 'interviews', label: 'Entretiens',        icon: Calendar })
       base.push({ id: 'ai',         label: 'IA Matching',       icon: Brain })  // S61
+      base.push({ id: 'cvparser',   label: 'Parser CV',         icon: FileSearch }) // S63
       base.push({ id: 'admin',      label: 'Administration',   icon: Settings })
     }
     return base
@@ -102,7 +106,7 @@ export default function Recrutement() {
             <h1 className="text-xl font-extrabold text-white tracking-tight">Recrutement</h1>
           </div>
           <p className="text-sm text-white/40 pl-11">
-            Portail candidats · Suivi pipeline · Entretiens · IA Matching
+            Portail candidats · Suivi pipeline · Entretiens · IA Matching · Parser CV
           </p>
         </div>
       </motion.div>
@@ -124,21 +128,33 @@ export default function Recrutement() {
               className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-medium whitespace-nowrap transition-all flex-shrink-0"
               style={{
                 background: activeTab === id
-                  ? id === 'ai' ? 'rgba(139,92,246,0.2)' : 'rgba(99,102,241,0.2)'
+                  ? id === 'ai'       ? 'rgba(139,92,246,0.2)'
+                  : id === 'cvparser' ? 'rgba(201,162,39,0.15)'
+                  : 'rgba(99,102,241,0.2)'
                   : 'rgba(255,255,255,0.04)',
                 color: activeTab === id
-                  ? id === 'ai' ? '#C4B5FD' : '#818CF8'
+                  ? id === 'ai'       ? '#C4B5FD'
+                  : id === 'cvparser' ? '#C9A227'
+                  : '#818CF8'
                   : 'rgba(255,255,255,0.4)',
                 border: activeTab === id
-                  ? id === 'ai' ? '1px solid rgba(139,92,246,0.35)' : '1px solid rgba(99,102,241,0.3)'
+                  ? id === 'ai'       ? '1px solid rgba(139,92,246,0.35)'
+                  : id === 'cvparser' ? '1px solid rgba(201,162,39,0.3)'
+                  : '1px solid rgba(99,102,241,0.3)'
                   : '1px solid transparent',
               }}>
               <Icon size={13}/>
               {label}
-              {/* Badge IA sur l'onglet IA Matching */}
+              {/* Badge NEW sur les onglets IA */}
               {id === 'ai' && activeTab !== 'ai' && (
                 <span className="text-[8px] px-1 py-0.5 rounded font-bold uppercase"
                   style={{ background: 'rgba(139,92,246,0.2)', color: '#A78BFA', marginLeft: 2 }}>
+                  IA
+                </span>
+              )}
+              {id === 'cvparser' && activeTab !== 'cvparser' && (
+                <span className="text-[8px] px-1 py-0.5 rounded font-bold uppercase"
+                  style={{ background: 'rgba(201,162,39,0.15)', color: '#C9A227', marginLeft: 2 }}>
                   NEW
                 </span>
               )}
@@ -154,6 +170,7 @@ export default function Recrutement() {
         {activeTab === 'pipeline'   && <CandidatePipeline/>}
         {activeTab === 'interviews' && <InterviewPanel/>}
         {activeTab === 'ai'         && <AIMatchingPanel/>}
+        {activeTab === 'cvparser'   && <CVParserPanel/>}
         {activeTab === 'admin'      && <RecruitmentAdminPanel/>}
       </motion.div>
     </motion.div>
