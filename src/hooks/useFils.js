@@ -23,7 +23,7 @@ export function useEntityThread(entityType, entityId) {
         .select('*')
         .eq('entity_type', entityType)
         .eq('entity_id', entityId)
-        .eq('org_id', profile.org_id)
+        .eq('organization_id', profile.organization_id)
         .maybeSingle()
 
       return data
@@ -35,7 +35,7 @@ export function useEntityThread(entityType, entityId) {
 
 export function useFils({ entityType } = {}) {
   const { profile } = useAuth()
-  const orgId = profile?.org_id
+  const orgId = profile?.organization_id
 
   return useQuery({
     queryKey: ['fils', orgId, entityType],
@@ -46,12 +46,12 @@ export function useFils({ entityType } = {}) {
         .from('communication_threads')
         .select(`
           *,
-          creator:profiles!communication_threads_created_by_fkey(
+          creator:users!communication_threads_created_by_fkey(
             id, first_name, last_name, avatar_url
           ),
           messages:communication_thread_messages(count)
         `)
-        .eq('org_id', orgId)
+        .eq('organization_id', orgId)
         .order('created_at', { ascending: false })
 
       if (entityType) q = q.eq('entity_type', entityType)
@@ -77,7 +77,7 @@ export function useCreateThread() {
         .select('id')
         .eq('entity_type', entityType)
         .eq('entity_id', entityId)
-        .eq('org_id', profile.org_id)
+        .eq('organization_id', profile.organization_id)
         .maybeSingle()
 
       if (existing) return existing
@@ -85,7 +85,7 @@ export function useCreateThread() {
       const { data, error } = await supabase
         .from('communication_threads')
         .insert({
-          org_id: profile.org_id,
+          organization_id: profile.organization_id,
           entity_type: entityType,
           entity_id: entityId,
           title,
@@ -116,7 +116,7 @@ export function useThreadMessages(threadId) {
         .from('communication_thread_messages')
         .select(`
           *,
-          author:profiles!communication_thread_messages_author_id_fkey(
+          author:users!communication_thread_messages_author_id_fkey(
             id, first_name, last_name, avatar_url, role
           )
         `)
@@ -150,7 +150,7 @@ export function useSendThreadMessage() {
         .from('communication_thread_messages')
         .insert({
           thread_id: threadId,
-          org_id: profile.org_id,
+          organization_id: profile.organization_id,
           author_id: profile.id,
           content,
           attachments,
@@ -158,7 +158,7 @@ export function useSendThreadMessage() {
         })
         .select(`
           *,
-          author:profiles!communication_thread_messages_author_id_fkey(
+          author:users!communication_thread_messages_author_id_fkey(
             id, first_name, last_name, avatar_url
           )
         `)

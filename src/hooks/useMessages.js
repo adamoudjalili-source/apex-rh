@@ -29,12 +29,12 @@ export function useMessages(channelId) {
         .from('communication_messages')
         .select(`
           *,
-          author:profiles!communication_messages_author_id_fkey(
+          author:users!communication_messages_author_id_fkey(
             id, first_name, last_name, avatar_url, role
           ),
           reply_to:communication_messages!communication_messages_reply_to_id_fkey(
             id, content, author_id,
-            reply_author:profiles!communication_messages_author_id_fkey(first_name, last_name)
+            reply_author:users!communication_messages_author_id_fkey(first_name, last_name)
           )
         `)
         .eq('channel_id', channelId)
@@ -67,7 +67,7 @@ export function useSendMessage() {
         .from('communication_messages')
         .insert({
           channel_id: channelId,
-          org_id: profile.org_id,
+          organization_id: profile.organization_id,
           author_id: profile.id,
           content: content.trim(),
           reply_to_id: replyToId,
@@ -76,7 +76,7 @@ export function useSendMessage() {
         })
         .select(`
           *,
-          author:profiles!communication_messages_author_id_fkey(
+          author:users!communication_messages_author_id_fkey(
             id, first_name, last_name, avatar_url, role
           )
         `)

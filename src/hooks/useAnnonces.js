@@ -11,7 +11,7 @@ import { useAuth } from '../contexts/AuthContext'
 
 export function useAnnonces({ pinned, limit = 20 } = {}) {
   const { profile } = useAuth()
-  const orgId = profile?.org_id
+  const orgId = profile?.organization_id
   const role  = profile?.role
 
   return useQuery({
@@ -23,12 +23,12 @@ export function useAnnonces({ pinned, limit = 20 } = {}) {
         .from('communication_announcements')
         .select(`
           *,
-          author:profiles!communication_announcements_author_id_fkey(
+          author:users!communication_announcements_author_id_fkey(
             id, first_name, last_name, avatar_url, role
           ),
           comments:communication_announcement_comments(count)
         `)
-        .eq('org_id', orgId)
+        .eq('organization_id', orgId)
         .or(`expires_at.is.null,expires_at.gt.${new Date().toISOString()}`)
         .order('pinned', { ascending: false })
         .order('published_at', { ascending: false })
@@ -58,7 +58,7 @@ export function useAnnonce(id) {
         .from('communication_announcements')
         .select(`
           *,
-          author:profiles!communication_announcements_author_id_fkey(
+          author:users!communication_announcements_author_id_fkey(
             id, first_name, last_name, avatar_url, role
           )
         `)
@@ -96,7 +96,7 @@ export function useCreateAnnonce() {
       const { data, error } = await supabase
         .from('communication_announcements')
         .insert({
-          org_id: profile.org_id,
+          organization_id: profile.organization_id,
           title,
           content,
           excerpt,
@@ -220,7 +220,7 @@ export function useAnnonceComments(annonceId) {
         .from('communication_announcement_comments')
         .select(`
           *,
-          author:profiles!communication_announcement_comments_author_id_fkey(
+          author:users!communication_announcement_comments_author_id_fkey(
             id, first_name, last_name, avatar_url
           )
         `)

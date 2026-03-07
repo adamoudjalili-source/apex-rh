@@ -12,7 +12,7 @@ import { useAuth } from '../contexts/AuthContext'
 
 export function useChannels() {
   const { profile } = useAuth()
-  const orgId = profile?.org_id
+  const orgId = profile?.organization_id
 
   return useQuery({
     queryKey: ['communication-channels', orgId],
@@ -23,11 +23,11 @@ export function useChannels() {
         .from('communication_channels')
         .select(`
           *,
-          author:profiles!communication_channels_created_by_fkey(
+          author:users!communication_channels_created_by_fkey(
             id, first_name, last_name, avatar_url
           )
         `)
-        .eq('org_id', orgId)
+        .eq('organization_id', orgId)
         .eq('is_archived', false)
         .order('last_msg_at', { ascending: false, nullsFirst: false })
 
@@ -39,7 +39,7 @@ export function useChannels() {
 
 export function useChannel(channelId) {
   const { profile } = useAuth()
-  const orgId = profile?.org_id
+  const orgId = profile?.organization_id
 
   return useQuery({
     queryKey: ['communication-channel', channelId],
@@ -66,7 +66,7 @@ export function useCreateChannel() {
       const { data, error } = await supabase
         .from('communication_channels')
         .insert({
-          org_id: profile.org_id,
+          organization_id: profile.organization_id,
           name,
           description,
           type,
@@ -113,7 +113,7 @@ export function useUpdateChannel() {
 
 export function useUnreadCount() {
   const { profile } = useAuth()
-  const orgId = profile?.org_id
+  const orgId = profile?.organization_id
   const userId = profile?.id
 
   return useQuery({
@@ -126,7 +126,7 @@ export function useUnreadCount() {
       const { count, error } = await supabase
         .from('communication_messages')
         .select('id', { count: 'exact', head: true })
-        .eq('org_id', orgId)
+        .eq('organization_id', orgId)
         .is('deleted_at', null)
         .not('author_id', 'eq', userId)
         .not('read_by', 'cs', `{${userId}}`)
@@ -142,7 +142,7 @@ export function useUnreadCount() {
 export function useChannelsRealtime() {
   const { profile } = useAuth()
   const qc = useQueryClient()
-  const orgId = profile?.org_id
+  const orgId = profile?.organization_id
 
   useEffect(() => {
     if (!orgId) return
@@ -153,7 +153,7 @@ export function useChannelsRealtime() {
         event: '*',
         schema: 'public',
         table: 'communication_channels',
-        filter: `org_id=eq.${orgId}`,
+        filter: `organization_id=eq.${orgId}`,
       }, () => {
         qc.invalidateQueries({ queryKey: ['communication-channels', orgId] })
       })
@@ -192,7 +192,7 @@ export function useSetMyStatus() {
         .from('communication_user_status')
         .upsert({
           user_id: profile.id,
-          org_id: profile.org_id,
+          organization_id: profile.organization_id,
           status,
           status_msg,
           last_seen_at: new Date().toISOString(),
@@ -221,7 +221,7 @@ export function useSearch(query) {
     queryFn: async () => {
       const { data, error } = await supabase
         .rpc('search_communication', {
-          p_org_id: profile.org_id,
+          p_organization_id: profile.organization_id,
           p_query: query,
           p_limit: 20,
         })
@@ -246,7 +246,7 @@ export function useAISummary(channelId) {
         .from('communication_ai_summaries')
         .select('*')
         .eq('channel_id', channelId)
-        .eq('org_id', profile.org_id)
+        .eq('organization_id', profile.organization_id)
         .order('generated_at', { ascending: false })
         .limit(1)
         .maybeSingle()
@@ -267,7 +267,7 @@ export function useGenerateAISummary() {
         body: {
           type: 'communication_summary',
           channel_id: channelId,
-          org_id: profile.org_id,
+          organization_id: profile.organization_id,
           messages: messages.map(m => ({
             author: `${m.author?.first_name} ${m.author?.last_name}`,
             content: m.content,
@@ -284,7 +284,7 @@ export function useGenerateAISummary() {
         .from('communication_ai_summaries')
         .insert({
           channel_id: channelId,
-          org_id: profile.org_id,
+          organization_id: profile.organization_id,
           summary,
           msg_count: messages.length,
           from_date: messages[0]?.created_at,
