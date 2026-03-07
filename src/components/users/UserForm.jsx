@@ -4,7 +4,7 @@ import { supabase } from '../../lib/supabase'
 const ROLES = [
   { value: 'administrateur', label: 'Administrateur' },
   { value: 'directeur', label: 'Directeur' },
-          {/* direction supprimé — décision B-1 */}
+  // { value: 'direction', label: 'Direction Générale' },  // supprimé — décision B-1
   { value: 'chef_division', label: 'Chef de Division' },
   { value: 'chef_service', label: 'Chef de Service' },
   { value: 'collaborateur', label: 'Collaborateur' },
