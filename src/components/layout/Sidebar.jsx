@@ -27,7 +27,7 @@ import {
   LayoutDashboard, CheckSquare, Target, FolderKanban,
   Activity, BookOpen, Trophy, Users, BarChart3,
   ChevronLeft, ChevronRight, ChevronDown,
-  LogOut, Settings, Building2, UserCog, GraduationCap, DollarSign,
+  LogOut, Settings, Building2, UserCog, GraduationCap, DollarSign, BriefcaseIcon,
 } from 'lucide-react'
 import { useAuth }        from '../../contexts/AuthContext'
 import { useAppSettings } from '../../hooks/useSettings'
@@ -150,6 +150,7 @@ export default function Sidebar() {
             <NavItem icon={Trophy}   label="Engagement & Rapports" path="/engagement" color="#C9A227" collapsed={collapsed}/>
             <NavItem icon={GraduationCap} label="Formation & Certifications" path="/formation" color="#10B981" collapsed={collapsed}/> {/* S57 */}
             <NavItem icon={DollarSign}    label="Compensation & Benchmark"   path="/compensation" color="#34D399" collapsed={collapsed}/> {/* S58 */}
+            <NavItem icon={BriefcaseIcon} label="Recrutement"                 path="/recrutement"  color="#818CF8" collapsed={collapsed}/> {/* S59 */}
             <GroupItem label="Gestion" icon={Building2}
               open={gestionOpen || isGestionActive}
               onToggle={() => setGestionOpen(o=>!o)}
@@ -205,7 +206,7 @@ export default function Sidebar() {
             <NavItem icon={Trophy}   label="Engagement équipe"  path="/engagement"    color="#C9A227" collapsed={collapsed}/>
             <NavItem icon={GraduationCap} label="Formation"     path="/formation"     color="#10B981" collapsed={collapsed}/> {/* S57 */}
             <NavItem icon={DollarSign}    label="Compensation"   path="/compensation"  color="#34D399" collapsed={collapsed}/> {/* S58 */}
-            <Divider label="Administration" collapsed={collapsed}/>
+            <NavItem icon={BriefcaseIcon} label="Recrutement"    path="/recrutement"   color="#818CF8" collapsed={collapsed}/> {/* S59 */}
             <NavItem icon={Settings} label="Paramètres" path="/admin/settings" collapsed={collapsed}/>
           </>
 
@@ -254,7 +255,8 @@ export default function Sidebar() {
             {/* 4c — Compensation */}
             <NavItem icon={DollarSign} label="Compensation" path="/compensation" color="#34D399" collapsed={collapsed}/> {/* S58 */}
 
-            {/* 5 — Mes Reconnaissances */}
+            {/* 4d — Recrutement */}
+            <NavItem icon={BriefcaseIcon} label="Recrutement" path="/recrutement" color="#818CF8" collapsed={collapsed}/> {/* S59 */}
             <Divider label="Reconnaissances" collapsed={collapsed}/>
             <NavItem icon={Trophy} label="Mes Reconnaissances" path="/mes-reconnaissances" color="#C9A227" collapsed={collapsed}/>
 
