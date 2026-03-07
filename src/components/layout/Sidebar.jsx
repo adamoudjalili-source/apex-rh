@@ -196,10 +196,10 @@ export default function Sidebar() {
             <NavItem icon={Users}    label="Mon Équipe"         path="/mon-equipe"    color="#3B82F6" collapsed={collapsed}/>
             <NavItem icon={BarChart3} label="Intelligence RH"   path="/intelligence"  color="#8B5CF6" collapsed={collapsed}/>
             <NavItem icon={Trophy}   label="Engagement équipe"  path="/engagement"    color="#C9A227" collapsed={collapsed}/>
-            {modules.formation_enabled !== false && <NavItem icon={GraduationCap} label="Formation" path="/formation" color="#10B981" collapsed={collapsed}/>} {/* S57 */
-            {modules.compensation_enabled !== false && <NavItem icon={DollarSign} label="Compensation" path="/compensation" color="#34D399" collapsed={collapsed}/>} {/* S58 */
-            {modules.recrutement_enabled !== false && <NavItem icon={BriefcaseIcon} label="Recrutement" path="/recrutement" color="#818CF8" collapsed={collapsed}/>} {/* S59 */
-            {modules.entretiens_enabled !== false && <NavItem icon={ClipboardList} label="Entretiens" path="/entretiens" color="#A78BFA" collapsed={collapsed}/>} {/* S60 */
+            {modules.formation_enabled !== false && <NavItem icon={GraduationCap} label="Formation" path="/formation" color="#10B981" collapsed={collapsed}/>} {/* S57 */}
+            {modules.compensation_enabled !== false && <NavItem icon={DollarSign} label="Compensation" path="/compensation" color="#34D399" collapsed={collapsed}/>} {/* S58 */}
+            {modules.recrutement_enabled !== false && <NavItem icon={BriefcaseIcon} label="Recrutement" path="/recrutement" color="#818CF8" collapsed={collapsed}/>} {/* S59 */}
+            {modules.entretiens_enabled !== false && <NavItem icon={ClipboardList} label="Entretiens" path="/entretiens" color="#A78BFA" collapsed={collapsed}/>} {/* S60 */}
             <NavItem icon={Settings} label="Paramètres" path="/admin/settings" collapsed={collapsed}/>
           </>
 
@@ -243,14 +243,14 @@ export default function Sidebar() {
             <NavItem icon={BookOpen} label="Mon Développement" path="/mon-developpement" color="#10B981" collapsed={collapsed}/>
 
             {/* 4b — Formation */}
-            {modules.formation_enabled !== false && <NavItem icon={GraduationCap} label="Formation" path="/formation" color="#6366F1" collapsed={collapsed}/>} {/* S57 */
+            {modules.formation_enabled !== false && <NavItem icon={GraduationCap} label="Formation" path="/formation" color="#6366F1" collapsed={collapsed}/>} {/* S57 */}
 
             {/* 4c — Compensation */}
-            {modules.compensation_enabled !== false && <NavItem icon={DollarSign} label="Compensation" path="/compensation" color="#34D399" collapsed={collapsed}/>} {/* S58 */
+            {modules.compensation_enabled !== false && <NavItem icon={DollarSign} label="Compensation" path="/compensation" color="#34D399" collapsed={collapsed}/>} {/* S58 */}
 
             {/* 4d — Recrutement */}
-            {modules.recrutement_enabled !== false && <NavItem icon={BriefcaseIcon} label="Recrutement" path="/recrutement" color="#818CF8" collapsed={collapsed}/>} {/* S59 */
-            {modules.entretiens_enabled !== false && <NavItem icon={ClipboardList} label="Entretiens" path="/entretiens" color="#A78BFA" collapsed={collapsed}/>} {/* S60 */
+            {modules.recrutement_enabled !== false && <NavItem icon={BriefcaseIcon} label="Recrutement" path="/recrutement" color="#818CF8" collapsed={collapsed}/>} {/* S59 */}
+            {modules.entretiens_enabled !== false && <NavItem icon={ClipboardList} label="Entretiens" path="/entretiens" color="#A78BFA" collapsed={collapsed}/>} {/* S60 */}
             <Divider label="Reconnaissances" collapsed={collapsed}/>
             <NavItem icon={Trophy} label="Mes Récompenses" path="/mes-reconnaissances" color="#C9A227" collapsed={collapsed}/>
 
