@@ -1,79 +1,92 @@
 // ============================================================
-// APEX RH — Sidebar.jsx  ·  Session 38
-// 3 EXPÉRIENCES DISTINCTES, 1 PLATEFORME COHÉRENTE
+// APEX RH — Sidebar.jsx · Réorg UX Hub & Spoke
+// Architecture simplifiée : 5–7 entrées selon le rôle
 //
-// VUE COLLABORATEUR (5 sections) :
-//   1. Mon Tableau de Bord  → /mon-tableau-de-bord
-//   2. Mon Travail ▾        → Tâches · Projets · Objectifs
-//   3. Ma Performance       → /ma-performance
-//   4. Mon Développement    → /mon-developpement
-//   5. Mes Récompenses     → /mes-reconnaissances
+// ADMIN / DIRECTEUR :
+//   Tableau de Bord · Mon Espace · Management
+//   Intelligence RH · Recrutement · Entretiens Annuels · Administration
 //
-// VUE MANAGER (+ sections) :
-//   + Mon Équipe            → /mon-equipe
-//   + Intelligence RH       → /intelligence
-//   + Engagement équipe     → /engagement
+// MANAGER (chef_division / chef_service) :
+//   Tableau de Bord · Mon Espace · Management
+//   Intelligence RH · Recrutement · Entretiens Annuels · Paramètres
 //
-// VUE ADMIN/RH :
-//   1. Tableau de Bord Global → /mon-tableau-de-bord
-//   2. Intelligence RH        → /intelligence
-//   3. Gestion ▾              → Utilisateurs · Organisation · Paramètres
-//   4. Rapports               → /engagement
+// COLLABORATEUR :
+//   Mon Tableau de Bord · Mon Espace
+//   Recrutement · Mon entretien · Paramètres
 // ============================================================
 import { useState } from 'react'
-import { NavLink, useNavigate, useLocation } from 'react-router-dom'
+import { NavLink, useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
-  LayoutDashboard, CheckSquare, Target, FolderKanban,
-  Activity, BookOpen, Trophy, Users, BarChart3,
-  ChevronLeft, ChevronRight, ChevronDown,
-  LogOut, Settings, Building2, UserCog, GraduationCap, DollarSign, BriefcaseIcon, ClipboardList,
+  LayoutDashboard, Users, BarChart3,
+  ChevronLeft, ChevronRight, LogOut,
+  BriefcaseIcon, ClipboardList, Settings,
+  Home, ShieldCheck,
 } from 'lucide-react'
 import { useAuth }        from '../../contexts/AuthContext'
 import { useAppSettings } from '../../hooks/useSettings'
 import { useTodayScore }  from '../../hooks/usePulse'
 import { getScoreColor, isPulseEnabled } from '../../lib/pulseHelpers'
+import { ROLE_COLORS, ROLE_LABELS, MANAGER_ROLES as MANAGERS, ADMIN_ROLES as ADMINS } from '../../lib/roles'
 import logoNita from '../../assets/logo-nita.png'
 
-import { ROLE_COLORS, ROLE_LABELS, MANAGER_ROLES as MANAGERS, ADMIN_ROLES as ADMINS } from '../../lib/roles'
+function NavItem({ icon: Icon, label, path, collapsed, color }) {
+  return (
+    <NavLink to={path}
+      className={({ isActive }) =>
+        `flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 relative overflow-hidden group ${
+          isActive ? 'text-white' : 'text-white/35 hover:text-white/75 hover:bg-white/[0.03]'
+        }`
+      }>
+      {({ isActive }) => (
+        <>
+          {isActive && (
+            <motion.div layoutId="nav-active-hub"
+              className="absolute inset-0 rounded-xl pointer-events-none"
+              style={{ background: color ? `${color}12` : 'rgba(99,102,241,0.1)' }}
+              transition={{ type:'spring', stiffness:500, damping:30 }}/>
+          )}
+          {isActive && (
+            <motion.div
+              className="absolute left-0 top-2 bottom-2 w-[3px] rounded-r"
+              style={{ background: color || '#6366F1' }}
+              transition={{ type:'spring', stiffness:500, damping:30 }}/>
+          )}
+          <Icon size={17} className="flex-shrink-0 relative z-10"
+            style={isActive && color ? { color } : undefined}/>
+          <AnimatePresence>
+            {!collapsed && (
+              <motion.span initial={{opacity:0}} animate={{opacity:1}} exit={{opacity:0}} transition={{duration:0.15}}
+                className="text-sm font-medium truncate flex-1 relative z-10">{label}</motion.span>
+            )}
+          </AnimatePresence>
+        </>
+      )}
+    </NavLink>
+  )
+}
 
-const TRAVAIL_ITEMS = [
-  { label:'Tâches',        icon:CheckSquare,  path:'/travail/taches',    moduleKey:'tasks_enabled' },
-  { label:'Projets',       icon:FolderKanban, path:'/travail/projets',   moduleKey:'projects_enabled' },
-  { label:'Objectifs OKR', icon:Target,       path:'/travail/objectifs', moduleKey:'okr_enabled' },
-]
-
-const GESTION_ITEMS = [
-  { label:'Utilisateurs', icon:UserCog,   path:'/admin/users',        roles:['administrateur'] },
-  { label:'Organisation', icon:Building2, path:'/admin/organisation', roles:['administrateur'] },
-  { label:'API & Connecteurs', icon:Settings, path:'/admin/api-manager', roles:['administrateur'] },  /* S53 */
-  { label:'Paramètres',   icon:Settings,  path:'/admin/settings' },
-]
+function Section({ label, collapsed }) {
+  if (collapsed) return <div className="h-px bg-white/[0.05] mx-3 my-2"/>
+  return <p className="text-[9px] text-white/15 uppercase tracking-[0.15em] px-3 pt-3 pb-1 font-semibold">{label}</p>
+}
 
 export default function Sidebar() {
-  const [collapsed, setCollapsed]     = useState(false)
-  const [travailOpen, setTravailOpen] = useState(true)
-  const [gestionOpen, setGestionOpen] = useState(false)
+  const [collapsed, setCollapsed] = useState(false)
 
   const { profile, signOut }  = useAuth()
   const navigate               = useNavigate()
-  const location               = useLocation()
   const { data: settings }    = useAppSettings()
   const { data: todayScore }  = useTodayScore()
 
-  const modules   = settings?.modules || {}
   const pulseOn   = isPulseEnabled(settings)
-  const isManager = MANAGERS.includes(profile?.role)
-  const isAdmin   = ADMINS.includes(profile?.role)
   const role      = profile?.role
+  const isManager = MANAGERS.includes(role)
+  const isAdmin   = ADMINS.includes(role)
+  const isCollab  = !isManager
 
   const initiale = profile?.first_name?.charAt(0) || profile?.last_name?.charAt(0) || 'U'
   const fullName = [profile?.first_name, profile?.last_name].filter(Boolean).join(' ') || 'Utilisateur'
-
-  const travailItems  = TRAVAIL_ITEMS.filter(i => !i.moduleKey || modules[i.moduleKey] !== false)
-  const gestionItems  = GESTION_ITEMS.filter(i => !i.roles || i.roles.includes(role))
-  const isTravailActive = travailItems.some(i => location.pathname.startsWith(i.path))
-  const isGestionActive = gestionItems.some(i => location.pathname.startsWith(i.path))
 
   return (
     <motion.aside
@@ -105,158 +118,53 @@ export default function Sidebar() {
       {/* Navigation */}
       <nav className="flex-1 px-3 py-4 overflow-y-auto overflow-x-hidden space-y-0.5">
 
-        {/* ═══ VUE ADMIN / RH ═══ */}
-        {isAdmin ? (
+        {/* ═══ VUE ADMIN / DIRECTEUR ═══ */}
+        {isAdmin && (
           <>
-            <NavItem icon={LayoutDashboard} label="Tableau de Bord" path="/mon-tableau-de-bord" collapsed={collapsed}/>
-
-            <Divider label="Mon Travail" collapsed={collapsed}/>
-            <GroupItem label="Mon Travail" icon={CheckSquare}
-              open={travailOpen || isTravailActive}
-              onToggle={() => setTravailOpen(o=>!o)}
-              collapsed={collapsed} active={isTravailActive}/>
-            <AnimatePresence>
-              {(travailOpen || isTravailActive) && !collapsed && (
-                <motion.div key="travail-items-admin"
-                  initial={{opacity:0,height:0}} animate={{opacity:1,height:'auto'}} exit={{opacity:0,height:0}}
-                  transition={{duration:0.22}} style={{overflow:'hidden'}}>
-                  {travailItems.map(item => (
-                    <SubItem key={item.path} icon={item.icon} label={item.label} path={item.path}/>
-                  ))}
-                </motion.div>
-              )}
-            </AnimatePresence>
-            {(travailOpen || isTravailActive) && collapsed && travailItems.map(item => (
-              <NavItem key={item.path} icon={item.icon} label={item.label} path={item.path} collapsed={collapsed}/>
-            ))}
-
-            <Divider label="Performance" collapsed={collapsed}/>
-            <NavItem icon={Activity} label="Ma Performance" path="/ma-performance" color="#4F46E5" collapsed={collapsed}/>
-
-            <Divider label="Management" collapsed={collapsed}/>
-            <NavItem icon={Users}    label="Mon Équipe"    path="/mon-equipe"   color="#3B82F6" collapsed={collapsed}/>
-
-            <Divider label="Analyse" collapsed={collapsed}/>
-            <NavItem icon={BarChart3} label="Intelligence RH"  path="/intelligence" color="#8B5CF6" collapsed={collapsed}/>
-            <NavItem icon={Trophy}   label="Engagement & Rapports" path="/engagement" color="#C9A227" collapsed={collapsed}/>
-            {modules.formation_enabled !== false && <NavItem icon={GraduationCap} label="Formation & Certifications" path="/formation" color="#10B981" collapsed={collapsed}/>} {/* S57 */}
-            {modules.compensation_enabled !== false && <NavItem icon={DollarSign} label="Compensation & Benchmark" path="/compensation" color="#34D399" collapsed={collapsed}/>} {/* S58 */}
-            {modules.recrutement_enabled !== false && <NavItem icon={BriefcaseIcon} label="Recrutement" path="/recrutement" color="#818CF8" collapsed={collapsed}/>} {/* S59 */}
-            {modules.entretiens_enabled !== false && <NavItem icon={ClipboardList} label="Entretiens Annuels" path="/entretiens" color="#A78BFA" collapsed={collapsed}/>} {/* S60 */}
-            <GroupItem label="Gestion" icon={Building2}
-              open={gestionOpen || isGestionActive}
-              onToggle={() => setGestionOpen(o=>!o)}
-              collapsed={collapsed} active={isGestionActive}/>
-            <AnimatePresence>
-              {(gestionOpen || isGestionActive) && !collapsed && (
-                <motion.div key="gestion-items"
-                  initial={{opacity:0,height:0}} animate={{opacity:1,height:'auto'}} exit={{opacity:0,height:0}}
-                  transition={{duration:0.22, overflow:'hidden'}} style={{overflow:'hidden'}}>
-                  {gestionItems.map(item => (
-                    <SubItem key={item.path} icon={item.icon} label={item.label} path={item.path}/>
-                  ))}
-                </motion.div>
-              )}
-            </AnimatePresence>
-            {(gestionOpen || isGestionActive) && collapsed && gestionItems.map(item => (
-              <NavItem key={item.path} icon={item.icon} label={item.label} path={item.path} collapsed={collapsed}/>
-            ))}
+            <NavItem icon={LayoutDashboard} label="Tableau de Bord"    path="/dashboard"      color="#C9A227" collapsed={collapsed}/>
+            <Section label="Espace personnel" collapsed={collapsed}/>
+            <NavItem icon={Home}             label="Mon Espace"         path="/mon-espace"     color="#4F46E5" collapsed={collapsed}/>
+            <Section label="Management" collapsed={collapsed}/>
+            <NavItem icon={Users}            label="Management"         path="/management"     color="#3B82F6" collapsed={collapsed}/>
+            <Section label="Analyse" collapsed={collapsed}/>
+            <NavItem icon={BarChart3}        label="Intelligence RH"    path="/intelligence"   color="#8B5CF6" collapsed={collapsed}/>
+            <Section label="RH Opérationnel" collapsed={collapsed}/>
+            <NavItem icon={BriefcaseIcon}    label="Recrutement"        path="/recrutement"    color="#818CF8" collapsed={collapsed}/>
+            <NavItem icon={ClipboardList}    label="Entretiens annuels" path="/entretiens"     color="#A78BFA" collapsed={collapsed}/>
+            <Section label="Admin" collapsed={collapsed}/>
+            <NavItem icon={ShieldCheck}      label="Administration"     path="/administration" color="#EF4444" collapsed={collapsed}/>
           </>
+        )}
 
-        /* ═══ VUE MANAGER ═══ */
-        ) : isManager ? (
+        {/* ═══ VUE MANAGER ═══ */}
+        {isManager && !isAdmin && (
           <>
-            <NavItem icon={LayoutDashboard} label="Mon Tableau de Bord" path="/mon-tableau-de-bord" collapsed={collapsed}/>
-            <Divider label="Mon Travail" collapsed={collapsed}/>
-            <GroupItem label="Mon Travail" icon={CheckSquare}
-              open={travailOpen || isTravailActive}
-              onToggle={() => setTravailOpen(o=>!o)}
-              collapsed={collapsed} active={isTravailActive}/>
-            <AnimatePresence>
-              {(travailOpen || isTravailActive) && !collapsed && (
-                <motion.div key="travail-items-mgr"
-                  initial={{opacity:0,height:0}} animate={{opacity:1,height:'auto'}} exit={{opacity:0,height:0}}
-                  transition={{duration:0.22}} style={{overflow:'hidden'}}>
-                  {travailItems.map(item => (
-                    <SubItem key={item.path} icon={item.icon} label={item.label} path={item.path}/>
-                  ))}
-                </motion.div>
-              )}
-            </AnimatePresence>
-            {(travailOpen || isTravailActive) && collapsed && travailItems.map(item => (
-              <NavItem key={item.path} icon={item.icon} label={item.label} path={item.path} collapsed={collapsed}/>
-            ))}
-            {pulseOn && (
-              <>
-                <Divider label="Performance" collapsed={collapsed}/>
-                <NavItem icon={Activity} label="Ma Performance" path="/ma-performance" color="#4F46E5" collapsed={collapsed}/>
-              </>
-            )}
-            <Divider label="Management" collapsed={collapsed}/>
-            <NavItem icon={Users}    label="Mon Équipe"         path="/mon-equipe"    color="#3B82F6" collapsed={collapsed}/>
-            <NavItem icon={BarChart3} label="Intelligence RH"   path="/intelligence"  color="#8B5CF6" collapsed={collapsed}/>
-            <NavItem icon={Trophy}   label="Engagement équipe"  path="/engagement"    color="#C9A227" collapsed={collapsed}/>
-            {modules.formation_enabled !== false && <NavItem icon={GraduationCap} label="Formation" path="/formation" color="#10B981" collapsed={collapsed}/>} {/* S57 */}
-            {modules.compensation_enabled !== false && <NavItem icon={DollarSign} label="Compensation" path="/compensation" color="#34D399" collapsed={collapsed}/>} {/* S58 */}
-            {modules.recrutement_enabled !== false && <NavItem icon={BriefcaseIcon} label="Recrutement" path="/recrutement" color="#818CF8" collapsed={collapsed}/>} {/* S59 */}
-            {modules.entretiens_enabled !== false && <NavItem icon={ClipboardList} label="Entretiens" path="/entretiens" color="#A78BFA" collapsed={collapsed}/>} {/* S60 */}
-            <NavItem icon={Settings} label="Paramètres" path="/admin/settings" collapsed={collapsed}/>
+            <NavItem icon={LayoutDashboard} label="Tableau de Bord"    path="/dashboard"      color="#C9A227" collapsed={collapsed}/>
+            <Section label="Espace personnel" collapsed={collapsed}/>
+            <NavItem icon={Home}            label="Mon Espace"          path="/mon-espace"     color="#4F46E5" collapsed={collapsed}/>
+            <Section label="Management" collapsed={collapsed}/>
+            <NavItem icon={Users}           label="Management"          path="/management"     color="#3B82F6" collapsed={collapsed}/>
+            <Section label="Analyse" collapsed={collapsed}/>
+            <NavItem icon={BarChart3}       label="Intelligence RH"     path="/intelligence"   color="#8B5CF6" collapsed={collapsed}/>
+            <Section label="RH Opérationnel" collapsed={collapsed}/>
+            <NavItem icon={BriefcaseIcon}   label="Recrutement"         path="/recrutement"    color="#818CF8" collapsed={collapsed}/>
+            <NavItem icon={ClipboardList}   label="Entretiens annuels"  path="/entretiens"     color="#A78BFA" collapsed={collapsed}/>
+            <Section label="Paramètres" collapsed={collapsed}/>
+            <NavItem icon={Settings}        label="Paramètres"          path="/admin/settings" collapsed={collapsed}/>
           </>
+        )}
 
-        /* ═══ VUE COLLABORATEUR ═══ */
-        ) : (
+        {/* ═══ VUE COLLABORATEUR ═══ */}
+        {isCollab && (
           <>
-            {/* 1 — Mon Tableau de Bord */}
-            <NavItem icon={LayoutDashboard} label="Mon Tableau de Bord" path="/mon-tableau-de-bord" collapsed={collapsed}/>
-
-            {/* 2 — Mon Travail */}
-            <Divider label="Mon Travail" collapsed={collapsed}/>
-            <GroupItem label="Mon Travail" icon={CheckSquare}
-              open={travailOpen || isTravailActive}
-              onToggle={() => setTravailOpen(o=>!o)}
-              collapsed={collapsed} active={isTravailActive}/>
-            <AnimatePresence>
-              {(travailOpen || isTravailActive) && !collapsed && (
-                <motion.div key="travail-items-collab"
-                  initial={{opacity:0,height:0}} animate={{opacity:1,height:'auto'}} exit={{opacity:0,height:0}}
-                  transition={{duration:0.22}} style={{overflow:'hidden'}}>
-                  {travailItems.map(item => (
-                    <SubItem key={item.path} icon={item.icon} label={item.label} path={item.path}/>
-                  ))}
-                </motion.div>
-              )}
-            </AnimatePresence>
-            {(travailOpen || isTravailActive) && collapsed && travailItems.map(item => (
-              <NavItem key={item.path} icon={item.icon} label={item.label} path={item.path} collapsed={collapsed}/>
-            ))}
-
-            {/* 3 — Ma Performance */}
-            {pulseOn && (
-              <>
-                <Divider label="Performance" collapsed={collapsed}/>
-                <NavItem icon={Activity} label="Ma Performance" path="/ma-performance" color="#4F46E5" collapsed={collapsed}/>
-              </>
-            )}
-
-            {/* 4 — Mon Développement */}
-            <Divider label="Développement" collapsed={collapsed}/>
-            <NavItem icon={BookOpen} label="Mon Développement" path="/mon-developpement" color="#10B981" collapsed={collapsed}/>
-
-            {/* 4b — Formation */}
-            {modules.formation_enabled !== false && <NavItem icon={GraduationCap} label="Formation" path="/formation" color="#6366F1" collapsed={collapsed}/>} {/* S57 */}
-
-            {/* 4c — Compensation */}
-            {modules.compensation_enabled !== false && <NavItem icon={DollarSign} label="Compensation" path="/compensation" color="#34D399" collapsed={collapsed}/>} {/* S58 */}
-
-            {/* 4d — Recrutement */}
-            {modules.recrutement_enabled !== false && <NavItem icon={BriefcaseIcon} label="Recrutement" path="/recrutement" color="#818CF8" collapsed={collapsed}/>} {/* S59 */}
-            {modules.entretiens_enabled !== false && <NavItem icon={ClipboardList} label="Entretiens" path="/entretiens" color="#A78BFA" collapsed={collapsed}/>} {/* S60 */}
-            <Divider label="Reconnaissances" collapsed={collapsed}/>
-            <NavItem icon={Trophy} label="Mes Récompenses" path="/mes-reconnaissances" color="#C9A227" collapsed={collapsed}/>
-
-            {/* Paramètres */}
-            <Divider label="Administration" collapsed={collapsed}/>
-            <NavItem icon={Settings} label="Paramètres" path="/admin/settings" collapsed={collapsed}/>
+            <NavItem icon={LayoutDashboard} label="Mon Tableau de Bord" path="/mon-tableau-de-bord" color="#C9A227" collapsed={collapsed}/>
+            <Section label="Mon espace" collapsed={collapsed}/>
+            <NavItem icon={Home}            label="Mon Espace"           path="/mon-espace"          color="#4F46E5" collapsed={collapsed}/>
+            <Section label="RH" collapsed={collapsed}/>
+            <NavItem icon={BriefcaseIcon}   label="Recrutement"          path="/recrutement"         color="#818CF8" collapsed={collapsed}/>
+            <NavItem icon={ClipboardList}   label="Mon entretien"        path="/entretiens"          color="#A78BFA" collapsed={collapsed}/>
+            <Section label="Paramètres" collapsed={collapsed}/>
+            <NavItem icon={Settings}        label="Paramètres"           path="/admin/settings"      collapsed={collapsed}/>
           </>
         )}
       </nav>
@@ -309,81 +217,5 @@ export default function Sidebar() {
         {collapsed ? <ChevronRight size={11}/> : <ChevronLeft size={11}/>}
       </button>
     </motion.aside>
-  )
-}
-
-function NavItem({ icon: Icon, label, path, collapsed, color }) {
-  return (
-    <NavLink to={path}
-      className={({ isActive }) =>
-        `flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 relative overflow-hidden group ${
-          isActive ? 'bg-indigo-500/10 text-indigo-400' : 'text-white/35 hover:text-white/75 hover:bg-white/[0.03]'
-        }`
-      }>
-      {({ isActive }) => (
-        <>
-          {isActive && (
-            <motion.div layoutId="nav-active"
-              className="absolute left-0 top-0 bottom-0 w-[3px] bg-indigo-500 rounded-r"
-              transition={{ type:'spring', stiffness:500, damping:30 }}/>
-          )}
-          <Icon size={17} className="flex-shrink-0"
-            style={color && isActive ? { color } : undefined}/>
-          <AnimatePresence>
-            {!collapsed && (
-              <motion.span initial={{opacity:0}} animate={{opacity:1}} exit={{opacity:0}} transition={{duration:0.18}}
-                className="text-sm font-medium truncate flex-1">{label}</motion.span>
-            )}
-          </AnimatePresence>
-        </>
-      )}
-    </NavLink>
-  )
-}
-
-function SubItem({ icon: Icon, label, path }) {
-  return (
-    <NavLink to={path}
-      className={({ isActive }) =>
-        `flex items-center gap-3 pl-8 pr-3 py-2 rounded-lg transition-all text-sm ${
-          isActive ? 'text-indigo-400 bg-indigo-500/[0.07]' : 'text-white/25 hover:text-white/55 hover:bg-white/[0.02]'
-        }`
-      }>
-      <Icon size={14} className="flex-shrink-0"/>
-      <span className="truncate">{label}</span>
-    </NavLink>
-  )
-}
-
-function GroupItem({ icon: Icon, label, open, onToggle, collapsed, active }) {
-  return (
-    <button onClick={onToggle}
-      className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 ${
-        active ? 'text-indigo-300' : 'text-white/35 hover:text-white/65 hover:bg-white/[0.03]'
-      }`}>
-      <Icon size={17} className="flex-shrink-0"/>
-      <AnimatePresence>
-        {!collapsed && (
-          <motion.div initial={{opacity:0}} animate={{opacity:1}} exit={{opacity:0}} transition={{duration:0.18}}
-            className="flex items-center flex-1 min-w-0 justify-between">
-            <span className="text-sm font-medium truncate">{label}</span>
-            <ChevronDown size={13}
-              className={`transition-transform duration-200 flex-shrink-0 ${open ? 'rotate-180' : ''}`}/>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </button>
-  )
-}
-
-function Divider({ label, collapsed }) {
-  return (
-    <div className="pt-3 pb-1">
-      {!collapsed ? (
-        <p className="text-[10px] text-white/15 uppercase tracking-widest px-3">{label}</p>
-      ) : (
-        <div className="h-px bg-white/[0.06] mx-3"/>
-      )}
-    </div>
   )
 }

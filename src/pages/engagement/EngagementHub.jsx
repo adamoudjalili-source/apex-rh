@@ -39,8 +39,8 @@ export default function EngagementHub() {
             <Trophy size={16} style={{ color:'#C9A227' }}/>
           </div>
           <div>
-            <h1 className="text-xl font-bold text-white" style={{ fontFamily:"'Syne',sans-serif" }}>Engagement</h1>
-            <p className="text-xs text-white/30">Reconnaissance, motivation et développement</p>
+            <h1 className="text-xl font-bold text-white" style={{ fontFamily:"'Syne',sans-serif" }}>Récompenses & Engagement</h1>
+            <p className="text-xs text-white/30">Reconnaissance, motivation et développement personnel</p>
           </div>
         </div>
         <div className="flex items-end gap-0.5 overflow-x-auto scrollbar-hide">

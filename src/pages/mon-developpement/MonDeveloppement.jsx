@@ -5,8 +5,8 @@
 //   • Feedbacks 360° reçus : radar compétences + synthèse commentaires
 //   • Boucle fermée : Review Cycles → PDI → Objectifs
 //   • IA Coach : chat contextuel + génération PDI automatique (S43)
+//   • Formation & Certifications : intégré (Réorg UX Hub & Spoke)
 // ⚠️ NE PAS réintroduire de score IPR composite côté employé
-// ⚠️ NE PAS modifier Sidebar.jsx, App.jsx, useTasks.js, usePulse.js
 // ============================================================
 import { useState, useMemo, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -25,11 +25,13 @@ import {
   AI_CONTEXT_TYPES,
 } from '../../hooks/useGenerativeAI'
 import AIAssistant from '../../components/ai/AIAssistant'
+import { lazy, Suspense } from 'react'
+const FormationPage = lazy(() => import('../formation/Formation'))
 import {
   BookOpen, Target, MessageSquare, CheckCircle2, Circle,
   Plus, ChevronDown, Trash2, Pencil, X, Check,
   TrendingUp, Zap, RefreshCw, Calendar, ArrowRight, ChevronRight,
-  Sparkles, Brain,
+  Sparkles, Brain, GraduationCap,
 } from 'lucide-react'
 
 // ─── Animations ──────────────────────────────────────────────
@@ -689,10 +691,11 @@ export default function MonDeveloppement() {
   ,[evaluations])
 
   const TABS = [
-    { id:'pdi',       label:'Mon PDI',         icon:BookOpen,       color:ACCENT    },
-    { id:'feedbacks', label:'Feedbacks reçus',  icon:MessageSquare,  color:'#4F46E5' },
-    { id:'boucle',    label:'Boucle & Reviews', icon:RefreshCw,      color:'#F59E0B' },
-    { id:'ia',        label:'IA Coach Perso',         icon:Brain,          color:'#10B981' },
+    { id:'pdi',       label:'Mon PDI',              icon:BookOpen,       color:ACCENT    },
+    { id:'feedbacks', label:'Feedbacks reçus',       icon:MessageSquare,  color:'#4F46E5' },
+    { id:'boucle',    label:'Boucle & Reviews',      icon:RefreshCw,      color:'#F59E0B' },
+    { id:'ia',        label:'IA Coach Perso',        icon:Brain,          color:'#10B981' },
+    { id:'formation', label:'Formation & Certifs',   icon:GraduationCap,  color:'#6366F1' },
   ]
 
   return (
@@ -729,7 +732,7 @@ export default function MonDeveloppement() {
               style={isActive?{background:`${tab.color}20`,color:tab.color,border:`1px solid ${tab.color}30`}:{color:'rgba(255,255,255,0.3)'}}>
               <Icon size={12}/>
               <span className="hidden sm:inline">{tab.label}</span>
-              <span className="sm:hidden">{tab.id==='pdi'?'PDI':tab.id==='feedbacks'?'F360':tab.id==='boucle'?'Boucle':'IA'}</span>
+              <span className="sm:hidden">{tab.id==='pdi'?'PDI':tab.id==='feedbacks'?'F360':tab.id==='boucle'?'Boucle':tab.id==='formation'?'Certifs':'IA'}</span>
               {tab.id==='ia' && !isActive && <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-emerald-400 animate-pulse"/>}
             </button>
           })}
@@ -744,6 +747,11 @@ export default function MonDeveloppement() {
             {activeTab==='feedbacks' && <TabFeedbacks profile={profile}/>}
             {activeTab==='boucle'    && <TabBoucle    profile={profile}/>}
             {activeTab==='ia'        && <TabIACoach   profile={profile}/>}
+            {activeTab==='formation' && (
+              <Suspense fallback={<div className="flex items-center justify-center py-12"><div className="w-5 h-5 rounded-full border-2 border-white/10 border-t-white/40 animate-spin"/></div>}>
+                <FormationPage/>
+              </Suspense>
+            )}
           </motion.div>
         </AnimatePresence>
       </div>

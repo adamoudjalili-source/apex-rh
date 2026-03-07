@@ -1,7 +1,7 @@
 // ============================================================
-// APEX RH — App.jsx  ·  Session 49 (QW2 : React.lazy)
-// Routes complètes — vision originale + rétrocompatibilité totale
-// QW2 S49 : lazy loading par route pour réduire le bundle initial
+// APEX RH — App.jsx · Réorg UX Hub & Spoke
+// Architecture Hub & Spoke — 5 hubs principaux
+// + rétrocompatibilité totale des anciennes URLs
 // ============================================================
 import { Suspense, lazy } from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
@@ -9,18 +9,23 @@ import { Routes, Route, Navigate } from 'react-router-dom'
 import ProtectedRoute from './components/layout/ProtectedRoute'
 import AppLayout      from './components/layout/AppLayout'
 
-// ── Auth (eager — chemin critique, petits fichiers) ──────────
+// ── Auth (eager) ──────────────────────────────────────────────
 import Login               from './pages/auth/Login'
 import ForgotPassword      from './pages/auth/ForgotPassword'
 import ResetPassword       from './pages/auth/ResetPassword'
 import ForceChangePassword from './pages/auth/ForceChangePassword'
 
-// ── Pages lazy — chargées à la demande par route ─────────────
+// ── Hub pages (lazy) ─────────────────────────────────────────
+const MonEspaceHub      = lazy(() => import('./pages/espace/MonEspaceHub'))
+const ManagementHub     = lazy(() => import('./pages/management/ManagementHub'))
+const AdministrationHub = lazy(() => import('./pages/administration/AdministrationHub'))
+
+// ── Pages existantes (lazy) ───────────────────────────────────
 const UsersPage      = lazy(() => import('./pages/admin/Users'))
 const Organisation   = lazy(() => import('./pages/admin/Organisation'))
 const SettingsPage   = lazy(() => import('./pages/admin/Settings'))
-const SuperAdmin     = lazy(() => import('./pages/admin/SuperAdmin'))   // S52
-const ApiManager     = lazy(() => import('./pages/admin/ApiManager'))   // S53
+const SuperAdmin     = lazy(() => import('./pages/admin/SuperAdmin'))
+const ApiManager     = lazy(() => import('./pages/admin/ApiManager'))
 
 const Dashboard      = lazy(() => import('./pages/dashboard/Dashboard'))
 const MonEspace      = lazy(() => import('./pages/mon-espace/MonEspace'))
@@ -30,18 +35,17 @@ const ObjectivesPage = lazy(() => import('./pages/objectives/Objectives'))
 const ProjectsPage   = lazy(() => import('./pages/projects/Projects'))
 const IntelligenceRH = lazy(() => import('./pages/intelligence/IntelligenceRH'))
 const EngagementHub  = lazy(() => import('./pages/engagement/EngagementHub'))
-const Formation      = lazy(() => import('./pages/formation/Formation'))      // S57
-const Compensation   = lazy(() => import('./pages/compensation/Compensation')) // S58
-const Recrutement    = lazy(() => import('./pages/recrutement/Recrutement'))  // S59
-const EntretiensAnnuels = lazy(() => import('./pages/entretiens/EntretiensAnnuels')) // S60
+const Formation      = lazy(() => import('./pages/formation/Formation'))
+const Compensation   = lazy(() => import('./pages/compensation/Compensation'))
+const Recrutement    = lazy(() => import('./pages/recrutement/Recrutement'))
+const EntretiensAnnuels = lazy(() => import('./pages/entretiens/EntretiensAnnuels'))
 
-// ── Espace Collaborateur (S61-S62) — C-01 routes manquantes ──
-const MaPerformance      = lazy(() => import('./pages/ma-performance/MaPerformance'))           // S61
-const MonDeveloppement   = lazy(() => import('./pages/mon-developpement/MonDeveloppement'))     // S61
-const MesReconnaissances = lazy(() => import('./pages/mes-reconnaissances/MesReconnaissances')) // S62
-const MonTableauDeBord   = lazy(() => import('./pages/mon-tableau-de-bord/MonTableauDeBord'))   // S62
+// ── Espace Collaborateur ──────────────────────────────────────
+const MaPerformance      = lazy(() => import('./pages/ma-performance/MaPerformance'))
+const MonDeveloppement   = lazy(() => import('./pages/mon-developpement/MonDeveloppement'))
+const MesReconnaissances = lazy(() => import('./pages/mes-reconnaissances/MesReconnaissances'))
+const MonTableauDeBord   = lazy(() => import('./pages/mon-tableau-de-bord/MonTableauDeBord'))
 
-// ── Fallback Suspense ─────────────────────────────────────────
 function PageLoader() {
   return (
     <div className="flex items-center justify-center h-full min-h-[200px]">
@@ -49,7 +53,6 @@ function PageLoader() {
     </div>
   )
 }
-
 const S = ({ children }) => <Suspense fallback={<PageLoader />}>{children}</Suspense>
 
 export default function App() {
@@ -67,42 +70,51 @@ export default function App() {
         <Route element={<AppLayout />}>
           <Route path="/" element={<Navigate to="/dashboard" replace />} />
 
-          {/* Principal */}
-          <Route path="/dashboard"  element={<S><Dashboard /></S>} />
-          <Route path="/mon-espace" element={<S><MonEspace /></S>} />
-          <Route path="/mon-equipe" element={<S><MonEquipe /></S>} />
+          {/* ── Tableaux de bord ── */}
+          <Route path="/dashboard"           element={<S><Dashboard /></S>} />
+          <Route path="/mon-tableau-de-bord" element={<S><MonTableauDeBord /></S>} />
 
-          {/* Espace Collaborateur — C-01 routes manquantes (S61-S62) */}
-          <Route path="/ma-performance"      element={<S><MaPerformance /></S>} />      {/* S61 */}
-          <Route path="/mon-developpement"   element={<S><MonDeveloppement /></S>} />   {/* S61 */}
-          <Route path="/mes-reconnaissances" element={<S><MesReconnaissances /></S>} /> {/* S62 */}
-          <Route path="/mon-tableau-de-bord" element={<S><MonTableauDeBord /></S>} />   {/* S62 */}
+          {/* ── Hubs principaux ── */}
+          <Route path="/mon-espace"      element={<S><MonEspaceHub /></S>} />
+          <Route path="/management"      element={<S><ManagementHub /></S>} />
+          <Route path="/administration"  element={<S><AdministrationHub /></S>} />
 
-          {/* Travail */}
+          {/* ── Pages Espace Personnel (depuis Mon Espace Hub) ── */}
+          <Route path="/ma-performance"      element={<S><MaPerformance /></S>} />
+          <Route path="/mon-developpement"   element={<S><MonDeveloppement /></S>} />  {/* inclut Formation */}
+          <Route path="/mes-reconnaissances" element={<S><MesReconnaissances /></S>} />
+          <Route path="/engagement"          element={<S><EngagementHub /></S>} />     {/* Récompenses & Engagement */}
+          <Route path="/compensation"        element={<S><Compensation /></S>} />
+
+          {/* ── Travail (depuis Mon Espace Hub) ── */}
           <Route path="/travail/taches"    element={<S><Tasks /></S>} />
           <Route path="/travail/projets"   element={<S><ProjectsPage /></S>} />
           <Route path="/travail/objectifs" element={<S><ObjectivesPage /></S>} />
 
-          {/* Mesure & Analyse */}
-          <Route path="/intelligence" element={<S><IntelligenceRH /></S>} />
-          <Route path="/engagement"   element={<S><EngagementHub /></S>} />
-          <Route path="/formation"    element={<S><Formation /></S>} />        {/* S57 */}
-          <Route path="/compensation" element={<S><Compensation /></S>} />   {/* S58 */}
-          <Route path="/recrutement"  element={<S><Recrutement /></S>} />    {/* S59 */}
-          <Route path="/entretiens"  element={<S><EntretiensAnnuels /></S>} />  {/* S60 */}
+          {/* ── Management (sous-pages depuis ManagementHub) ── */}
+          <Route path="/mon-equipe" element={<S><MonEquipe /></S>} />
+          <Route path="/formation"  element={<S><Formation /></S>} />   {/* vue manager/admin */}
 
-          {/* Administration */}
+          {/* ── Analyse RH ── */}
+          <Route path="/intelligence" element={<S><IntelligenceRH /></S>} />
+
+          {/* ── RH Opérationnel (sidebar directe) ── */}
+          <Route path="/recrutement" element={<S><Recrutement /></S>} />
+          <Route path="/entretiens"  element={<S><EntretiensAnnuels /></S>} />
+
+          {/* ── Administration (sous-pages depuis AdminHub) ── */}
           <Route path="/admin/users"        element={<S><UsersPage /></S>} />
           <Route path="/admin/organisation" element={<S><Organisation /></S>} />
           <Route path="/admin/settings"     element={<S><SettingsPage /></S>} />
-          <Route path="/admin/super-admin"  element={<S><SuperAdmin /></S>} />   {/* S52 */}
-          <Route path="/admin/api-manager"  element={<S><ApiManager /></S>} />   {/* S53 */}
+          <Route path="/admin/super-admin"  element={<S><SuperAdmin /></S>} />
+          <Route path="/admin/api-manager"  element={<S><ApiManager /></S>} />
 
-          {/* Rétrocompatibilité — anciennes URLs */}
+          {/* ── Rétrocompatibilité ── */}
           <Route path="/tasks"      element={<Navigate to="/travail/taches"    replace />} />
           <Route path="/objectives" element={<Navigate to="/travail/objectifs" replace />} />
           <Route path="/projects"   element={<Navigate to="/travail/projets"   replace />} />
           <Route path="/pulse/*"    element={<Navigate to="/intelligence"       replace />} />
+          <Route path="/mon-espace-legacy" element={<S><MonEspace /></S>} />  {/* ancien /mon-espace si besoin */}
 
           <Route path="*" element={<Navigate to="/dashboard" replace />} />
         </Route>
