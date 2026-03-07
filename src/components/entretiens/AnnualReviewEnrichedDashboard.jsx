@@ -430,7 +430,7 @@ function CampaignComparator({ campaigns }) {
 // ─── Section selector (sous-onglets internes) ─────────────────
 
 const SECTIONS = [
-  { id: 'overview',   label: 'Vue d'ensemble',  icon: BarChart3 },
+  { id: 'overview',   label: "Vue d'ensemble",  icon: BarChart3 },
   { id: 'heatmap',    label: 'Heatmap divisions', icon: Users },
   { id: 'tendances',  label: 'Tendances',         icon: TrendingUp },
   { id: 'comparaison',label: 'Comparaison',        icon: Star },
