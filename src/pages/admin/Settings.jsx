@@ -752,6 +752,20 @@ function ModulesSection() {
         <SettingRow label="Intégrations Tierces" description="Webhooks Slack, Teams, Zapier + export Google Calendar — réservé administrateurs">
           <Toggle checked={form.integrations_enabled ?? false} onChange={(v) => setForm(prev => ({ ...prev, integrations_enabled: v }))} />
         </SettingRow>
+
+        {/* ─── Modules S57-S60 (Étape 18) ─── */}
+        <SettingRow label="Formation & Certifications" description="Catalogue de formations, inscriptions, certifications, suivi d'équipe">
+          <Toggle checked={form.formation_enabled ?? true} onChange={(v) => setForm(prev => ({ ...prev, formation_enabled: v }))} />
+        </SettingRow>
+        <SettingRow label="Compensation & Benchmark" description="Rémunération individuelle, benchmark marché, masse salariale équipe">
+          <Toggle checked={form.compensation_enabled ?? true} onChange={(v) => setForm(prev => ({ ...prev, compensation_enabled: v }))} />
+        </SettingRow>
+        <SettingRow label="Recrutement" description="Pipeline candidats, offres, entretiens, IA matching et parser CV">
+          <Toggle checked={form.recrutement_enabled ?? true} onChange={(v) => setForm(prev => ({ ...prev, recrutement_enabled: v }))} />
+        </SettingRow>
+        <SettingRow label="Entretiens Annuels" description="Campagnes d'évaluation, auto-évaluation collaborateur, calibration RH">
+          <Toggle checked={form.entretiens_enabled ?? true} onChange={(v) => setForm(prev => ({ ...prev, entretiens_enabled: v }))} />
+        </SettingRow>
       </SectionCard>
 
       <SectionCard title="Configuration OKR" description="Paramètres des cycles d'objectifs" icon={Target}>
