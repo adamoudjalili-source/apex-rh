@@ -40,6 +40,9 @@ const Compensation   = lazy(() => import('./pages/compensation/Compensation'))
 const Recrutement    = lazy(() => import('./pages/recrutement/Recrutement'))
 const EntretiensAnnuels = lazy(() => import('./pages/entretiens/EntretiensAnnuels'))
 
+// ── Gestion des Temps S66 ─────────────────────────────────────
+const GestionTemps = lazy(() => import('./pages/temps/GestionTemps'))
+
 // ── Communication S65 ─────────────────────────────────────────
 const CommunicationPage = lazy(() => import('./pages/communication/CommunicationPage'))
 const MessagesPage      = lazy(() => import('./pages/communication/Messages'))
@@ -107,6 +110,7 @@ export default function App() {
           {/* ── RH Opérationnel (sidebar directe) ── */}
           <Route path="/recrutement" element={<S><Recrutement /></S>} />
           <Route path="/entretiens"  element={<S><EntretiensAnnuels /></S>} />
+          <Route path="/temps"       element={<S><GestionTemps /></S>} />
 
           {/* ── Communication S65 ── */}
           <Route path="/communication"          element={<S><CommunicationPage /></S>} />
