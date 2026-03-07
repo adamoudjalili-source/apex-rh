@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState, useRef } from 'react'
 import { supabase } from '../lib/supabase'
 import { logAudit } from '../lib/auditLog'
+import { isAdminRole, isManagerRole } from '../lib/roles'
 
 const AuthContext = createContext({})
 
@@ -207,10 +208,11 @@ export const AuthProvider = ({ children }) => {
     updatePassword,
     isAdmin: profile?.role === 'administrateur',
     isDirecteur: profile?.role === 'directeur',
-    isDirection: profile?.role === 'direction',
     isChefDivision: profile?.role === 'chef_division',
     isChefService: profile?.role === 'chef_service',
     isCollaborateur: profile?.role === 'collaborateur',
+    isAdminOrAbove: isAdminRole(profile?.role),
+    isManagerOrAbove: isManagerRole(profile?.role),
   }
 
   return (
