@@ -207,7 +207,8 @@ function computeMaxStreak(sortedDates) {
   return Math.max(max, streak)
 }
 
-import { MANAGER_ROLES, isManagerRole } from '../lib/roles'
+import { MANAGER_ROLES, isManagerRole as _isManagerRole } from '../lib/roles'
+export const isManagerRole = _isManagerRole  // re-export pour compatibilité Gamification.jsx
 
 // ─── MON STREAK (calculé live depuis pulse_daily_logs) ───────
 
