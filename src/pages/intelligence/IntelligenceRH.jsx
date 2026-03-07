@@ -27,16 +27,16 @@ import ENPSPage                  from './ENPSPage'                  // S55
 const TABS = [
   { id:'performance',          label:'Performance PULSE',   icon:Activity,         component:BoardPage,               color:'#4F46E5', moduleKey:null },
   { id:'analytics',            label:'Analytics',           icon:BarChart3,        component:AnalyticsPage,           color:'#8B5CF6', moduleKey:'analytics_enabled' },
-  { id:'analytics_predictifs', label:'Prédictifs',          icon:GitBranch,        component:AnalyticsPredictifs,     color:'#A78BFA', moduleKey:null, badge:'S46' },
+  { id:'analytics_predictifs', label:'Prédictifs',          icon:GitBranch,        component:AnalyticsPredictifs,     color:'#A78BFA', moduleKey:null },
   { id:'feedback360',          label:'Feedback 360°',       icon:MessageSquare,    component:Feedback360Page,         color:'#3B82F6', moduleKey:'feedback360_enabled' },
   { id:'surveys',              label:'Surveys',             icon:TrendingUp,       component:SurveysPage,             color:'#10B981', moduleKey:'surveys_engagement_enabled' },
   { id:'review_cycles',        label:'Review Cycles',       icon:ClipboardList,    component:ReviewCyclesPage,        color:'#C9A227', moduleKey:'review_cycles_enabled' },
-  { id:'activite',             label:'Activité Réelle',     icon:Wifi,             component:ActiviteReelle,          color:'#F59E0B', moduleKey:null, badge:'S37' },
-  { id:'talents',              label:'Talents',             icon:Grid3x3,          component:TalentMapping,           color:'#F59E0B', moduleKey:null, badge:'S51', managerOnly:true },
-  { id:'behavioral',           label:'Comportemental',      icon:Brain,            component:BehavioralIntelligence,  color:'#EF4444', moduleKey:null, badge:'S54', managerOnly:true },  // S54
-  { id:'enps',                 label:'eNPS',                icon:Star,             component:ENPSPage,                color:'#10B981', moduleKey:'surveys_engagement_enabled', badge:'S55' },  // S55
-  { id:'drh',                  label:'Tableau DRH',         icon:LayoutDashboard,  component:TableauBordDRH,          color:'#EC4899', moduleKey:null, badge:'S47', adminOnly:true },
-  { id:'direction',             label:'Direction Générale',  icon:Building2,        component:DashboardDirection,      color:'#C9A227', moduleKey:null, badge:'S48', directionOnly:true },
+  { id:'activite',             label:'Activité Réelle',     icon:Wifi,             component:ActiviteReelle,          color:'#F59E0B', moduleKey:null },
+  { id:'talents',              label:'Talents',             icon:Grid3x3,          component:TalentMapping,           color:'#F59E0B', moduleKey:null, managerOnly:true },
+  { id:'behavioral',           label:'Comportemental',      icon:Brain,            component:BehavioralIntelligence,  color:'#EF4444', moduleKey:null, managerOnly:true },  // S54
+  { id:'enps',                 label:'eNPS',                icon:Star,             component:ENPSPage,                color:'#10B981', moduleKey:'surveys_engagement_enabled' },  // S55
+  { id:'drh',                  label:'Tableau DRH',         icon:LayoutDashboard,  component:TableauBordDRH,          color:'#EC4899', moduleKey:null, adminOnly:true },
+  { id:'direction',             label:'Direction Générale',  icon:Building2,        component:DashboardDirection,      color:'#C9A227', moduleKey:null, directionOnly:true },
 ]
 
 export default function IntelligenceRH() {
@@ -82,12 +82,6 @@ export default function IntelligenceRH() {
                 style={active?{ background:'rgba(255,255,255,0.04)', borderTop:`2px solid ${tab.color}`, borderLeft:'1px solid rgba(255,255,255,0.08)', borderRight:'1px solid rgba(255,255,255,0.08)' }:undefined}>
                 <Icon size={13} style={active?{color:tab.color}:undefined}/>
                 {tab.label}
-                {tab.badge && (
-                  <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full"
-                    style={{ background:'rgba(245,158,11,0.15)', color:'#F59E0B' }}>
-                    {tab.badge}
-                  </span>
-                )}
               </button>
             )
           })}
