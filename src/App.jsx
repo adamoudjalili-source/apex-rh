@@ -31,6 +31,7 @@ const ProjectsPage   = lazy(() => import('./pages/projects/Projects'))
 const IntelligenceRH = lazy(() => import('./pages/intelligence/IntelligenceRH'))
 const EngagementHub  = lazy(() => import('./pages/engagement/EngagementHub'))
 const Formation      = lazy(() => import('./pages/formation/Formation'))      // S57
+const Compensation   = lazy(() => import('./pages/compensation/Compensation')) // S58
 
 // ── Fallback Suspense ─────────────────────────────────────────
 function PageLoader() {
@@ -72,6 +73,7 @@ export default function App() {
           <Route path="/intelligence" element={<S><IntelligenceRH /></S>} />
           <Route path="/engagement"   element={<S><EngagementHub /></S>} />
           <Route path="/formation"    element={<S><Formation /></S>} />        {/* S57 */}
+          <Route path="/compensation" element={<S><Compensation /></S>} />   {/* S58 */}
 
           {/* Administration */}
           <Route path="/admin/users"        element={<S><UsersPage /></S>} />
