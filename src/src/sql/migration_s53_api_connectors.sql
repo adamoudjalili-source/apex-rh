@@ -386,17 +386,17 @@ CREATE POLICY scim_select ON scim_sync_logs
 
 -- ─── 11. Purge automatique audit_logs > 90 jours (pg_cron) ──
 -- À exécuter après activation pg_cron si pas déjà présent
-DO $$
+DO $outer$
 BEGIN
   IF EXISTS (SELECT 1 FROM pg_extension WHERE extname = 'pg_cron') THEN
     PERFORM cron.schedule(
       'purge-api-audit-logs',
-      '0 3 * * *',  -- 3h du matin chaque jour
-      $$DELETE FROM api_audit_logs WHERE created_at < now() - INTERVAL '90 days'$$
+      '0 3 * * *',
+      'DELETE FROM api_audit_logs WHERE created_at < now() - INTERVAL ''90 days'''
     );
   END IF;
 EXCEPTION WHEN OTHERS THEN NULL;
-END $$;
+END $outer$;
 
 -- ─── Vérification finale ─────────────────────────────────────
 DO $$

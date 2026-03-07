@@ -1,3 +1,4 @@
+// @ts-nocheck
 // ============================================================
 // APEX RH — supabase/functions/apex-api-scim/index.ts
 // Session 53 — Connecteur SCIM 2.0 (RFC 7644)

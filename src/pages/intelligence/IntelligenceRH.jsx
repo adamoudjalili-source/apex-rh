@@ -9,7 +9,7 @@ import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { useAppSettings } from '../../hooks/useSettings'
 import { useAuth } from '../../contexts/AuthContext'
-import { BarChart3, MessageSquare, ClipboardList, Activity, Wifi, TrendingUp, GitBranch, LayoutDashboard, Building2, Grid3x3, Brain } from 'lucide-react'
+import { BarChart3, MessageSquare, ClipboardList, Activity, Wifi, TrendingUp, GitBranch, LayoutDashboard, Building2, Grid3x3, Brain, Star } from 'lucide-react'
 
 import BoardPage                 from '../pulse/Board'
 import AnalyticsPage             from '../pulse/Analytics'
@@ -22,6 +22,7 @@ import TableauBordDRH            from './TableauBordDRH'
 import DashboardDirection        from './DashboardDirection'
 import TalentMapping             from './TalentMapping'
 import BehavioralIntelligence    from './BehavioralIntelligence'   // S54
+import ENPSPage                  from './ENPSPage'                  // S55
 
 const TABS = [
   { id:'performance',          label:'Performance PULSE',   icon:Activity,         component:BoardPage,               color:'#4F46E5', moduleKey:null },
@@ -33,6 +34,7 @@ const TABS = [
   { id:'activite',             label:'Activité Réelle',     icon:Wifi,             component:ActiviteReelle,          color:'#F59E0B', moduleKey:null, badge:'S37' },
   { id:'talents',              label:'Talents',             icon:Grid3x3,          component:TalentMapping,           color:'#F59E0B', moduleKey:null, badge:'S51', managerOnly:true },
   { id:'behavioral',           label:'Comportemental',      icon:Brain,            component:BehavioralIntelligence,  color:'#EF4444', moduleKey:null, badge:'S54', managerOnly:true },  // S54
+  { id:'enps',                 label:'eNPS',                icon:Star,             component:ENPSPage,                color:'#10B981', moduleKey:'surveys_engagement_enabled', badge:'S55' },  // S55
   { id:'drh',                  label:'Tableau DRH',         icon:LayoutDashboard,  component:TableauBordDRH,          color:'#EC4899', moduleKey:null, badge:'S47', adminOnly:true },
   { id:'direction',             label:'Direction Générale',  icon:Building2,        component:DashboardDirection,      color:'#C9A227', moduleKey:null, badge:'S48', directionOnly:true },
 ]

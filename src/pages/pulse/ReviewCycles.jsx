@@ -888,9 +888,10 @@ function ManagerView() {
   }
 
   const tabs = [
-    { id: 'cycles',     label: 'Cycles', count: allCycles.length },
-    { id: 'pending',    label: 'À évaluer', count: pendingEvals.length, badge: pendingEvals.length > 0 },
-    { id: 'validation', label: 'Validation', count: cycleEvals.filter(e => e.status === 'manager_submitted').length },
+    { id: 'cycles',        label: 'Cycles', count: allCycles.length },
+    { id: 'pending',       label: 'À évaluer', count: pendingEvals.length, badge: pendingEvals.length > 0 },
+    { id: 'validation',    label: 'Validation', count: cycleEvals.filter(e => e.status === 'manager_submitted').length },
+    { id: 'calibration',   label: 'Calibration', count: null, badge: false, icon: '🎯' },
   ]
 
   const statusColors = { draft: '#6B7280', active: '#10B981', in_review: '#3B82F6', closed: '#9CA3AF' }
@@ -1147,6 +1148,13 @@ function ManagerView() {
         </div>
       )}
 
+      {/* ── Onglet Calibration ──────────────────────────── */}
+      {activeTab === 'calibration' && (
+        <Sus fallback={<div className="flex justify-center py-8"><Spinner /></div>}>
+          <CalibrationPage />
+        </Sus>
+      )}
+
       {/* ── Modals ──────────────────────────────────────── */}
       <AnimatePresence>
         {showCreateModal && (
@@ -1244,6 +1252,11 @@ function CycleEvalsList({ cycleId, cycle, onManagerEval, onValidate, onArchive }
     </div>
   )
 }
+
+// ─── IMPORT CALIBRATION ──────────────────────────────────────
+// CalibrationPage importé en lazy pour éviter les dépendances circulaires
+import { lazy, Suspense as Sus } from 'react'
+const CalibrationPage = lazy(() => import('../intelligence/CalibrationPage'))
 
 // ─── PAGE PRINCIPALE ─────────────────────────────────────────
 

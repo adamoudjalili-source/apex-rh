@@ -25,7 +25,7 @@ export const TARGET_TABLES = {
       { value: 'last_name',   label: 'Nom de famille',   type: 'text',    required: true },
       { value: 'email',       label: 'Email',            type: 'email',   required: true },
       { value: 'job_title',   label: 'Intitulé poste',   type: 'text',    required: false },
-      { value: 'hire_date',   label: 'Date d'embauche',  type: 'date',    required: false },
+      { value: 'hire_date',   label: "Date d'embauche",  type: 'date',    required: false },
       { value: 'is_active',   label: 'Actif',            type: 'boolean', required: false },
       { value: 'role',        label: 'Rôle APEX',        type: 'enum',    required: false },
       { value: 'phone',       label: 'Téléphone',        type: 'text',    required: false },

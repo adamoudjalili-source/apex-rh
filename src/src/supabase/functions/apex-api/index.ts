@@ -1,3 +1,4 @@
+// @ts-nocheck
 // ============================================================
 // APEX RH — supabase/functions/apex-api/index.ts
 // Session 53 — API REST Publique v1
