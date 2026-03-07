@@ -27,7 +27,7 @@ import {
   LayoutDashboard, CheckSquare, Target, FolderKanban,
   Activity, BookOpen, Trophy, Users, BarChart3,
   ChevronLeft, ChevronRight, ChevronDown,
-  LogOut, Settings, Building2, UserCog,
+  LogOut, Settings, Building2, UserCog, GraduationCap,
 } from 'lucide-react'
 import { useAuth }        from '../../contexts/AuthContext'
 import { useAppSettings } from '../../hooks/useSettings'
@@ -148,6 +148,7 @@ export default function Sidebar() {
             <Divider label="Analyse" collapsed={collapsed}/>
             <NavItem icon={BarChart3} label="Intelligence RH"  path="/intelligence" color="#8B5CF6" collapsed={collapsed}/>
             <NavItem icon={Trophy}   label="Engagement & Rapports" path="/engagement" color="#C9A227" collapsed={collapsed}/>
+            <NavItem icon={GraduationCap} label="Formation & Certifications" path="/formation" color="#10B981" collapsed={collapsed}/> {/* S57 */}
             <Divider label="Gestion" collapsed={collapsed}/>
             <GroupItem label="Gestion" icon={Building2}
               open={gestionOpen || isGestionActive}
@@ -202,6 +203,7 @@ export default function Sidebar() {
             <NavItem icon={Users}    label="Mon Équipe"         path="/mon-equipe"    color="#3B82F6" collapsed={collapsed}/>
             <NavItem icon={BarChart3} label="Intelligence RH"   path="/intelligence"  color="#8B5CF6" collapsed={collapsed}/>
             <NavItem icon={Trophy}   label="Engagement équipe"  path="/engagement"    color="#C9A227" collapsed={collapsed}/>
+            <NavItem icon={GraduationCap} label="Formation"     path="/formation"     color="#10B981" collapsed={collapsed}/> {/* S57 */}
             <Divider label="Administration" collapsed={collapsed}/>
             <NavItem icon={Settings} label="Paramètres" path="/admin/settings" collapsed={collapsed}/>
           </>
@@ -244,6 +246,9 @@ export default function Sidebar() {
             {/* 4 — Mon Développement */}
             <Divider label="Développement" collapsed={collapsed}/>
             <NavItem icon={BookOpen} label="Mon Développement" path="/mon-developpement" color="#10B981" collapsed={collapsed}/>
+
+            {/* 4b — Formation */}
+            <NavItem icon={GraduationCap} label="Formation" path="/formation" color="#6366F1" collapsed={collapsed}/> {/* S57 */}
 
             {/* 5 — Mes Reconnaissances */}
             <Divider label="Reconnaissances" collapsed={collapsed}/>
