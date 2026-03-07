@@ -1,6 +1,14 @@
+// ============================================================
+// APEX RH — AppLayout.jsx
+// ✅ Session 56 — Ajout NotificationToast + PushPermissionBanner
+//                + OnboardingWizardV2 + OnboardingChecklist
+// ============================================================
 import { Outlet } from 'react-router-dom'
 import Sidebar from './Sidebar'
-import Header from './Header'
+import Header  from './Header'
+import NotificationToast    from '../notifications/NotificationToast'
+import PushPermissionBanner from '../notifications/PushPermissionBanner'
+import OnboardingWizardV2, { OnboardingChecklist } from '../onboarding/OnboardingWizardV2'
 
 export default function AppLayout() {
   return (
@@ -21,6 +29,12 @@ export default function AppLayout() {
           <Outlet />
         </main>
       </div>
+
+      {/* ── Overlays globaux S56 ── */}
+      <OnboardingWizardV2 />
+      <OnboardingChecklist />
+      <NotificationToast />
+      <PushPermissionBanner />
     </div>
   )
 }
