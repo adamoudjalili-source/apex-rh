@@ -1,15 +1,16 @@
 // ============================================================
 // APEX RH — pages/recrutement/Recrutement.jsx
 // Session 59 — Portail Candidats & Recrutement Light
-// Onglets adaptatifs : Offres · Mes candidatures · Pipeline (mgr) · Entretiens (mgr) · Admin
+// Session 61 — + Onglet IA Matching (matching automatique, scoring candidats)
+// Onglets adaptatifs : Offres · Mes candidatures · Pipeline (mgr) · Entretiens (mgr) · IA Matching (mgr) · Admin
 // ============================================================
 import { useState, useMemo } from 'react'
 import { motion } from 'framer-motion'
 import {
   Briefcase, Send, Users, Calendar, Settings,
-  TrendingUp, Clock, CheckCircle2, Target,
+  TrendingUp, Clock, CheckCircle2, Brain,
 } from 'lucide-react'
-import { useAuth }          from '../../contexts/AuthContext'
+import { useAuth }             from '../../contexts/AuthContext'
 import { useRecruitmentStats } from '../../hooks/useRecruitment'
 
 import JobBoard              from '../../components/recrutement/JobBoard'
@@ -17,6 +18,7 @@ import MyApplications        from '../../components/recrutement/MyApplications'
 import CandidatePipeline     from '../../components/recrutement/CandidatePipeline'
 import InterviewPanel        from '../../components/recrutement/InterviewPanel'
 import RecruitmentAdminPanel from '../../components/recrutement/RecruitmentAdminPanel'
+import AIMatchingPanel       from '../../components/recrutement/AIMatchingPanel'   // S61
 
 // ─── Animations ───────────────────────────────────────────────
 const stagger = {
@@ -69,10 +71,12 @@ export default function Recrutement() {
     if (isManager && !isAdmin) {
       base.push({ id: 'pipeline',   label: 'Mon pipeline',    icon: Users })
       base.push({ id: 'interviews', label: 'Entretiens',       icon: Calendar })
+      base.push({ id: 'ai',         label: 'IA Matching',      icon: Brain })   // S61
     }
     if (isAdmin) {
       base.push({ id: 'pipeline',   label: 'Pipeline',         icon: Users })
       base.push({ id: 'interviews', label: 'Entretiens',        icon: Calendar })
+      base.push({ id: 'ai',         label: 'IA Matching',       icon: Brain })  // S61
       base.push({ id: 'admin',      label: 'Administration',   icon: Settings })
     }
     return base
@@ -98,7 +102,7 @@ export default function Recrutement() {
             <h1 className="text-xl font-extrabold text-white tracking-tight">Recrutement</h1>
           </div>
           <p className="text-sm text-white/40 pl-11">
-            Portail candidats · Suivi pipeline · Entretiens
+            Portail candidats · Suivi pipeline · Entretiens · IA Matching
           </p>
         </div>
       </motion.div>
@@ -119,12 +123,25 @@ export default function Recrutement() {
               onClick={() => setActiveTab(id)}
               className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-medium whitespace-nowrap transition-all flex-shrink-0"
               style={{
-                background: activeTab === id ? 'rgba(99,102,241,0.2)' : 'rgba(255,255,255,0.04)',
-                color:      activeTab === id ? '#818CF8' : 'rgba(255,255,255,0.4)',
-                border:     activeTab === id ? '1px solid rgba(99,102,241,0.3)' : '1px solid transparent',
+                background: activeTab === id
+                  ? id === 'ai' ? 'rgba(139,92,246,0.2)' : 'rgba(99,102,241,0.2)'
+                  : 'rgba(255,255,255,0.04)',
+                color: activeTab === id
+                  ? id === 'ai' ? '#C4B5FD' : '#818CF8'
+                  : 'rgba(255,255,255,0.4)',
+                border: activeTab === id
+                  ? id === 'ai' ? '1px solid rgba(139,92,246,0.35)' : '1px solid rgba(99,102,241,0.3)'
+                  : '1px solid transparent',
               }}>
               <Icon size={13}/>
               {label}
+              {/* Badge IA sur l'onglet IA Matching */}
+              {id === 'ai' && activeTab !== 'ai' && (
+                <span className="text-[8px] px-1 py-0.5 rounded font-bold uppercase"
+                  style={{ background: 'rgba(139,92,246,0.2)', color: '#A78BFA', marginLeft: 2 }}>
+                  NEW
+                </span>
+              )}
             </button>
           ))}
         </div>
@@ -136,6 +153,7 @@ export default function Recrutement() {
         {activeTab === 'mine'       && <MyApplications/>}
         {activeTab === 'pipeline'   && <CandidatePipeline/>}
         {activeTab === 'interviews' && <InterviewPanel/>}
+        {activeTab === 'ai'         && <AIMatchingPanel/>}
         {activeTab === 'admin'      && <RecruitmentAdminPanel/>}
       </motion.div>
     </motion.div>
