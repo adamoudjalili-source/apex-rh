@@ -1,12 +1,14 @@
 // ============================================================
 // APEX RH — usePermission.js
-// Session 91 — Phase A RBAC (wrapper transparent AuthContext)
+// Session 91  — Phase A RBAC (wrapper transparent AuthContext)
 // Session 101 — Extension module pulse (journal · board · calibration · analytics)
 // Session 102 — Extension modules okr + calibration (transverses)
+// Session 108 — Phase D RBAC : surcharges individuelles en base (overrides)
 // Hook unifié V2 : can() · scope() · hasRole()
-// Zéro requête Supabase — wraps les helpers AuthContext existants
+// Priorité : override individuel (DB) > matrice statique (fallback)
 // ============================================================
 import { useAuth } from '../contexts/AuthContext'
+import { useMyOverrides } from './useUserPermissionOverrides'
 
 // Ordre hiérarchique des rôles (index = niveau, plus haut = plus de droits)
 const ROLE_ORDER = ['collaborateur', 'chef_service', 'chef_division', 'directeur', 'administrateur', 'super_admin']
@@ -474,14 +476,26 @@ export function usePermission() {
     isSuperAdmin,
   }
 
+  // Surcharges individuelles depuis Supabase (Phase D)
+  const { overrides } = useMyOverrides()
+
   /**
    * Vérifie si l'utilisateur peut effectuer une action sur une ressource d'un module.
+   * Phase D : vérifie d'abord les surcharges individuelles (DB), puis la matrice statique (fallback).
    * @param {string} module   — ex: 'conges', 'admin', 'intelligence'
    * @param {string} resource — ex: 'requests', 'users', 'drh_dashboard'
    * @param {string} action   — ex: 'read', 'create', 'update', 'delete', 'validate', 'export', 'admin'
    * @returns {boolean}
    */
   function can(module, resource, action) {
+    // 1. Vérifier override individuel (prioritaire sur la matrice)
+    if (overrides && overrides.length > 0) {
+      const override = overrides.find(o =>
+        o.module === module && o.resource === resource && o.action === action
+      )
+      if (override !== undefined) return override.granted
+    }
+    // 2. Fallback matrice statique
     const fn = PERMISSION_MATRIX[module]?.[resource]?.[action]
     if (!fn) return false
     return fn(helpers) ?? false

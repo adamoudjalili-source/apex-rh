@@ -6,24 +6,25 @@
 // ============================================================
 import { useState, useEffect, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import {
-  Shield, BookOpen, Clock, Search, Filter,
+import { Shield, BookOpen, Clock, Search, Filter,
   RefreshCw, ChevronLeft, ChevronRight, User,
   ArrowUpRight, ArrowDownRight, ShieldCheck, ShieldOff,
-  AlertTriangle, Key,
+  AlertTriangle, Key, Users, SlidersHorizontal,
 } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
 import { usePermission } from '../../hooks/usePermission'
 import { supabase } from '../../lib/supabase'
 import AccessControlMatrix from '../../components/admin/AccessControlMatrix'
+import PermissionOverrideEditor from '../../components/admin/PermissionOverrideEditor'
 
 const stagger = { hidden: {}, visible: { transition: { staggerChildren: 0.06, delayChildren: 0.04 } } }
 const fadeUp  = { hidden: { opacity: 0, y: 14 }, visible: { opacity: 1, y: 0, transition: { duration: 0.32, ease: [0.4,0,0.2,1] } } }
 
 // ---- Constantes ----
 const TABS = [
-  { key: 'matrix',  label: 'Matrice des rôles', icon: Shield },
-  { key: 'journal', label: 'Journal RBAC',       icon: BookOpen },
+  { key: 'matrix',    label: 'Matrice des rôles',          icon: Shield },
+  { key: 'overrides', label: 'Surcharges individuelles',   icon: SlidersHorizontal },
+  { key: 'journal',   label: 'Journal RBAC',               icon: BookOpen },
 ]
 
 const CATEGORY_OPTIONS = [
@@ -42,6 +43,100 @@ const ACTION_ICONS = {
 }
 
 const PAGE_SIZE = 20
+
+// ---- Sous-composant : Sélecteur utilisateur + PermissionOverrideEditor ----
+function OverridesTab({ orgId }) {
+  const [users, setUsers]       = useState([])
+  const [loading, setLoading]   = useState(false)
+  const [search, setSearch]     = useState('')
+  const [selectedUser, setSelectedUser] = useState(null)
+
+  useEffect(() => {
+    if (!orgId) return
+    setLoading(true)
+    supabase
+      .from('users')
+      .select('id, first_name, last_name, email, role')
+      .eq('organization_id', orgId)
+      .order('last_name')
+      .then(({ data }) => { setUsers(data || []); setLoading(false) })
+  }, [orgId])
+
+  const ROLE_LABELS = {
+    super_admin: 'Super Admin', administrateur: 'Admin',
+    directeur: 'Directeur', chef_division: 'Chef Division',
+    chef_service: 'Chef Service', collaborateur: 'Collaborateur',
+  }
+
+  const filtered = users.filter(u => {
+    const q = search.toLowerCase()
+    return (
+      u.first_name?.toLowerCase().includes(q) ||
+      u.last_name?.toLowerCase().includes(q) ||
+      u.email?.toLowerCase().includes(q)
+    )
+  })
+
+  return (
+    <div className="grid grid-cols-[280px,1fr] gap-6 min-h-[400px]">
+
+      {/* Colonne gauche : liste des utilisateurs */}
+      <div className="space-y-3">
+        <div className="relative">
+          <Search size={12} className="absolute left-3 top-1/2 -translate-y-1/2 text-white/25" />
+          <input
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            placeholder="Rechercher un utilisateur…"
+            className="w-full h-8 bg-white/5 border border-white/10 rounded-lg pl-7 pr-3 text-xs text-white/70 placeholder-white/20 focus:outline-none focus:border-white/20"
+          />
+        </div>
+
+        <div className="rounded-xl border border-white/8 overflow-hidden"
+          style={{ background: 'rgba(255,255,255,0.02)' }}>
+          {loading ? (
+            <div className="flex items-center justify-center py-8">
+              <RefreshCw size={14} className="animate-spin text-white/20" />
+            </div>
+          ) : filtered.length === 0 ? (
+            <div className="py-8 text-center text-white/25 text-xs">Aucun utilisateur</div>
+          ) : (
+            filtered.map(u => {
+              const isActive = selectedUser?.id === u.id
+              return (
+                <button
+                  key={u.id}
+                  onClick={() => setSelectedUser(u)}
+                  className={`w-full flex items-center gap-3 px-3 py-2.5 border-b border-white/5 last:border-0 text-left transition-colors ${
+                    isActive ? 'bg-indigo-500/10' : 'hover:bg-white/2'
+                  }`}>
+                  <div className="w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold flex-shrink-0"
+                    style={{ background: 'rgba(99,102,241,0.15)', color: '#818CF8' }}>
+                    {(u.first_name?.[0] || '?').toUpperCase()}
+                  </div>
+                  <div className="min-w-0">
+                    <p className={`text-[11px] font-medium truncate ${isActive ? 'text-white/90' : 'text-white/60'}`}>
+                      {u.first_name} {u.last_name}
+                    </p>
+                    <p className="text-[10px] text-white/25 truncate">{ROLE_LABELS[u.role] || u.role}</p>
+                  </div>
+                </button>
+              )
+            })
+          )}
+        </div>
+      </div>
+
+      {/* Colonne droite : éditeur */}
+      <div>
+        <PermissionOverrideEditor
+          userId={selectedUser?.id}
+          userName={selectedUser ? `${selectedUser.first_name} ${selectedUser.last_name}` : null}
+        />
+      </div>
+    </div>
+  )
+}
 
 // ---- Sous-composant : Journal RBAC ----
 function RbacJournal({ orgId }) {
@@ -369,10 +464,10 @@ export default function AccessControl() {
           <div className="mt-3 flex items-center gap-2">
             <span className="text-[11px] font-semibold px-2 py-1 rounded-full border"
               style={{ color: '#F59E0B', background: 'rgba(245,158,11,0.1)', borderColor: 'rgba(245,158,11,0.2)' }}>
-              Phase A — RBAC Wrapper
+              Phase D — RBAC Dynamique
             </span>
             <span className="text-[11px] text-white/30">
-              Les surcharges individuelles sont gérées dans la fiche employé (onglet Accès &amp; Droits)
+              Matrice par défaut + surcharges individuelles en base
             </span>
           </div>
         </motion.div>
@@ -408,6 +503,11 @@ export default function AccessControl() {
             {activeTab === 'matrix' && (
               <motion.div key="matrix" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
                 <AccessControlMatrix />
+              </motion.div>
+            )}
+            {activeTab === 'overrides' && (
+              <motion.div key="overrides" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+                <OverridesTab orgId={orgId} />
               </motion.div>
             )}
             {activeTab === 'journal' && (
