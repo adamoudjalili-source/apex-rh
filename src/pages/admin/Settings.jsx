@@ -2003,7 +2003,8 @@ export default function SettingsPage() {
       case 'company': return <CompanySection />
       case 'modules': return <ModulesSection />
       case 'pulse': return <PulseSettingsSection />
-      case 'notification-rules': return <NotificationRulesAdmin /> {/* FIX S88 — S86 */}
+      // FIX S88 — S86 NotificationRulesAdmin
+      case 'notification-rules': return <NotificationRulesAdmin />
       case 'feedback360-settings': return <Feedback360SettingsSection />
       case 'surveys-settings': return <SurveysEngagementSettingsSection />
       case 'ia-coach-settings': return <IACoachSettingsSection />

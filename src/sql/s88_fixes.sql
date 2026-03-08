@@ -176,71 +176,70 @@ WHERE NOT EXISTS (
 
 -- ┌─────────────────────────────────────────────────────────┐
 -- │ FIX S88-3 — BUG-C2 : S65 FKs profiles→users            │
--- │ ATTENTION : exécuter uniquement si les tables existent   │
--- │ et que les données ont été insérées avec des user IDs    │
--- │ valides dans la table users (pas profiles).              │
+-- │ Cartographie exacte des colonnes par table :            │
+-- │  communication_channels          → created_by           │
+-- │  communication_messages          → author_id            │
+-- │  communication_announcements     → author_id            │
+-- │  communication_announcement_comments → author_id        │
+-- │  communication_threads           → created_by           │
+-- │  communication_thread_messages   → author_id            │
+-- │  communication_user_status       → user_id (PK)         │
 -- └─────────────────────────────────────────────────────────┘
 
--- communication_announcements : author_id
-DO $$
-BEGIN
-  IF EXISTS (
-    SELECT 1 FROM information_schema.table_constraints
-    WHERE constraint_name LIKE '%communication_announcements_author_id%'
-      AND constraint_type = 'FOREIGN KEY'
-  ) THEN
-    ALTER TABLE communication_announcements
-      DROP CONSTRAINT IF EXISTS communication_announcements_author_id_fkey;
-    ALTER TABLE communication_announcements
-      ADD CONSTRAINT communication_announcements_author_id_fkey
-      FOREIGN KEY (author_id) REFERENCES users(id) ON DELETE SET NULL;
-  END IF;
-END $$;
-
--- communication_announcements : created_by
-ALTER TABLE communication_announcements
-  DROP CONSTRAINT IF EXISTS communication_announcements_created_by_fkey;
-ALTER TABLE communication_announcements
-  ADD CONSTRAINT communication_announcements_created_by_fkey
-  FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE SET NULL;
-
--- communication_channels : created_by
+-- communication_channels : created_by → users
 ALTER TABLE communication_channels
   DROP CONSTRAINT IF EXISTS communication_channels_created_by_fkey;
 ALTER TABLE communication_channels
   ADD CONSTRAINT communication_channels_created_by_fkey
   FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE SET NULL;
 
--- communication_messages : author_id
+-- communication_messages : author_id → users
 ALTER TABLE communication_messages
   DROP CONSTRAINT IF EXISTS communication_messages_author_id_fkey;
 ALTER TABLE communication_messages
   ADD CONSTRAINT communication_messages_author_id_fkey
   FOREIGN KEY (author_id) REFERENCES users(id) ON DELETE SET NULL;
 
--- communication_fil_posts : author_id
-ALTER TABLE communication_fil_posts
-  DROP CONSTRAINT IF EXISTS communication_fil_posts_author_id_fkey;
-ALTER TABLE communication_fil_posts
-  ADD CONSTRAINT communication_fil_posts_author_id_fkey
+-- communication_announcements : author_id → users (PAS created_by !)
+ALTER TABLE communication_announcements
+  DROP CONSTRAINT IF EXISTS communication_announcements_author_id_fkey;
+ALTER TABLE communication_announcements
+  ADD CONSTRAINT communication_announcements_author_id_fkey
   FOREIGN KEY (author_id) REFERENCES users(id) ON DELETE SET NULL;
 
--- communication_announcement_comments : author_id
+-- communication_announcement_comments : author_id → users
 ALTER TABLE communication_announcement_comments
   DROP CONSTRAINT IF EXISTS communication_announcement_comments_author_id_fkey;
 ALTER TABLE communication_announcement_comments
   ADD CONSTRAINT communication_announcement_comments_author_id_fkey
   FOREIGN KEY (author_id) REFERENCES users(id) ON DELETE SET NULL;
 
--- communication_user_presence : user_id
-ALTER TABLE communication_user_presence
-  DROP CONSTRAINT IF EXISTS communication_user_presence_user_id_fkey;
-ALTER TABLE communication_user_presence
-  ADD CONSTRAINT communication_user_presence_user_id_fkey
+-- communication_threads : created_by → users
+ALTER TABLE communication_threads
+  DROP CONSTRAINT IF EXISTS communication_threads_created_by_fkey;
+ALTER TABLE communication_threads
+  ADD CONSTRAINT communication_threads_created_by_fkey
+  FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE SET NULL;
+
+-- communication_thread_messages : author_id → users
+ALTER TABLE communication_thread_messages
+  DROP CONSTRAINT IF EXISTS communication_thread_messages_author_id_fkey;
+ALTER TABLE communication_thread_messages
+  ADD CONSTRAINT communication_thread_messages_author_id_fkey
+  FOREIGN KEY (author_id) REFERENCES users(id) ON DELETE SET NULL;
+
+-- communication_user_status : user_id (PK) → users
+ALTER TABLE communication_user_status
+  DROP CONSTRAINT IF EXISTS communication_user_status_user_id_fkey;
+ALTER TABLE communication_user_status
+  ADD CONSTRAINT communication_user_status_user_id_fkey
   FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE;
 
--- Corriger les policies RLS S65 (org_id → organization_id)
--- communication_announcements
+-- Note S88 : les colonnes org_id ont déjà été renommées organization_id en production
+-- (S87 référence déjà a.organization_id dans ses vues → renommage antérieur confirmé)
+-- Aucun RENAME COLUMN nécessaire.
+
+-- Corriger les policies RLS S65 sur communication_announcements
 DROP POLICY IF EXISTS "announcements_select" ON communication_announcements;
 CREATE POLICY "announcements_select" ON communication_announcements
   FOR SELECT USING (
