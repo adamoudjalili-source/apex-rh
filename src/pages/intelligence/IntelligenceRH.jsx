@@ -9,7 +9,7 @@ import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useAppSettings } from '../../hooks/useSettings'
 import { useAuth } from '../../contexts/AuthContext'
-import { BarChart3, MessageSquare, ClipboardList, Activity, Wifi, TrendingUp, GitBranch, LayoutDashboard, Building2, Grid3x3, Brain, Star, Gauge, Target, BarChart2, Bell, SlidersHorizontal, FileText, Map } from 'lucide-react'
+import { BarChart3, MessageSquare, ClipboardList, Activity, Wifi, TrendingUp, GitBranch, LayoutDashboard, Building2, Grid3x3, Brain, Star, Gauge, Target, BarChart2, Bell, SlidersHorizontal, FileText, Map, BookOpen } from 'lucide-react'
 
 import PulseAlertCenter          from '../../components/pulse/PulseAlertCenter'    // S76
 import TeamPulseHeatmap          from '../../components/pulse/TeamPulseHeatmap'    // S76
@@ -29,7 +29,8 @@ import ENPSPage                  from './ENPSPage'                  // S55
 import AdoptionDashboard          from './AdoptionDashboard'           // S40 — Étape 8
 import CartographieCharges        from './CartographieCharges'          // S42 — Étape 8
 import HRIntelligencePage         from './HRIntelligencePage'           // S82 — Bilan social
-import SuccessionVivierPage        from '../talent/SuccessionVivierPage'  // S83 — Vivier + gap analysis
+import SuccessionVivierPage        from '../talent/SuccessionVivierPage'    // S83 — Vivier + gap analysis
+import CompetencyFrameworkPage     from '../talent/CompetencyFrameworkPage'  // S84 — Référentiel Compétences
 
 // Groupes sémantiques (pour documentation) :
 //   Mesure    : performance, analytics, analytics_predictifs, activite, cartographie_charges
@@ -63,6 +64,7 @@ const TABS = [
   { id:'talents',              group:'talent',     label:'Cartographie Talents',icon:Grid3x3,          component:TalentMapping,           color:'#F59E0B', moduleKey:null, managerOnly:true },
   { id:'behavioral',           group:'talent',     label:'Comportemental',      icon:Brain,            component:BehavioralIntelligence,  color:'#EF4444', moduleKey:null, managerOnly:true },
   { id:'vivier_s83',           group:'talent',     label:'Vivier & Relève',     icon:Map,              component:SuccessionVivierPage,    color:'#10B981', moduleKey:null, adminOnly:true },  // S83
+  { id:'referentiel_s84',      group:'talent',     label:'Référentiel',         icon:BookOpen,         component:CompetencyFrameworkPage, color:'#4F46E5', moduleKey:null, adminOnly:true },  // S84
   // ─── Groupe Stratégie ────────────────────────────────────────
   { id:'drh',                  group:'strategie',  label:'Tableau DRH',         icon:LayoutDashboard,  component:TableauBordDRH,          color:'#EC4899', moduleKey:null, adminOnly:true },
   { id:'direction',            group:'strategie',  label:'Direction Générale',  icon:Building2,        component:DashboardDirection,      color:'#C9A227', moduleKey:null, adminOnly:true },

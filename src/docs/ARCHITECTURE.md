@@ -268,6 +268,7 @@ get_succession_coverage(p_org_id uuid)
 | Feedback 360° — Cycles planifiés + tendances | S81 | `feedback360_templates`, `feedback360_cycles`, `feedback360_requests` |
 | Intelligence RH — Bilan social + turnover | S82 | `employee_departures`, `mv_headcount_stats`, `mv_turnover_stats`, `mv_absenteeism_stats` |
 | Succession & Talents — Vivier + gap analysis | S83 | `talent_pool_entries`, `succession_gaps`, `mv_succession_coverage` |
+| Référentiel Compétences — Cartographie + gaps | S84 | `competency_categories`, `competencies`, `role_competency_requirements`, `user_competency_assessments`, `mv_competency_coverage` |
 
 ---
 
@@ -330,4 +331,11 @@ supabase/functions/
 ✅ get_talent_gap_analysis + get_succession_coverage — SECURITY DEFINER avec vérif org (S83)
 ✅ succession_plans et talent_assessments existent depuis S51/S55 — ne jamais recréer
 ✅ key_positions existe depuis S51 — talent_pool_entries.target_position_id la référence
+✅ useCompetencyFramework.js (S42 familles métiers) — NE PAS ÉCRASER — hooks S84 dans useCompetencyS84.js (S84)
+✅ competencies.UNIQUE(organization_id, name) — pas de doublon de nom dans une org (S84)
+✅ role_competency_requirements — UNIQUE sur (org, role_name, competency_id) OU (org, position_id, competency_id) (S84)
+✅ user_competency_assessments.UNIQUE(organization_id, user_id, competency_id, source) — upsert par quadruplet (S84)
+✅ mv_competency_coverage — REVOKE ALL appliqué, jamais exposée directement (S84)
+✅ get_competency_gaps + refresh_competency_coverage_mv — SECURITY DEFINER avec vérif org (S84)
+✅ source enum assessments : 'manager' | 'self' | '360' | 'import' (S84)
 ```
