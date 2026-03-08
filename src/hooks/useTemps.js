@@ -612,3 +612,522 @@ export function useExportTimeSheets() {
 
   return { exportTimeSheets: exportFn }
 }
+
+// ============================================================
+// S71 — MOTEUR HEURES SUPPLÉMENTAIRES
+// Hooks : calcul HS, validation, alertes, export paie
+// ============================================================
+
+// ─── CONSTANTES HS ────────────────────────────────────────────
+
+export const OT_MODES = {
+  daily:  'Journalier',
+  weekly: 'Hebdomadaire',
+  both:   'Journalier + Hebdomadaire',
+}
+
+export const DEFAULT_OT_SETTINGS = {
+  daily_threshold_hours:      8,
+  weekly_threshold_hours:     40,
+  ot_rate_25_after:           8,
+  ot_rate_50_after:           10,
+  ot_rate_100_after:          null,
+  submission_deadline_days:   3,
+  alert_enabled:              true,
+  overtime_requires_approval: true,
+  overtime_calc_mode:         'weekly',
+}
+
+// ─── CALCUL HS À PARTIR D'UN GROUPE D'ENTRÉES ─────────────────
+
+/**
+ * Calcule la répartition HS à partir des entrées d'une feuille
+ * @param {Array}  entries   — time_entries de la semaine
+ * @param {Object} settings  — time_settings (avec colonnes S71)
+ * @returns {{ regularHours, ot25Hours, ot50Hours, ot100Hours, overtimeHours, totalHours }}
+ */
+export function calculateOvertimeBreakdown(entries = [], settings = {}) {
+  const s = { ...DEFAULT_OT_SETTINGS, ...settings }
+  const mode = s.overtime_calc_mode || 'weekly'
+
+  let regularHours = 0
+  let ot25Hours    = 0
+  let ot50Hours    = 0
+  let ot100Hours   = 0
+
+  if (mode === 'daily' || mode === 'both') {
+    // Regrouper par jour
+    const byDay = {}
+    entries.forEach(e => {
+      if (!byDay[e.entry_date]) byDay[e.entry_date] = 0
+      byDay[e.entry_date] += Number(e.hours || 0)
+    })
+
+    Object.values(byDay).forEach(dayHours => {
+      const thresh = s.daily_threshold_hours
+      const t25    = s.ot_rate_25_after
+      const t50    = s.ot_rate_50_after
+      const t100   = s.ot_rate_100_after
+
+      if (dayHours <= thresh) {
+        regularHours += dayHours
+      } else {
+        regularHours += thresh
+        const over = dayHours - thresh
+
+        if (t100 && dayHours > t100) {
+          const h100 = dayHours - t100
+          const h50  = t100 - t50
+          const h25  = Math.max(0, t50 - t25)
+          ot25Hours  += Math.min(h25, over)
+          ot50Hours  += Math.min(h50, Math.max(0, over - h25))
+          ot100Hours += h100
+        } else if (dayHours > t50) {
+          ot25Hours += Math.max(0, t50 - t25)
+          ot50Hours += dayHours - t50
+        } else {
+          ot25Hours += Math.min(over, t50 - t25)
+        }
+      }
+    })
+  } else {
+    // Mode weekly (défaut)
+    const weekTotal = entries.reduce((s, e) => s + Number(e.hours || 0), 0)
+    const thresh    = s.weekly_threshold_hours
+    const t25       = s.ot_rate_25_after
+    const t50       = s.ot_rate_50_after
+    const t100      = s.ot_rate_100_after
+
+    if (weekTotal <= thresh) {
+      regularHours = weekTotal
+    } else {
+      regularHours = thresh
+      const over = weekTotal - thresh
+
+      if (t100 && weekTotal > (thresh + t100)) {
+        const h100 = weekTotal - (thresh + t100)
+        const h50  = t100 - t50
+        const h25  = Math.max(0, t50 - t25)
+        ot25Hours  = h25
+        ot50Hours  = h50
+        ot100Hours = h100
+      } else if (weekTotal > (thresh + t50)) {
+        ot25Hours = Math.max(0, t50 - t25)
+        ot50Hours = weekTotal - (thresh + t50)
+      } else {
+        ot25Hours = Math.min(over, Math.max(0, t50 - t25))
+      }
+    }
+  }
+
+  const overtimeHours = ot25Hours + ot50Hours + ot100Hours
+  const totalHours    = regularHours + overtimeHours
+
+  return {
+    regularHours:  Math.round(regularHours  * 100) / 100,
+    ot25Hours:     Math.round(ot25Hours     * 100) / 100,
+    ot50Hours:     Math.round(ot50Hours     * 100) / 100,
+    ot100Hours:    Math.round(ot100Hours    * 100) / 100,
+    overtimeHours: Math.round(overtimeHours * 100) / 100,
+    totalHours:    Math.round(totalHours    * 100) / 100,
+  }
+}
+
+// ─── MISE À JOUR RÉPARTITION HS (feuille unique) ──────────────
+
+export function useRecalculateOvertime() {
+  const { profile } = useAuth()
+  const qc = useQueryClient()
+
+  return useMutation({
+    mutationFn: async ({ timesheetId }) => {
+      // 1. Récupérer les entrées + settings
+      const [tsRes, setRes] = await Promise.all([
+        supabase
+          .from('time_sheets')
+          .select('*, time_entries(*)')
+          .eq('id', timesheetId)
+          .single(),
+        supabase
+          .from('time_settings')
+          .select('*')
+          .eq('organization_id', profile.organization_id)
+          .maybeSingle(),
+      ])
+      if (tsRes.error) throw tsRes.error
+      const entries  = tsRes.data.time_entries || []
+      const settings = setRes.data || {}
+
+      // 2. Calculer
+      const breakdown = calculateOvertimeBreakdown(entries, settings)
+
+      // 3. Mettre à jour la feuille
+      const { data, error } = await supabase
+        .from('time_sheets')
+        .update({
+          total_hours:    breakdown.totalHours,
+          overtime_hours: breakdown.overtimeHours,
+          regular_hours:  breakdown.regularHours,
+          ot_25_hours:    breakdown.ot25Hours,
+          ot_50_hours:    breakdown.ot50Hours,
+          ot_100_hours:   breakdown.ot100Hours,
+        })
+        .eq('id', timesheetId)
+        .select()
+        .single()
+      if (error) throw error
+      return { ...data, breakdown }
+    },
+    onSuccess: (_, vars) => {
+      qc.invalidateQueries({ queryKey: ['time_sheets'] })
+      qc.invalidateQueries({ queryKey: ['time_sheet', vars.timesheetId] })
+      qc.invalidateQueries({ queryKey: ['time_stats'] })
+    },
+  })
+}
+
+// ─── RECALCUL GLOBAL ORGANISATION ─────────────────────────────
+
+export function useRecalculateOrgOvertime() {
+  const { profile } = useAuth()
+  const qc = useQueryClient()
+
+  return useMutation({
+    mutationFn: async ({ weekStart }) => {
+      const orgId = profile.organization_id
+
+      // 1. Settings
+      const { data: settings } = await supabase
+        .from('time_settings')
+        .select('*')
+        .eq('organization_id', orgId)
+        .maybeSingle()
+
+      // 2. Toutes les feuilles de la semaine avec leurs entrées
+      let q = supabase
+        .from('time_sheets')
+        .select('*, time_entries(*)')
+        .eq('organization_id', orgId)
+      if (weekStart) q = q.eq('week_start', weekStart)
+
+      const { data: sheets, error } = await q
+      if (error) throw error
+
+      // 3. Recalculer + mettre à jour chaque feuille
+      const updates = (sheets || []).map(sheet => {
+        const breakdown = calculateOvertimeBreakdown(sheet.time_entries || [], settings || {})
+        return supabase
+          .from('time_sheets')
+          .update({
+            total_hours:    breakdown.totalHours,
+            overtime_hours: breakdown.overtimeHours,
+            regular_hours:  breakdown.regularHours,
+            ot_25_hours:    breakdown.ot25Hours,
+            ot_50_hours:    breakdown.ot50Hours,
+            ot_100_hours:   breakdown.ot100Hours,
+          })
+          .eq('id', sheet.id)
+      })
+      await Promise.all(updates)
+      return { recalculated: updates.length }
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['time_sheets'] })
+      qc.invalidateQueries({ queryKey: ['time_stats'] })
+    },
+  })
+}
+
+// ─── VALIDATION HS PAR MANAGER ────────────────────────────────
+
+export function useApproveOvertime() {
+  const { profile } = useAuth()
+  const qc = useQueryClient()
+
+  return useMutation({
+    mutationFn: async (timesheetId) => {
+      const { data, error } = await supabase
+        .from('time_sheets')
+        .update({
+          overtime_approved:    true,
+          overtime_approved_by: profile.id,
+          overtime_approved_at: new Date().toISOString(),
+          overtime_rejected_reason: null,
+        })
+        .eq('id', timesheetId)
+        .select()
+        .single()
+      if (error) throw error
+      return data
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['time_sheets'] }),
+  })
+}
+
+export function useRejectOvertime() {
+  const qc = useQueryClient()
+
+  return useMutation({
+    mutationFn: async ({ timesheetId, reason }) => {
+      const { data, error } = await supabase
+        .from('time_sheets')
+        .update({
+          overtime_approved:        false,
+          overtime_rejected_reason: reason,
+        })
+        .eq('id', timesheetId)
+        .select()
+        .single()
+      if (error) throw error
+      return data
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['time_sheets'] }),
+  })
+}
+
+// ─── ALERTES HS ───────────────────────────────────────────────
+
+export function useOvertimeAlerts() {
+  const { profile } = useAuth()
+  const orgId = profile?.organization_id
+
+  return useQuery({
+    queryKey: ['overtime_alerts', orgId],
+    queryFn: async () => {
+      const now = new Date()
+      const weekAgo = new Date(now)
+      weekAgo.setDate(weekAgo.getDate() - 14)
+
+      const [sheetsRes, settingsRes] = await Promise.all([
+        supabase
+          .from('time_sheets')
+          .select(`
+            *, users!time_sheets_user_id_fkey(id, first_name, last_name, service_id)
+          `)
+          .eq('organization_id', orgId)
+          .gte('week_start', weekAgo.toISOString().split('T')[0])
+          .order('week_start', { ascending: false }),
+        supabase
+          .from('time_settings')
+          .select('*')
+          .eq('organization_id', orgId)
+          .maybeSingle(),
+      ])
+
+      const sheets   = sheetsRes.data  || []
+      const settings = settingsRes.data || DEFAULT_OT_SETTINGS
+      const alerts   = []
+
+      sheets.forEach(sheet => {
+        const user = sheet.users || {}
+        const name = `${user.first_name || ''} ${user.last_name || ''}`.trim()
+        const weekEnd = new Date(sheet.week_start)
+        weekEnd.setDate(weekEnd.getDate() + 6)
+        const daysSinceEnd = Math.floor((now - weekEnd) / 86400000)
+
+        // Alerte : feuille non soumise après délai
+        if (sheet.status === 'draft' && daysSinceEnd > (settings.submission_deadline_days || 3)) {
+          alerts.push({
+            id:       `late_${sheet.id}`,
+            type:     'late_submission',
+            severity: daysSinceEnd > 7 ? 'critical' : 'warning',
+            userId:   sheet.user_id,
+            userName: name,
+            weekStart: sheet.week_start,
+            message:  `Feuille de temps non soumise (${daysSinceEnd}j de retard)`,
+            icon:     'clock',
+          })
+        }
+
+        // Alerte : HS en attente de validation
+        if (sheet.overtime_hours > 0 && !sheet.overtime_approved && sheet.status === 'submitted') {
+          alerts.push({
+            id:       `ot_pending_${sheet.id}`,
+            type:     'overtime_pending',
+            severity: sheet.overtime_hours > 8 ? 'critical' : 'warning',
+            userId:   sheet.user_id,
+            userName: name,
+            weekStart: sheet.week_start,
+            hours:    sheet.overtime_hours,
+            message:  `${sheet.overtime_hours}h HS en attente de validation`,
+            icon:     'alert',
+          })
+        }
+
+        // Alerte : HS élevées (> 1.5× seuil hebdo)
+        const weeklyThresh = settings.weekly_threshold_hours || 40
+        if (sheet.overtime_hours > weeklyThresh * 0.5) {
+          alerts.push({
+            id:       `ot_high_${sheet.id}`,
+            type:     'overtime_high',
+            severity: 'info',
+            userId:   sheet.user_id,
+            userName: name,
+            weekStart: sheet.week_start,
+            hours:    sheet.overtime_hours,
+            message:  `Volume HS élevé : ${sheet.overtime_hours}h cette semaine`,
+            icon:     'trending',
+          })
+        }
+      })
+
+      return alerts.sort((a, b) => {
+        const sev = { critical: 0, warning: 1, info: 2 }
+        return (sev[a.severity] || 2) - (sev[b.severity] || 2)
+      })
+    },
+    enabled: !!orgId,
+    refetchInterval: 5 * 60 * 1000,
+  })
+}
+
+// ─── EXPORT PAIE MENSUEL (HS structuré) ───────────────────────
+
+export function useExportOvertimePayroll() {
+  const { profile } = useAuth()
+  const orgId = profile?.organization_id
+
+  const exportFn = async ({ year, month, format = 'xlsx' }) => {
+    // Calculer la plage de semaines du mois
+    const from = `${year}-${String(month).padStart(2,'0')}-01`
+    const lastDay = new Date(year, month, 0).getDate()
+    const to   = `${year}-${String(month).padStart(2,'0')}-${lastDay}`
+
+    const { data, error } = await supabase
+      .from('time_sheets')
+      .select(`
+        week_start, status, total_hours, regular_hours,
+        ot_25_hours, ot_50_hours, ot_100_hours, overtime_hours,
+        overtime_approved, overtime_approved_at,
+        users!time_sheets_user_id_fkey(
+          id, first_name, last_name, role, service_id,
+          services(name)
+        )
+      `)
+      .eq('organization_id', orgId)
+      .gte('week_start', from)
+      .lte('week_start', to)
+      .order('users(last_name)', { ascending: true })
+
+    if (error) throw error
+
+    // Agréger par collaborateur
+    const byUser = {}
+    ;(data || []).forEach(sheet => {
+      const u   = sheet.users || {}
+      const uid = u.id || 'unknown'
+      if (!byUser[uid]) {
+        byUser[uid] = {
+          collaborateur: `${u.first_name || ''} ${u.last_name || ''}`.trim(),
+          service:       u.services?.name || '',
+          role:          u.role || '',
+          total_hours:   0,
+          regular_hours: 0,
+          ot_25_hours:   0,
+          ot_50_hours:   0,
+          ot_100_hours:  0,
+          overtime_hours: 0,
+          weeks:         0,
+          validated_weeks: 0,
+        }
+      }
+      byUser[uid].total_hours    += Number(sheet.total_hours    || 0)
+      byUser[uid].regular_hours  += Number(sheet.regular_hours  || 0)
+      byUser[uid].ot_25_hours    += Number(sheet.ot_25_hours    || 0)
+      byUser[uid].ot_50_hours    += Number(sheet.ot_50_hours    || 0)
+      byUser[uid].ot_100_hours   += Number(sheet.ot_100_hours   || 0)
+      byUser[uid].overtime_hours += Number(sheet.overtime_hours || 0)
+      byUser[uid].weeks          += 1
+      if (sheet.overtime_approved) byUser[uid].validated_weeks += 1
+    })
+
+    const monthLabel = new Date(year, month - 1, 1)
+      .toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })
+
+    // Feuille récap
+    const summary = Object.values(byUser).map(u => ({
+      'Collaborateur':       u.collaborateur,
+      'Service':             u.service,
+      'Rôle':                u.role,
+      'Total heures':        +u.total_hours.toFixed(2),
+      'Heures normales':     +u.regular_hours.toFixed(2),
+      'HS taux 25%':         +u.ot_25_hours.toFixed(2),
+      'HS taux 50%':         +u.ot_50_hours.toFixed(2),
+      'HS taux 100%':        +u.ot_100_hours.toFixed(2),
+      'Total HS':            +u.overtime_hours.toFixed(2),
+      'Semaines validées':   `${u.validated_weeks}/${u.weeks}`,
+    }))
+
+    // Feuille détail hebdo
+    const detail = (data || []).map(sheet => {
+      const u = sheet.users || {}
+      return {
+        'Collaborateur':   `${u.first_name || ''} ${u.last_name || ''}`.trim(),
+        'Service':         u.services?.name || '',
+        'Semaine':         sheet.week_start,
+        'Statut':          TIMESHEET_STATUS_LABELS[sheet.status] || sheet.status,
+        'Total heures':    +Number(sheet.total_hours    || 0).toFixed(2),
+        'Heures normales': +Number(sheet.regular_hours  || 0).toFixed(2),
+        'HS 25%':          +Number(sheet.ot_25_hours    || 0).toFixed(2),
+        'HS 50%':          +Number(sheet.ot_50_hours    || 0).toFixed(2),
+        'HS 100%':         +Number(sheet.ot_100_hours   || 0).toFixed(2),
+        'Total HS':        +Number(sheet.overtime_hours || 0).toFixed(2),
+        'HS validées':     sheet.overtime_approved ? 'Oui' : 'Non',
+      }
+    })
+
+    const filename = `paie_heures_${year}_${String(month).padStart(2,'0')}`
+    const wb = XLSX.utils.book_new()
+
+    const wsSum = XLSX.utils.json_to_sheet(summary)
+    wsSum['!cols'] = [
+      { wch: 25 },{ wch: 18 },{ wch: 16 },
+      { wch: 14 },{ wch: 16 },{ wch: 12 },{ wch: 12 },{ wch: 12 },{ wch: 10 },{ wch: 16 },
+    ]
+    XLSX.utils.book_append_sheet(wb, wsSum, `Récap ${monthLabel}`)
+
+    const wsDet = XLSX.utils.json_to_sheet(detail)
+    wsDet['!cols'] = [
+      { wch: 22 },{ wch: 16 },{ wch: 12 },{ wch: 14 },
+      { wch: 12 },{ wch: 14 },{ wch: 8 },{ wch: 8 },{ wch: 8 },{ wch: 10 },{ wch: 12 },
+    ]
+    XLSX.utils.book_append_sheet(wb, wsDet, 'Détail hebdomadaire')
+
+    if (format === 'csv') {
+      XLSX.writeFile(wb, `${filename}.csv`, { bookType: 'csv' })
+    } else {
+      XLSX.writeFile(wb, `${filename}.xlsx`)
+    }
+
+    return { exported: summary.length, month: monthLabel }
+  }
+
+  return { exportOvertimePayroll: exportFn }
+}
+
+// ─── FEUILLES HS EN ATTENTE (pour managers) ───────────────────
+
+export function usePendingOvertimeSheets() {
+  const { profile } = useAuth()
+  const orgId = profile?.organization_id
+
+  return useQuery({
+    queryKey: ['pending_overtime_sheets', orgId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('time_sheets')
+        .select(`
+          *,
+          users!time_sheets_user_id_fkey(id, first_name, last_name, role, service_id)
+        `)
+        .eq('organization_id', orgId)
+        .eq('status', 'submitted')
+        .gt('overtime_hours', 0)
+        .eq('overtime_approved', false)
+        .order('week_start', { ascending: false })
+      if (error) throw error
+      return data || []
+    },
+    enabled: !!orgId,
+  })
+}
