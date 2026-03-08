@@ -54,6 +54,9 @@ const PerformanceHub = lazy(() => import('./pages/performance/PerformanceHub'))
 // ── Module 6 Évaluations S94 ──────────────────────────────────
 const EvaluationsHub = lazy(() => import('./pages/evaluations/EvaluationsHub'))
 
+// ── Module 2 Gestion des Employés S96 ─────────────────────────
+const EmployesHub = lazy(() => import('./pages/employes/EmployesHub'))
+
 // ── Onboarding S75 ────────────────────────────────────────────
 const Onboarding  = lazy(() => import('./pages/onboarding/Onboarding'))
 // ── Offboarding S68 ───────────────────────────────────────────
@@ -123,6 +126,9 @@ export default function App() {
           {/* ── Analyse RH ── */}
           <Route path="/intelligence" element={<S><IntelligenceRH /></S>} />
 
+          {/* ── Module 2 — Gestion des Employés S96 ── */}
+          <Route path="/employes" element={<S><EmployesHub /></S>} />
+
           {/* ── RH Opérationnel (sidebar directe) ── */}
           <Route path="/recrutement" element={<S><Recrutement /></S>} />
           <Route path="/entretiens"  element={<S><EntretiensAnnuels /></S>} />
@@ -141,7 +147,7 @@ export default function App() {
           <Route path="/communication/fils"     element={<S><FilsPage /></S>} />
 
           {/* ── Administration (sous-pages depuis AdminHub) ── */}
-          <Route path="/admin/users"         element={<S><UsersPage /></S>} />
+          <Route path="/admin/users"         element={<Navigate to="/employes" replace />} />
           <Route path="/admin/organisation"  element={<S><Organisation /></S>} />
           <Route path="/admin/access-control" element={<S><AccessControl /></S>} />
           <Route path="/admin/settings"     element={<S><SettingsPage /></S>} />

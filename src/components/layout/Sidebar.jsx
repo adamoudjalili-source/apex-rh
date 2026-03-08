@@ -33,7 +33,7 @@ import {
   ChevronLeft, ChevronRight, LogOut,
   BriefcaseIcon, ClipboardList, ClipboardCheck, Settings,
   Home, ShieldCheck, MessageCircle, Clock, CalendarOff, DoorOpen,
-  Globe, UserCheck,
+  Globe, UserCheck, UserSquare2,
 } from 'lucide-react'
 import { useAuth }        from '../../contexts/AuthContext'
 import { useAppSettings } from '../../hooks/useSettings'
@@ -170,6 +170,7 @@ export default function Sidebar() {
             <NavItem icon={Users}            label="Management"         path="/management"     color="#3B82F6" collapsed={collapsed}/>
             <Section label="RH quotidien" collapsed={collapsed}/>
             <NavItem icon={Clock}            label="Temps & Absences"   path="/temps-absences" color="#34D399" collapsed={collapsed}/>
+            <NavItem icon={UserSquare2}      label="Gestion des Employés" path="/employes"      color="#3B82F6" collapsed={collapsed}/>
             <NavItem icon={TrendingUp}      label="Performance"        path="/performance"    color="#818CF8" collapsed={collapsed}/>
             <NavItem icon={ClipboardCheck}  label="Évaluations"        path="/evaluations"    color="#A78BFA" collapsed={collapsed}/>
             <Section label="Analyse" collapsed={collapsed}/>
