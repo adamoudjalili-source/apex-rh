@@ -692,3 +692,385 @@ export function useRecruitmentStages() {
     },
   })
 }
+
+// ============================================================
+// SESSION 72 — Pipeline structuré + scoring
+// ============================================================
+
+// ─── CONSTANTES S72 ──────────────────────────────────────────
+
+export const SCORE_LABELS = {
+  excellent: { label: 'Excellent',  min: 80, color: '#10B981', bg: 'rgba(16,185,129,0.15)' },
+  fort:      { label: 'Fort',       min: 65, color: '#3B82F6', bg: 'rgba(59,130,246,0.15)' },
+  moyen:     { label: 'Moyen',      min: 45, color: '#F59E0B', bg: 'rgba(245,158,11,0.15)' },
+  faible:    { label: 'Faible',     min: 0,  color: '#EF4444', bg: 'rgba(239,68,68,0.15)'  },
+}
+
+export const APPLICATION_SOURCE_LABELS = {
+  linkedin:  'LinkedIn',
+  site_web:  'Site web',
+  referral:  'Référence interne',
+  jobboard:  'Job board',
+  spontanee: 'Candidature spontanée',
+  autre:     'Autre',
+}
+
+export const APPLICATION_SOURCE_COLORS = {
+  linkedin:  '#0077B5',
+  site_web:  '#6366F1',
+  referral:  '#10B981',
+  jobboard:  '#F59E0B',
+  spontanee: '#8B5CF6',
+  autre:     '#6B7280',
+}
+
+export function getScoreLevel(score) {
+  if (score == null) return null
+  if (score >= 80) return 'excellent'
+  if (score >= 65) return 'fort'
+  if (score >= 45) return 'moyen'
+  return 'faible'
+}
+
+export function getScoreInfo(score) {
+  const level = getScoreLevel(score)
+  if (!level) return null
+  return { level, ...SCORE_LABELS[level] }
+}
+
+// ─── CANDIDATURES ENRICHIES (toute l'org) ────────────────────
+
+export function useJobApplicationsEnriched(filters = {}) {
+  const { profile } = useAuth()
+  return useQuery({
+    queryKey: ['job_applications_enriched', filters],
+    enabled: !!profile,
+    queryFn: async () => {
+      let q = supabase
+        .from('job_applications')
+        .select(`
+          *,
+          job:job_postings(id, title, contract_type, division_id, hiring_manager_id, required_skills),
+          applicant:users!job_applications_applicant_user_id_fkey(id, first_name, last_name, role),
+          interviews:interview_schedules(
+            id, status, scheduled_at, interview_type,
+            feedback:interview_feedback(overall_score, recommendation)
+          )
+        `)
+        .is('archived_at', null)
+        .order('applied_at', { ascending: false })
+
+      if (filters.job_id)    q = q.eq('job_id', filters.job_id)
+      if (filters.status)    q = q.eq('status', filters.status)
+      if (filters.source)    q = q.eq('source', filters.source)
+      if (filters.min_score) q = q.gte('match_score', filters.min_score)
+      if (filters.search) {
+        q = q.or(`candidate_name.ilike.%${filters.search}%,candidate_email.ilike.%${filters.search}%`)
+      }
+      if (filters.date_from) q = q.gte('applied_at', filters.date_from)
+      if (filters.date_to)   q = q.lte('applied_at', filters.date_to)
+
+      const { data, error } = await q
+      if (error) throw error
+      return data || []
+    },
+  })
+}
+
+// ─── MV PIPELINE PAR OFFRE ───────────────────────────────────
+
+export function usePipelineByJob(filters = {}) {
+  const { profile } = useAuth()
+  return useQuery({
+    queryKey: ['mv_pipeline_by_job', filters],
+    enabled: !!profile,
+    queryFn: async () => {
+      let q = supabase
+        .from('mv_pipeline_by_job')
+        .select('*')
+        .order('cnt', { ascending: false })
+
+      if (filters.job_id)    q = q.eq('job_id', filters.job_id)
+      if (filters.is_published !== undefined) q = q.eq('is_published', filters.is_published)
+
+      const { data, error } = await q
+      if (error) return []
+      return data || []
+    },
+  })
+}
+
+// ─── DASHBOARD RECRUTEMENT ENRICHI ───────────────────────────
+
+export function useRecruitmentDashboard(filters = {}) {
+  const { profile } = useAuth()
+  return useQuery({
+    queryKey: ['mv_recruitment_dashboard', filters],
+    enabled: !!profile,
+    queryFn: async () => {
+      let q = supabase
+        .from('mv_recruitment_dashboard')
+        .select('*')
+        .order('total_applicants', { ascending: false })
+
+      if (filters.job_id)       q = q.eq('job_id', filters.job_id)
+      if (filters.is_published !== undefined) q = q.eq('is_published', filters.is_published)
+      if (filters.limit)        q = q.limit(filters.limit)
+
+      const { data, error } = await q
+      // Si la MV n'existe pas encore, requête directe fallback
+      if (error) {
+        const { data: fallback } = await supabase
+          .from('job_postings')
+          .select('id, title, contract_type, published_at, closed_at, organization_id')
+          .order('created_at', { ascending: false })
+          .limit(20)
+        return (fallback || []).map(j => ({ ...j, total_applicants: 0, hired_count: 0 }))
+      }
+      return data || []
+    },
+  })
+}
+
+// ─── METTRE À JOUR SCORE CANDIDATURE ─────────────────────────
+
+export function useUpdateApplicationScore() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: async ({ id, match_score }) => {
+      const { data, error } = await supabase
+        .from('job_applications')
+        .update({ match_score, updated_at: new Date().toISOString() })
+        .eq('id', id)
+        .select()
+        .single()
+      if (error) throw error
+      return data
+    },
+    onSuccess: (data) => {
+      qc.invalidateQueries({ queryKey: ['job_applications'] })
+      qc.invalidateQueries({ queryKey: ['job_applications_enriched'] })
+      qc.invalidateQueries({ queryKey: ['application', data.id] })
+      qc.invalidateQueries({ queryKey: ['mv_pipeline_by_job'] })
+    },
+  })
+}
+
+// ─── DÉPLACER CANDIDAT DANS PIPELINE ─────────────────────────
+
+export function useMoveApplicationStage() {
+  const qc = useQueryClient()
+  const { profile } = useAuth()
+  return useMutation({
+    mutationFn: async ({ id, new_status, from_status, stage_order, pipeline_notes }) => {
+      // Mettre à jour le statut
+      const update = {
+        status: new_status,
+        stage_order: stage_order || 0,
+        updated_at: new Date().toISOString(),
+      }
+      if (pipeline_notes !== undefined) update.pipeline_notes = pipeline_notes
+      if (new_status === 'accepte') update.hired_at = new Date().toISOString()
+      if (new_status === 'en_revue') update.reviewed_at = new Date().toISOString()
+
+      const { data, error } = await supabase
+        .from('job_applications')
+        .update(update)
+        .eq('id', id)
+        .select()
+        .single()
+      if (error) throw error
+
+      // Enregistrer l'action dans pipeline_actions
+      await supabase.from('pipeline_actions').insert({
+        application_id: id,
+        action_type: 'stage_move',
+        action_data: { from_stage: from_status, to_stage: new_status },
+        performed_by: profile?.id,
+        organization_id: profile?.organization_id,
+      })
+
+      return data
+    },
+    onSuccess: (data) => {
+      qc.invalidateQueries({ queryKey: ['job_applications'] })
+      qc.invalidateQueries({ queryKey: ['job_applications_enriched'] })
+      qc.invalidateQueries({ queryKey: ['application', data.id] })
+      qc.invalidateQueries({ queryKey: ['applications_by_manager'] })
+      qc.invalidateQueries({ queryKey: ['mv_pipeline_by_job'] })
+      qc.invalidateQueries({ queryKey: ['mv_pipeline_stats'] })
+      qc.invalidateQueries({ queryKey: ['pipeline_actions'] })
+    },
+  })
+}
+
+// ─── ARCHIVER CANDIDATURE ─────────────────────────────────────
+
+export function useArchiveApplication() {
+  const qc = useQueryClient()
+  const { profile } = useAuth()
+  return useMutation({
+    mutationFn: async ({ id, reason }) => {
+      const { data, error } = await supabase
+        .from('job_applications')
+        .update({
+          archived_at: new Date().toISOString(),
+          archived_reason: reason,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', id)
+        .select()
+        .single()
+      if (error) throw error
+
+      await supabase.from('pipeline_actions').insert({
+        application_id: id,
+        action_type: 'archived',
+        action_data: { reason },
+        performed_by: profile?.id,
+        organization_id: profile?.organization_id,
+      })
+
+      return data
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['job_applications'] })
+      qc.invalidateQueries({ queryKey: ['job_applications_enriched'] })
+      qc.invalidateQueries({ queryKey: ['mv_pipeline_by_job'] })
+    },
+  })
+}
+
+// ─── AJOUTER NOTE PIPELINE ────────────────────────────────────
+
+export function useAddPipelineNote() {
+  const qc = useQueryClient()
+  const { profile } = useAuth()
+  return useMutation({
+    mutationFn: async ({ id, note }) => {
+      const { data, error } = await supabase
+        .from('job_applications')
+        .update({
+          pipeline_notes: note,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', id)
+        .select()
+        .single()
+      if (error) throw error
+
+      await supabase.from('pipeline_actions').insert({
+        application_id: id,
+        action_type: 'note_added',
+        action_data: { note: note?.substring(0, 200) },
+        performed_by: profile?.id,
+        organization_id: profile?.organization_id,
+      })
+
+      return data
+    },
+    onSuccess: (data) => {
+      qc.invalidateQueries({ queryKey: ['job_applications_enriched'] })
+      qc.invalidateQueries({ queryKey: ['application', data.id] })
+    },
+  })
+}
+
+// ─── HISTORIQUE ACTIONS PIPELINE ─────────────────────────────
+
+export function usePipelineActions(applicationId) {
+  const { profile } = useAuth()
+  return useQuery({
+    queryKey: ['pipeline_actions', applicationId],
+    enabled: !!profile && !!applicationId,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('pipeline_actions')
+        .select(`
+          *,
+          performer:users!pipeline_actions_performed_by_fkey(id, first_name, last_name)
+        `)
+        .eq('application_id', applicationId)
+        .order('performed_at', { ascending: false })
+      if (error) return []
+      return data || []
+    },
+  })
+}
+
+// ─── STATS GLOBALES RECRUTEMENT (fallback si MV absente) ─────
+
+export function useRecruitmentGlobalStats() {
+  const { profile } = useAuth()
+  return useQuery({
+    queryKey: ['recruitment_global_stats'],
+    enabled: !!profile,
+    queryFn: async () => {
+      // Essayer la MV d'abord
+      const { data: mv } = await supabase
+        .from('mv_recruitment_stats')
+        .select('*')
+        .single()
+
+      if (mv) return mv
+
+      // Fallback : calcul direct
+      const [{ count: total }, { count: active }, { count: hired }, { count: interviews }] =
+        await Promise.all([
+          supabase.from('job_applications').select('*', { count: 'exact', head: true }),
+          supabase.from('job_postings').select('*', { count: 'exact', head: true }).eq('is_published', true),
+          supabase.from('job_applications').select('*', { count: 'exact', head: true }).eq('status', 'accepte'),
+          supabase.from('interview_schedules').select('*', { count: 'exact', head: true }).in('status', ['planifie', 'confirme']),
+        ])
+
+      return {
+        total_applications: total ?? 0,
+        active_postings:    active ?? 0,
+        hired:              hired ?? 0,
+        in_interview:       interviews ?? 0,
+      }
+    },
+  })
+}
+
+// ─── COMPUTE SCORE DEPUIS API SUPABASE ───────────────────────
+
+export function useComputeApplicationScore() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: async (applicationId) => {
+      const { data, error } = await supabase
+        .rpc('compute_application_score', { p_application_id: applicationId })
+      if (error) throw error
+
+      // Mettre à jour le score dans la table
+      if (data != null) {
+        await supabase
+          .from('job_applications')
+          .update({ match_score: data, updated_at: new Date().toISOString() })
+          .eq('id', applicationId)
+      }
+      return data
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['job_applications_enriched'] })
+      qc.invalidateQueries({ queryKey: ['mv_pipeline_by_job'] })
+    },
+  })
+}
+
+// ─── REFRESH MV RECRUTEMENT ───────────────────────────────────
+
+export function useRefreshRecruitmentMVs() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: async () => {
+      await supabase.rpc('refresh_recruitment_mvs')
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['mv_pipeline_by_job'] })
+      qc.invalidateQueries({ queryKey: ['mv_recruitment_dashboard'] })
+      qc.invalidateQueries({ queryKey: ['mv_recruitment_stats'] })
+    },
+  })
+}
