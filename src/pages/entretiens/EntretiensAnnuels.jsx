@@ -1,17 +1,20 @@
 // ============================================================
 // APEX RH — pages/entretiens/EntretiensAnnuels.jsx
-// Session 60 — Page principale Entretiens annuels & Évaluation avancée
+// Session 60 — Entretiens annuels & Évaluation avancée
+// Session 80 — +2 onglets : Auto-éval / Tableau de bord manager + mi-année
 // Onglets adaptatifs rôle :
-//   Collaborateur  : Mon entretien · Historique
-//   Manager        : + Mon équipe · Entretiens en attente
-//   Admin/Directeur: + Administration campagnes
+//   Collaborateur  : Mon entretien · Auto-évaluation · Historique
+//   Manager        : + Mon équipe · Suivi · Mi-année
+//   Admin/Directeur: + Campagnes · Calibration · Tableau de bord
 // ============================================================
 import { useState } from 'react'
+import { lazy, Suspense } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   ClipboardList, History, Users, Settings, BarChart3,
   Clock, CheckCircle, AlertCircle, Star,
   ChevronRight, Calendar, Loader2, Lock,
+  UserCheck, CalendarRange,
 } from 'lucide-react'
 import { useAuth }        from '../../contexts/AuthContext'
 import { useAppSettings } from '../../hooks/useSettings'
@@ -27,8 +30,12 @@ import AnnualReviewDashboard         from '../../components/entretiens/AnnualRev
 import AnnualReviewAdmin             from '../../components/entretiens/AnnualReviewAdmin'
 import AnnualReviewHistory           from '../../components/entretiens/AnnualReviewHistory'
 import AnnualReviewEnrichedDashboard from '../../components/entretiens/AnnualReviewEnrichedDashboard'
-import { lazy, Suspense } from 'react'
-const CalibrationPage = lazy(() => import('../intelligence/CalibrationPage'))  // Étape 16
+// S80 — nouveaux composants
+import ReviewSelfAssessmentForm from '../../components/entretiens/ReviewSelfAssessmentForm'
+import ReviewManagerDashboard   from '../../components/entretiens/ReviewManagerDashboard'
+import MidYearCampaignPanel     from '../../components/entretiens/MidYearCampaignPanel'
+
+const CalibrationPage = lazy(() => import('../intelligence/CalibrationPage'))
 
 // S69 — guards via AuthContext helpers (MANAGERS/ADMINS locaux supprimés)
 
@@ -231,6 +238,44 @@ function MyReviewTab() {
 // ─── Page principale ──────────────────────────────────────────
 
 
+// ─── Auto-évaluation structurée (S80) ────────────────────────
+function AutoEvalTab() {
+  const { data: campaigns = [] } = useActiveCampaigns()
+  const activeCampaign = campaigns[0]
+  const { data: review, isLoading } = useMyReview(activeCampaign?.id)
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <Loader2 size={24} className="animate-spin text-white/30"/>
+      </div>
+    )
+  }
+  if (!activeCampaign) {
+    return (
+      <div className="flex flex-col items-center justify-center py-16 gap-3">
+        <Calendar size={40} className="text-white/10"/>
+        <p className="text-sm text-white/35">Aucun entretien en cours.</p>
+      </div>
+    )
+  }
+  if (!review) {
+    return (
+      <div className="flex flex-col items-center justify-center py-16 gap-3">
+        <ClipboardList size={40} className="text-white/10"/>
+        <p className="text-sm text-white/35">Votre entretien n'a pas encore été créé par votre manager.</p>
+      </div>
+    )
+  }
+  const canEdit = ['pending','self_in_progress','self_submitted'].includes(review.status)
+  return (
+    <ReviewSelfAssessmentForm
+      review={review}
+      readOnly={!canEdit}
+    />
+  )
+}
+
 // ─── QuickStats entretiens (Étape 21) ────────────────────────
 function QuickStatsEntretiens() {
   const { data: campaigns = [] } = useActiveCampaigns()
@@ -279,16 +324,20 @@ export default function EntretiensAnnuels() {
   }
 
   const TABS = [
-    { id: 'mine',    label: 'Mon entretien',   icon: ClipboardList },
-    { id: 'history', label: 'Historique',       icon: History },
+    { id: 'mine',     label: 'Mon entretien',   icon: ClipboardList },
+    { id: 'autoeval', label: 'Auto-évaluation', icon: UserCheck },
+    { id: 'history',  label: 'Historique',      icon: History },
     ...(canManageTeam ? [{
       id: 'team',
       label: 'Mon équipe',
       icon: Users,
       badge: pendingReviews.length > 0 ? pendingReviews.length : null,
     }] : []),
+    // S80 — Suivi managérial + Mi-année
+    ...(canManageTeam ? [{ id: 'suivi',    label: 'Suivi',    icon: BarChart3 }] : []),
+    ...(canManageTeam ? [{ id: 'mi_annee', label: 'Mi-année', icon: CalendarRange }] : []),
     ...(hasStrategic ? [{ id: 'calibration', label: 'Calibration', icon: Settings }] : []),
-    ...(canAdmin ? [{ id: 'admin',   label: 'Campagnes',      icon: Settings }] : []),
+    ...(canAdmin ? [{ id: 'admin',   label: 'Campagnes', icon: Settings }] : []),
     ...(hasStrategic ? [{ id: 'tableau', label: 'Tableau de bord', icon: BarChart3 }] : []),
   ]
 
@@ -349,8 +398,13 @@ export default function EntretiensAnnuels() {
             initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -6 }} transition={{ duration: 0.2 }}>
             {validTab === 'mine'        && <MyReviewTab/>}
+            {/* S80 — Auto-évaluation structurée */}
+            {validTab === 'autoeval'    && <AutoEvalTab/>}
             {validTab === 'history'     && <AnnualReviewHistory/>}
             {validTab === 'team'        && canManageTeam && <AnnualReviewDashboard/>}
+            {/* S80 — Suivi managérial et mi-année */}
+            {validTab === 'suivi'       && canManageTeam && <ReviewManagerDashboard/>}
+            {validTab === 'mi_annee'    && canManageTeam && <MidYearCampaignPanel/>}
             {validTab === 'admin'       && canAdmin      && <AnnualReviewAdmin/>}
             {validTab === 'calibration' && hasStrategic  && (
               <Suspense fallback={<div className="flex items-center justify-center py-12"><span className="text-white/30 text-sm">Chargement calibration...</span></div>}>

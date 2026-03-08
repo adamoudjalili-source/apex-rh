@@ -845,3 +845,192 @@ export function useArchiveReview() {
     },
   })
 }
+
+// ─── S80 ──────────────────────────────────────────────────────
+
+/** Auto-évaluation structurée d'un entretien */
+export function useReviewSelfAssessment(reviewId) {
+  const { profile } = useAuth()
+  return useQuery({
+    queryKey: ['review-self-assessment', reviewId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('review_self_assessments')
+        .select('*')
+        .eq('review_id', reviewId)
+        .maybeSingle()
+      if (error) throw error
+      return data
+    },
+    enabled: !!reviewId && !!profile?.id,
+    staleTime: 30_000,
+  })
+}
+
+/** Soumettre ou sauvegarder l'auto-évaluation structurée */
+export function useSubmitSelfAssessment() {
+  const queryClient = useQueryClient()
+  const { profile } = useAuth()
+  return useMutation({
+    mutationFn: async ({ review_id, answers, submit = false }) => {
+      const { data: existing } = await supabase
+        .from('review_self_assessments')
+        .select('id')
+        .eq('review_id', review_id)
+        .maybeSingle()
+
+      const payload = {
+        organization_id: profile.organization_id,
+        review_id,
+        user_id: profile.id,
+        answers,
+        submitted_at: submit ? new Date().toISOString() : null,
+      }
+
+      let error
+      if (existing) {
+        ;({ error } = await supabase
+          .from('review_self_assessments')
+          .update(payload)
+          .eq('id', existing.id))
+      } else {
+        ;({ error } = await supabase
+          .from('review_self_assessments')
+          .insert(payload))
+      }
+      if (error) throw error
+
+      // Si soumission finale → avancer le statut de la review
+      if (submit) {
+        const { error: revErr } = await supabase
+          .from('annual_reviews')
+          .update({ status: 'self_submitted', self_submitted_at: new Date().toISOString() })
+          .eq('id', review_id)
+          .eq('employee_id', profile.id)
+        if (revErr) throw revErr
+      }
+    },
+    onSuccess: (_, { review_id }) => {
+      queryClient.invalidateQueries({ queryKey: ['review-self-assessment', review_id] })
+      queryClient.invalidateQueries({ queryKey: ['annual-review', review_id] })
+      queryClient.invalidateQueries({ queryKey: ['annual-reviews-mine'] })
+      queryClient.invalidateQueries({ queryKey: ['annual-reviews-pending-manager'] })
+    },
+  })
+}
+
+/** PDI lié à un entretien */
+export function useReviewDevelopmentPlan(reviewId) {
+  const { profile } = useAuth()
+  return useQuery({
+    queryKey: ['review-development-plan', reviewId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('review_development_plans')
+        .select('*')
+        .eq('review_id', reviewId)
+        .maybeSingle()
+      if (error) throw error
+      return data
+    },
+    enabled: !!reviewId && !!profile?.id,
+    staleTime: 30_000,
+  })
+}
+
+/** Créer ou mettre à jour le PDI */
+export function useUpsertDevelopmentPlan() {
+  const queryClient = useQueryClient()
+  const { profile } = useAuth()
+  return useMutation({
+    mutationFn: async ({ review_id, goals, next_check_date, status, manager_comment }) => {
+      const payload = {
+        organization_id: profile.organization_id,
+        review_id,
+        user_id: profile.id,
+        goals: goals ?? [],
+        next_check_date: next_check_date ?? null,
+        status: status ?? 'pending',
+        manager_comment: manager_comment ?? null,
+      }
+      const { error } = await supabase
+        .from('review_development_plans')
+        .upsert(payload, { onConflict: 'review_id,user_id' })
+      if (error) throw error
+    },
+    onSuccess: (_, { review_id }) => {
+      queryClient.invalidateQueries({ queryKey: ['review-development-plan', review_id] })
+    },
+  })
+}
+
+/** Stats de complétion pour un manager (via RPC) */
+export function useReviewCompletionStats(managerId) {
+  const { profile } = useAuth()
+  const id = managerId ?? profile?.id
+  return useQuery({
+    queryKey: ['review-completion-stats', id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .rpc('get_review_completion_stats', { p_manager_id: id })
+      if (error) throw error
+      return data ?? []
+    },
+    enabled: !!id && !!profile?.id,
+    staleTime: 60_000,
+  })
+}
+
+/** Entretiens mi-année — toutes les reviews de type 'mid_year' actives */
+export function useMidYearReviews() {
+  const { profile } = useAuth()
+  return useQuery({
+    queryKey: ['mid-year-reviews', profile?.id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('annual_reviews')
+        .select(`
+          id, status, review_type, self_submitted_at, manager_submitted_at,
+          completed_at, employee_signed_at, manager_signed_at, created_at,
+          campaign:annual_review_campaigns(id, title, year, status, self_eval_deadline, manager_eval_deadline),
+          employee:users!annual_reviews_employee_id_fkey(id, first_name, last_name, role),
+          manager:users!annual_reviews_manager_id_fkey(id, first_name, last_name)
+        `)
+        .eq('review_type', 'mid_year')
+        .in('status', ['pending','self_in_progress','self_submitted','meeting_scheduled','manager_in_progress'])
+        .order('created_at', { ascending: false })
+      if (error) throw error
+      return data ?? []
+    },
+    enabled: !!profile?.id,
+    staleTime: 60_000,
+  })
+}
+
+/** Créer des entretiens mi-année pour une campagne */
+export function useCreateMidYearReviews() {
+  const queryClient = useQueryClient()
+  const { profile } = useAuth()
+  return useMutation({
+    mutationFn: async ({ campaign_id, assignments }) => {
+      const rows = assignments.map(a => ({
+        campaign_id,
+        employee_id:     a.employee_id,
+        manager_id:      a.manager_id,
+        organization_id: profile.organization_id,
+        status:          'pending',
+        review_type:     'mid_year',
+      }))
+      const { error } = await supabase
+        .from('annual_reviews')
+        .insert(rows)
+        .onConflict('campaign_id,employee_id')
+        .ignore()
+      if (error) throw error
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['mid-year-reviews'] })
+      queryClient.invalidateQueries({ queryKey: ['annual-reviews-team'] })
+    },
+  })
+}
