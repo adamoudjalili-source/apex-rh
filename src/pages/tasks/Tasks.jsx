@@ -20,12 +20,17 @@ import TaskForm             from '../../components/tasks/TaskForm'
 import ExportButton         from '../../components/ui/ExportButton'
 import { exportTasks }      from '../../lib/exportExcel'
 import JournalPage          from '../pulse/Journal'
+// ✅ S77
+import WorkloadChart        from '../../components/tasks/WorkloadChart'
+import GanttMini            from '../../components/tasks/GanttMini'
 
 const VIEWS = [
   { id:'kanban',   label:'Kanban',      icon:'▦' },
   { id:'list',     label:'Liste',       icon:'☰' },
   { id:'calendar', label:'Calendrier',  icon:'📅' },
   { id:'myday',    label:'Ma Journée',  icon:'☀' },
+  { id:'gantt',    label:'Gantt',       icon:'📊' },
+  { id:'charge',   label:'Charge',      icon:'⚖' },
 ]
 
 export default function Tasks() {
@@ -34,7 +39,7 @@ export default function Tasks() {
   const { data: settings }  = useAppSettings()
   const pulseOn              = isPulseEnabled(settings)
   const isJournal            = activeView === 'myday' && pulseOn
-  const isTaskView           = !isJournal && activeView !== 'myday'
+  const isTaskView           = !isJournal && activeView !== 'myday' && activeView !== 'gantt' && activeView !== 'charge'
 
   const { data: tasks = [], isLoading, error } = useTasks(isTaskView ? activeFilters : {})
   const [selectedTaskId,  setSelectedTaskId]  = useState(null)
@@ -137,6 +142,8 @@ export default function Tasks() {
             {activeView==='kanban'   && <div className="h-full overflow-x-auto"><KanbanView tasks={tasks} onTaskClick={setSelectedTaskId}/></div>}
             {activeView==='list'     && <ListView tasks={tasks} onTaskClick={setSelectedTaskId}/>}
             {activeView==='calendar' && <div className="h-full overflow-y-auto"><CalendarView tasks={tasks} onTaskClick={setSelectedTaskId}/></div>}
+            {activeView==='gantt'    && <div className="h-full overflow-y-auto"><GanttMini /></div>}
+            {activeView==='charge'   && <div className="h-full overflow-y-auto"><WorkloadChart /></div>}
           </div>
         )
       )}

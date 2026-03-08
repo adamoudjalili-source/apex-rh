@@ -28,7 +28,12 @@ import { useAppSettings } from '../../hooks/useSettings'
 import { isPulseEnabled, formatMinutes } from '../../lib/pulseHelpers'
 import { useTodayLog } from '../../hooks/usePulse'
 
-const TABS = ['Détails', 'Checklists', 'Commentaires', 'Activité']
+// ✅ Session 77 — Dépendances + Récurrence + Temps
+import TaskDependencyGraph from './TaskDependencyGraph'
+import RecurrenceConfig    from './RecurrenceConfig'
+import TimeTrackingPanel   from './TimeTrackingPanel'
+
+const TABS = ['Détails', 'Checklists', 'Commentaires', 'Activité', 'Dépendances', 'Récurrence', 'Temps']
 
 // --- Session 18 : Helpers pour les liaisons inter-modules ---
 const LEVEL_LABELS = {
@@ -590,6 +595,16 @@ export default function TaskDetailPanel({ taskId, onClose }) {
               {activeTab === 'Checklists' && <TaskChecklist task={task} />}
               {activeTab === 'Commentaires' && <TaskComments taskId={task.id} />}
               {activeTab === 'Activité' && <TaskActivityLog taskId={task.id} />}
+              {/* ✅ S77 */}
+              {activeTab === 'Dépendances' && (
+                <TaskDependencyGraph taskId={task.id} task={task} />
+              )}
+              {activeTab === 'Récurrence' && (
+                <RecurrenceConfig taskId={task.id} />
+              )}
+              {activeTab === 'Temps' && (
+                <TimeTrackingPanel taskId={task.id} estimatedMinutes={task.estimated_minutes} />
+              )}
             </div>
           </>
         )}

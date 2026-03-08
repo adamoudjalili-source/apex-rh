@@ -1,5 +1,5 @@
 # MEMOIRE_PROJET.md — APEX RH
-> Mis à jour : Session 76 — Performance PULSE — Alertes proactives + Calibration ✅ DÉPLOYÉ (08/03/2026)
+> Mis à jour : Session 77 — Tâches — Dépendances + récurrence + charge ✅ DÉPLOYÉ (08/03/2026)
 
 ## 🔴 RÈGLE D'OR — LIVRAISON OBLIGATOIRE (chaque session)
 
@@ -14,12 +14,12 @@
 
 **Commande ZIP :**
 ```bash
-cd /home/claude && zip -r /mnt/user-data/outputs/src_SXX.zip src/
+cd /home/claude && zip -r /mnt/user-data/outputs/src_S77.zip src/
 ```
 
 **Commande Git :**
 ```bash
-cd C:\Users\DELL\APEX_RH\apex-rh && git add -A && git commit -m "feat(SXX): [description]" && git push
+cd C:\Users\DELL\APEX_RH\apex-rh && git add -A && git commit -m "feat(S77): Tâches — Dépendances + récurrence + charge" && git push
 ```
 
 ---
@@ -28,7 +28,7 @@ cd C:\Users\DELL\APEX_RH\apex-rh && git add -A && git commit -m "feat(SXX): [des
 - **URL production** : https://apex-rh-h372.vercel.app
 - **Supabase** : ptpxoczdycajphrshdnk
 - **Stack** : React 18 + Vite + TailwindCSS + Supabase + Vercel
-- **Sessions déployées** : 1 → 76
+- **Sessions déployées** : 1 → 77
 - **Nature** : Outil interne NITA (pas un SaaS commercialisé)
 
 ---
@@ -48,14 +48,17 @@ cd C:\Users\DELL\APEX_RH\apex-rh && git add -A && git commit -m "feat(SXX): [des
 11. **Formation — Budget + Obligatoire + Évaluation DÉPLOYÉ (S73)**.
 12. **Compensation — Workflow révision salariale DÉPLOYÉ (S74)**.
 13. **Onboarding — Parcours progressif automatisé DÉPLOYÉ (S75)**.
-14. **Performance PULSE — Alertes proactives + Calibration DÉPLOYÉ (S76)** :
-    - `s76_pulse_alertes.sql` — 2 enums nouveaux (pulse_alert_type, pulse_alert_status, pulse_dimension), 3 tables, MV `mv_pulse_trends`, RLS
-    - `usePulse.js` — 11 hooks S76 appended
-    - `PulseAlertCenter.jsx` — centre d'alertes + gestion règles
-    - `PulseCalibration.jsx` — calibration poids dimensions + seuils (admin)
-    - `PulseTrendChart.jsx` — graphe SVG tendance 30j
-    - `TeamPulseHeatmap.jsx` — heatmap semaine × collaborateur SVG natif
-    - `IntelligenceRH.jsx` — +3 onglets : Alertes PULSE / Heatmap équipe / Calibration
+14. **Performance PULSE — Alertes proactives + Calibration DÉPLOYÉ (S76)**.
+15. **Tâches — Dépendances + récurrence + charge DÉPLOYÉ (S77)** :
+    - `s77_tasks_advanced.sql` — 2 enums, 3 tables, MV `mv_team_workload`, 2 fonctions RPC, RLS
+    - `useTasks.js` — 12 hooks S77 appended
+    - `TaskDependencyGraph.jsx` — graphe SVG dépendances inter-tâches
+    - `RecurrenceConfig.jsx` — config récurrence (daily/weekly/monthly/custom), preview occurrences
+    - `TimeTrackingPanel.jsx` — log temps + historique + barre progression estimé
+    - `WorkloadChart.jsx` — barre SVG charge par collaborateur (via MV + RPC)
+    - `GanttMini.jsx` — timeline Gantt 4 semaines SVG natif, navigation semaines, filtres statut
+    - `TaskDetailPanel.jsx` — +3 onglets : Dépendances / Récurrence / Temps
+    - `Tasks.jsx` — +2 vues : Gantt / Charge
 
 ---
 
@@ -93,34 +96,42 @@ const { canAdmin, canValidate, canManageTeam, canRecruit, canViewAnalytics } = u
 | `pulse_alert_rules` | id, organization_id, name, alert_type, threshold_score, consecutive_days | NEW S76 |
 | `pulse_alerts` | id, organization_id, rule_id, user_id, alert_type, status, severity, context_json | NEW S76 |
 | `pulse_calibration` | id, organization_id, dimension, weight, min_trigger_score, target_score | NEW S76 |
+| `task_dependencies` | id, organization_id, task_id, depends_on_id, dependency_type | NEW S77 |
+| `task_recurrences` | id, organization_id, task_id, frequency, interval_value, days_of_week, end_date | NEW S77 |
+| `task_time_tracking` | id, organization_id, task_id, user_id, minutes_spent, logged_at, note | NEW S77 |
 
 ---
 
-## Hooks disponibles — PULSE S76 (référence rapide)
+## Hooks disponibles — Tâches S77 (référence rapide)
 
 ```
-usePulseAlerts()            — mes alertes actives
-useTeamPulseAlerts()        — alertes équipe (manager+)
-usePulseAlertRules()        — règles d'alerte org
-useCreateAlertRule()        — créer une règle
-useUpdateAlertRule()        — modifier une règle
-useDeleteAlertRule()        — supprimer une règle
-useAcknowledgeAlert()       — traiter une alerte (acknowledge/resolve/dismiss)
-usePulseCalibration()       — config calibration org
-useUpdateCalibration()      — sauvegarder calibration (upsert par dimension)
-usePulseTrends(userId?)     — tendances 30j d'un user
-useTeamPulseTrends()        — scores 30j toute l'équipe (pour heatmap)
-useRefreshPulseTrendsMV()   — rafraîchir MV mv_pulse_trends
+useTaskDependencies(taskId)   — dépendances d'une tâche (dependsOn + blockedBy)
+useCreateDependency()         — créer une dépendance
+useDeleteDependency()         — supprimer une dépendance
+useTaskRecurrence(taskId)     — règle récurrence d'une tâche
+useCreateRecurrence()         — créer récurrence
+useUpdateRecurrence()         — modifier récurrence
+useDeleteRecurrence()         — supprimer récurrence
+useTimeTracking(taskId)       — logs temps d'une tâche
+useLogTime()                  — enregistrer du temps
+useDeleteTimeLog()            — supprimer un log
+useTeamWorkload()             — charge par collaborateur (RPC → MV)
+useGanttData(start, end)      — tâches avec dates pour Gantt (RPC)
 ```
 
 ---
 
-## Enums S76
+## Enums S77
 
 ```sql
-pulse_alert_type   : 'decrochage' | 'absence' | 'stagnation' | 'pic_negatif'
-pulse_alert_status : 'active' | 'acknowledged' | 'resolved' | 'dismissed'
-pulse_dimension    : 'delivery' | 'quality' | 'regularity' | 'bonus_okr' | 'global'
+task_dependency_type    : 'blocks' | 'related'
+task_recurrence_frequency : 'daily' | 'weekly' | 'monthly' | 'custom'
+```
+
+## Colonnes ajoutées sur `tasks` (S77)
+```sql
+tasks.estimated_minutes  integer  -- temps estimé en minutes
+tasks.workload_score     integer  -- charge 0-10
 ```
 
 ---

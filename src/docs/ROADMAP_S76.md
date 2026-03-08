@@ -7,7 +7,9 @@
 2. `ROADMAP_SXX.md` mis à jour
 3. `SESSION_START_SXX+1.md` créé et pré-rempli
 4. **ZIP `src_SXX.zip` du dossier `src/` COMPLET**
-5. **Commande Git prête à copier-coller**
+5. **`ARCHITECTURE.md` mis à jour** (nouvelles tables, règles d'or, nouveaux modules)
+6. **Commande Git prête à copier-coller**
+7. `README.md` **uniquement si** stack / installation / structure a changé
 
 ---
 
