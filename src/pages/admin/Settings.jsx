@@ -1300,7 +1300,6 @@ function PulseNotificationsSection() {
   const { profile } = useAuth()
   const { can } = usePermission()
   const isManager = can('evaluations', 'entretiens_team', 'read')
-  const isManager = canManageTeam
 
   const { data: settings, isLoading } = useNotificationSettings()
   const updateSettings = useUpdateNotificationSettings()
