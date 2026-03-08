@@ -185,3 +185,339 @@ export function useOnboarding() {
     isLast: currentStep === steps.length - 1,
   }
 }
+
+// ============================================================
+// SESSION 75 — Onboarding Parcours Progressif
+// Hooks : templates, étapes, assignments, progress
+// ============================================================
+
+// ─── useOnboardingTemplates ───────────────────────────────────
+export function useOnboardingTemplates() {
+  const { profile } = useAuth()
+  return useQuery({
+    queryKey: ['onboarding_templates', profile?.organization_id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('onboarding_templates')
+        .select('*')
+        .eq('organization_id', profile.organization_id)
+        .order('name')
+      if (error) throw error
+      return data || []
+    },
+    enabled: !!profile?.organization_id,
+  })
+}
+
+// ─── useCreateTemplate ───────────────────────────────────────
+export function useCreateTemplate() {
+  const { profile } = useAuth()
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: async (payload) => {
+      const { data, error } = await supabase
+        .from('onboarding_templates')
+        .insert({ ...payload, organization_id: profile.organization_id, created_by: profile.id })
+        .select().single()
+      if (error) throw error
+      return data
+    },
+    onSuccess: () => qc.invalidateQueries(['onboarding_templates']),
+  })
+}
+
+// ─── useUpdateTemplate ───────────────────────────────────────
+export function useUpdateTemplate() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: async ({ id, ...payload }) => {
+      const { data, error } = await supabase
+        .from('onboarding_templates')
+        .update(payload)
+        .eq('id', id)
+        .select().single()
+      if (error) throw error
+      return data
+    },
+    onSuccess: () => qc.invalidateQueries(['onboarding_templates']),
+  })
+}
+
+// ─── useDeleteTemplate ───────────────────────────────────────
+export function useDeleteTemplate() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: async (id) => {
+      const { error } = await supabase
+        .from('onboarding_templates')
+        .delete()
+        .eq('id', id)
+      if (error) throw error
+    },
+    onSuccess: () => qc.invalidateQueries(['onboarding_templates']),
+  })
+}
+
+// ─── useTemplateSteps ────────────────────────────────────────
+export function useTemplateSteps(templateId) {
+  return useQuery({
+    queryKey: ['onboarding_steps', templateId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('onboarding_steps')
+        .select('*')
+        .eq('template_id', templateId)
+        .order('order_index')
+      if (error) throw error
+      return data || []
+    },
+    enabled: !!templateId,
+  })
+}
+
+// ─── useCreateStep ───────────────────────────────────────────
+export function useCreateStep() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: async (payload) => {
+      const { data, error } = await supabase
+        .from('onboarding_steps')
+        .insert(payload)
+        .select().single()
+      if (error) throw error
+      return data
+    },
+    onSuccess: (_, vars) => qc.invalidateQueries(['onboarding_steps', vars.template_id]),
+  })
+}
+
+// ─── useUpdateStep ───────────────────────────────────────────
+export function useUpdateStep() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: async ({ id, template_id, ...payload }) => {
+      const { data, error } = await supabase
+        .from('onboarding_steps')
+        .update(payload)
+        .eq('id', id)
+        .select().single()
+      if (error) throw error
+      return data
+    },
+    onSuccess: (data) => qc.invalidateQueries(['onboarding_steps', data.template_id]),
+  })
+}
+
+// ─── useDeleteStep ───────────────────────────────────────────
+export function useDeleteStep() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: async ({ id, template_id }) => {
+      const { error } = await supabase
+        .from('onboarding_steps')
+        .delete()
+        .eq('id', id)
+      if (error) throw error
+      return template_id
+    },
+    onSuccess: (templateId) => qc.invalidateQueries(['onboarding_steps', templateId]),
+  })
+}
+
+// ─── useAssignTemplate ───────────────────────────────────────
+export function useAssignTemplate() {
+  const { profile } = useAuth()
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: async ({ userId, templateId, startDate }) => {
+      // Créer assignment
+      const { data: assignment, error: ae } = await supabase
+        .from('onboarding_assignments')
+        .insert({
+          user_id: userId,
+          template_id: templateId,
+          start_date: startDate || new Date().toISOString().slice(0, 10),
+          assigned_by: profile.id,
+          organization_id: profile.organization_id,
+        })
+        .select().single()
+      if (ae) throw ae
+
+      // Créer completions pour chaque étape
+      const { data: steps } = await supabase
+        .from('onboarding_steps')
+        .select('id')
+        .eq('template_id', templateId)
+
+      if (steps?.length) {
+        const completions = steps.map(s => ({
+          assignment_id: assignment.id,
+          step_id: s.id,
+          user_id: userId,
+          status: 'pending',
+        }))
+        await supabase.from('onboarding_step_completions').insert(completions)
+      }
+      return assignment
+    },
+    onSuccess: () => {
+      qc.invalidateQueries(['onboarding_assignments'])
+      qc.invalidateQueries(['onboarding_progress'])
+    },
+  })
+}
+
+// ─── useMyOnboardingProgress ─────────────────────────────────
+export function useMyOnboardingProgress() {
+  const { profile } = useAuth()
+  return useQuery({
+    queryKey: ['my_onboarding_progress', profile?.id],
+    queryFn: async () => {
+      // Assignment actif
+      const { data: assignments, error } = await supabase
+        .from('onboarding_assignments')
+        .select(`
+          *,
+          onboarding_templates (id, name, description),
+          onboarding_step_completions (
+            id, status, completed_at, comment, step_id,
+            onboarding_steps (id, title, description, order_index, due_day_offset, assignee_type, is_required, category)
+          )
+        `)
+        .eq('user_id', profile.id)
+        .eq('status', 'active')
+        .order('created_at', { ascending: false })
+      if (error) throw error
+      return assignments || []
+    },
+    enabled: !!profile?.id,
+    staleTime: 30_000,
+  })
+}
+
+// ─── useCompleteStep ─────────────────────────────────────────
+export function useCompleteStep() {
+  const { profile } = useAuth()
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: async ({ completionId, comment, skip = false }) => {
+      const { data, error } = await supabase
+        .from('onboarding_step_completions')
+        .update({
+          status: skip ? 'skipped' : 'completed',
+          completed_at: new Date().toISOString(),
+          completed_by: profile.id,
+          comment: comment || null,
+        })
+        .eq('id', completionId)
+        .select().single()
+      if (error) throw error
+      return data
+    },
+    onSuccess: () => {
+      qc.invalidateQueries(['my_onboarding_progress'])
+      qc.invalidateQueries(['team_onboarding_progress'])
+      qc.invalidateQueries(['all_onboarding_progress'])
+    },
+  })
+}
+
+// ─── useTeamOnboardingProgress ───────────────────────────────
+export function useTeamOnboardingProgress() {
+  const { profile } = useAuth()
+  return useQuery({
+    queryKey: ['team_onboarding_progress', profile?.id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('onboarding_assignments')
+        .select(`
+          *,
+          users!onboarding_assignments_user_id_fkey (id, full_name, role, manager_id),
+          onboarding_templates (id, name),
+          onboarding_step_completions (id, status, step_id)
+        `)
+        .eq('users.manager_id', profile.id)
+        .eq('status', 'active')
+      if (error) throw error
+      return data || []
+    },
+    enabled: !!profile?.id,
+    staleTime: 60_000,
+  })
+}
+
+// ─── useAllOnboardingProgress ────────────────────────────────
+export function useAllOnboardingProgress() {
+  const { profile } = useAuth()
+  return useQuery({
+    queryKey: ['all_onboarding_progress', profile?.organization_id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('onboarding_assignments')
+        .select(`
+          *,
+          users!onboarding_assignments_user_id_fkey (id, full_name, role, manager_id),
+          onboarding_templates (id, name, target_role, target_department),
+          onboarding_step_completions (id, status)
+        `)
+        .eq('organization_id', profile.organization_id)
+        .order('created_at', { ascending: false })
+      if (error) throw error
+      return data || []
+    },
+    enabled: !!profile?.organization_id,
+    staleTime: 60_000,
+  })
+}
+
+// ─── useOnboardingStats ──────────────────────────────────────
+export function useOnboardingStats() {
+  const { profile } = useAuth()
+  return useQuery({
+    queryKey: ['onboarding_stats', profile?.organization_id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('onboarding_assignments')
+        .select(`
+          id, status,
+          onboarding_step_completions (id, status)
+        `)
+        .eq('organization_id', profile.organization_id)
+      if (error) throw error
+
+      const total   = data?.length || 0
+      const active  = data?.filter(a => a.status === 'active').length || 0
+      const done    = data?.filter(a => a.status === 'completed').length || 0
+
+      let totalSteps = 0, completedSteps = 0, overdueSteps = 0
+      data?.forEach(a => {
+        const steps = a.onboarding_step_completions || []
+        totalSteps     += steps.length
+        completedSteps += steps.filter(s => s.status === 'completed').length
+        overdueSteps   += steps.filter(s => s.status === 'overdue').length
+      })
+
+      return {
+        total,
+        active,
+        completed: done,
+        overdue: overdueSteps,
+        avgCompletionRate: totalSteps > 0
+          ? Math.round((completedSteps / totalSteps) * 100)
+          : 0,
+      }
+    },
+    enabled: !!profile?.organization_id,
+    staleTime: 60_000,
+  })
+}
+
+// ─── useRefreshOnboardingMVs ─────────────────────────────────
+export function useRefreshOnboardingMVs() {
+  return useMutation({
+    mutationFn: async () => {
+      const { error } = await supabase.rpc('refresh_onboarding_mvs')
+      if (error) throw error
+    },
+  })
+}

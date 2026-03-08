@@ -28,6 +28,7 @@ import {
   Activity, BookOpen, Trophy, Users, BarChart3,
   ChevronLeft, ChevronRight, ChevronDown,
   LogOut, Settings, Building2, UserCog, GraduationCap, DollarSign, BriefcaseIcon, ClipboardList, MessageCircle,
+  MapPin,
 } from 'lucide-react'
 import { useAuth }        from '../../contexts/AuthContext'
 import { useAppSettings } from '../../hooks/useSettings'
@@ -151,6 +152,7 @@ export default function Sidebar() {
             <NavItem icon={BarChart3} label="Intelligence RH"  path="/intelligence" color="#8B5CF6" collapsed={collapsed}/>
             <NavItem icon={Trophy}   label="Engagement & Rapports" path="/engagement" color="#C9A227" collapsed={collapsed}/>
             <NavItem icon={GraduationCap} label="Formation & Certifications" path="/formation" color="#10B981" collapsed={collapsed}/> {/* S57 */}
+            <NavItem icon={MapPin}        label="Onboarding"                 path="/onboarding" color="#6366F1" collapsed={collapsed}/> {/* S75 */}
             <NavItem icon={DollarSign}    label="Compensation & Benchmark"   path="/compensation" color="#34D399" collapsed={collapsed}/> {/* S58 */}
             <NavItem icon={BriefcaseIcon} label="Recrutement"                 path="/recrutement"  color="#818CF8" collapsed={collapsed}/> {/* S59 */}
             <NavItem icon={ClipboardList} label="Entretiens Annuels"          path="/entretiens"   color="#A78BFA" collapsed={collapsed}/> {/* S60 */}
@@ -210,6 +212,7 @@ export default function Sidebar() {
             <NavItem icon={BarChart3} label="Intelligence RH"   path="/intelligence"  color="#8B5CF6" collapsed={collapsed}/>
             <NavItem icon={Trophy}   label="Engagement équipe"  path="/engagement"    color="#C9A227" collapsed={collapsed}/>
             <NavItem icon={GraduationCap} label="Formation"     path="/formation"     color="#10B981" collapsed={collapsed}/> {/* S57 */}
+            <NavItem icon={MapPin}        label="Onboarding"    path="/onboarding"    color="#6366F1" collapsed={collapsed}/> {/* S75 */}
             <NavItem icon={DollarSign}    label="Compensation"   path="/compensation"  color="#34D399" collapsed={collapsed}/> {/* S58 */}
             <NavItem icon={BriefcaseIcon} label="Recrutement"    path="/recrutement"   color="#818CF8" collapsed={collapsed}/> {/* S59 */}
             <NavItem icon={ClipboardList} label="Entretiens"      path="/entretiens"    color="#A78BFA" collapsed={collapsed}/> {/* S60 */}
@@ -260,6 +263,9 @@ export default function Sidebar() {
 
             {/* 4b — Formation */}
             <NavItem icon={GraduationCap} label="Formation" path="/formation" color="#6366F1" collapsed={collapsed}/> {/* S57 */}
+
+            {/* 4b2 — Onboarding S75 */}
+            <NavItem icon={MapPin} label="Onboarding" path="/onboarding" color="#6366F1" collapsed={collapsed}/> {/* S75 */}
 
             {/* 4c — Compensation */}
             <NavItem icon={DollarSign} label="Compensation" path="/compensation" color="#34D399" collapsed={collapsed}/> {/* S58 */}

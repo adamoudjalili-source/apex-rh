@@ -46,6 +46,8 @@ const GestionTemps = lazy(() => import('./pages/temps/GestionTemps'))
 // ── Congés & Absences S67 ─────────────────────────────────────
 const GestionConges = lazy(() => import('./pages/conges/GestionConges'))
 
+// ── Onboarding S75 ────────────────────────────────────────────
+const Onboarding  = lazy(() => import('./pages/onboarding/Onboarding'))
 // ── Offboarding S68 ───────────────────────────────────────────
 const Offboarding = lazy(() => import('./pages/offboarding/Offboarding'))
 
@@ -119,6 +121,7 @@ export default function App() {
           <Route path="/temps"       element={<S><GestionTemps /></S>} />
           <Route path="/conges"      element={<S><GestionConges /></S>} />
           <Route path="/offboarding" element={<S><Offboarding /></S>} />
+          <Route path="/onboarding"  element={<S><Onboarding  /></S>} />
 
           {/* ── Communication S65 ── */}
           <Route path="/communication"          element={<S><CommunicationPage /></S>} />

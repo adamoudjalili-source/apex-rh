@@ -1,5 +1,5 @@
 # MEMOIRE_PROJET.md — APEX RH
-> Mis à jour : Session 74 — Compensation — Workflow révision salariale ✅ DÉPLOYÉ (08/03/2026)
+> Mis à jour : Session 75 — Onboarding — Parcours progressif automatisé ✅ DÉPLOYÉ (08/03/2026)
 
 ## 🔴 RÈGLE D'OR — LIVRAISON OBLIGATOIRE (chaque session)
 
@@ -26,7 +26,7 @@ cd C:\Users\DELL\APEX_RH\apex-rh && git add -A && git commit -m "feat(SXX): [des
 - **URL production** : https://apex-rh-h372.vercel.app
 - **Supabase** : ptpxoczdycajphrshdnk
 - **Stack** : React 18 + Vite + TailwindCSS + Supabase + Vercel
-- **Sessions déployées** : 1 → 74
+- **Sessions déployées** : 1 → 75
 - **Nature** : Outil interne NITA (pas un SaaS commercialisé)
 
 ---
@@ -45,13 +45,20 @@ cd C:\Users\DELL\APEX_RH\apex-rh && git add -A && git commit -m "feat(SXX): [des
 10. **Recrutement — Pipeline structuré + scoring DÉPLOYÉ (S72)**.
 11. **Formation — Budget + Obligatoire + Évaluation DÉPLOYÉ (S73)**.
 12. **Compensation — Workflow révision salariale DÉPLOYÉ (S74)** :
-    - `s74_compensation_workflow.sql` — extension enum `review_status` (brouillon/soumis/valide_manager/valide_rh/refuse), colonnes workflow sur `compensation_reviews`, table `compensation_cycles`, RLS, MVs `mv_compensation_cycles_progress` + `mv_revision_stats`, fonction `refresh_compensation_mvs()`
-    - `useCompensation.js` — 14 hooks S74 : cycles CRUD, `usePendingReviews`, `useAllReviews`, `useTeamRevisionWorkflow`, `useCreateRevision`, `useApproveRevision`, `useRefuseRevision`, `useApplyRevision`, `useRevisionStats`, `useRevisionBudgetSimulation`, `useRefreshCompensationMVs`
-    - `RevisionWorkflow.jsx` — WorkflowStepper 4 étapes, cartes révision, validation/refus inline, modal création
-    - `CycleRevision.jsx` — CRUD cycles, avancement, BudgetSimulationWidget, actions démarrer/clôturer
-    - `SimulationBudget.jsx` — jauge SVG demi-cercle, donut distribution, barres département
-    - `CompensationDashboardEnrichi.jsx` — KPIs révisions, alertes en attente, répartition statuts, budget engagé
-    - `Compensation.jsx` — 9 onglets : Dashboard/Ma rémunération/Benchmark/Historique/Révisions/Cycles/Simulation/Mon équipe/Administration
+    - `s74_compensation_workflow.sql` — extension enum, colonnes workflow, cycles, MVs, RLS
+    - 14 hooks S74 dans `useCompensation.js`
+    - `RevisionWorkflow.jsx`, `CycleRevision.jsx`, `SimulationBudget.jsx`, `CompensationDashboardEnrichi.jsx`
+    - `Compensation.jsx` — 9 onglets
+13. **Onboarding — Parcours progressif automatisé DÉPLOYÉ (S75)** :
+    - `s75_onboarding_parcours.sql` — 3 enums, 4 tables, MV `mv_onboarding_progress`, fonction refresh, RLS
+    - `useOnboarding.js` — 12 hooks S75 appended (voir liste ci-dessous)
+    - `OnboardingTemplateManager.jsx` — CRUD templates + étapes avec modale
+    - `MyOnboardingJourney.jsx` — timeline visuelle collaborateur + modale complétion
+    - `TeamOnboardingDashboard.jsx` — suivi manager + alertes retard
+    - `OnboardingAdminDashboard.jsx` — stats globales SVG donut, assignation, liste
+    - `pages/onboarding/Onboarding.jsx` — hub 4 onglets : Mon parcours / Mon équipe / Templates / Administration
+    - `Sidebar.jsx` — MapPin ajouté + route `/onboarding` dans les 3 vues
+    - `App.jsx` — route `/onboarding` lazy
 
 ---
 
@@ -81,19 +88,36 @@ const { canAdmin, canValidate, canManageTeam, canRecruit, canViewAnalytics } = u
 |-------|--------------|-------|
 | `users` | id, organization_id, role, manager_id, full_name | PAS `profiles` |
 | `compensation_records` | employee_id, salary_amount, **is_current**, effective_date | `is_current` PAS `current` |
-| `compensation_reviews` | **user_id**, old_base_salary, new_base_salary, status, review_cycle_id | `increase_amount` et `increase_pct` sont GENERATED — ne jamais insérer. Colonne user (PAS employee_id) |
+| `compensation_reviews` | **user_id**, old_base_salary, new_base_salary, status, review_cycle_id | `increase_amount` et `increase_pct` GENERATED |
 | `compensation_cycles` | organization_id, name, year, status, budget_envelope | NEW S74 |
-| `salary_grades` | id, code, label, min_salary, mid_salary, max_salary | — |
+| `onboarding_templates` | id, organization_id, name, target_role, target_department, is_active | NEW S75 |
+| `onboarding_steps` | id, template_id, order_index, title, due_day_offset, assignee_type, category | NEW S75 |
+| `onboarding_assignments` | id, organization_id, user_id, template_id, start_date, status | NEW S75 |
+| `onboarding_step_completions` | id, assignment_id, step_id, user_id, status, completed_at, comment | NEW S75 |
 
 ---
 
-## Hooks disponibles — compensation (référence rapide)
+## Hooks disponibles — onboarding (référence rapide)
 
-### S58 (existants)
-`useSalaryGrades`, `useMyCompensationRecord`, `useMyCompensationStats`, `useTeamCompensationStats`, `useOrgCompensationStats`, `useMyReviews`, `useTeamReviews` (S58), `useCreateReview`, `useUpdateReview`, `useApplyReview`, `useSalaryBenchmarks`, `useMyBonuses`, `useTeamBonuses`
+### S40 (existants)
+`useOnboarding` (wizard première connexion)
 
-### S74 (nouveaux)
-`useCompensationCycles`, `useCreateCycle`, `useUpdateCycle`, `useDeleteCycle`, `useCyclesProgress`, `usePendingReviews`, `useAllReviews`, `useTeamRevisionWorkflow`, `useCreateRevision`, `useApproveRevision`, `useRefuseRevision`, `useApplyRevision`, `useRevisionStats`, `useRevisionBudgetSimulation`, `useRefreshCompensationMVs`
+### S75 (nouveaux — dans useOnboarding.js)
+`useOnboardingTemplates`, `useCreateTemplate`, `useUpdateTemplate`, `useDeleteTemplate`,
+`useTemplateSteps`, `useCreateStep`, `useUpdateStep`, `useDeleteStep`,
+`useAssignTemplate`, `useMyOnboardingProgress`, `useCompleteStep`,
+`useTeamOnboardingProgress`, `useAllOnboardingProgress`, `useOnboardingStats`,
+`useRefreshOnboardingMVs`
+
+---
+
+## Enums S75
+
+```sql
+onboarding_assignee_type : 'self' | 'manager' | 'rh'
+onboarding_step_status   : 'pending' | 'in_progress' | 'completed' | 'skipped' | 'overdue'
+onboarding_step_category : 'administrative' | 'equipment' | 'access' | 'training' | 'meeting' | 'documentation' | 'other'
+```
 
 ---
 
@@ -107,7 +131,7 @@ const { canAdmin, canValidate, canManageTeam, canRecruit, canViewAnalytics } = u
 - ✅ Helpers AuthContext S69 uniquement pour les guards de rôles
 - ✅ SVG natif uniquement — pas de recharts
 - ✅ `useUsersList()` depuis `useSettings.js` pour liste des users org (PAS `useOrgUsers`)
-- ✅ Sidebar : `src/components/layout/Sidebar.jsx` UNIQUEMENT
+- ✅ Sidebar : `src/components/layout/Sidebar.jsx` UNIQUEMENT (mais src/Sidebar.jsx à la racine de src)
 - ✅ RLS sur toutes les nouvelles tables
 - ✅ MVs avec REVOKE ALL (anon, authenticated)
 - ✅ Cast `::text` sur les nouvelles valeurs d'enum dans les MVs créées la même session

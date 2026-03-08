@@ -1,5 +1,5 @@
 # ROADMAP.md — APEX RH
-> Mis à jour : Session 74 ✅ — Compensation — Workflow révision salariale — DÉPLOYÉ (08/03/2026)
+> Mis à jour : Session 75 ✅ — Onboarding — Parcours progressif automatisé — DÉPLOYÉ (08/03/2026)
 
 ## 🔴 RÈGLE D'OR — LIVRAISON OBLIGATOIRE (chaque session)
 
@@ -15,36 +15,30 @@
 
 | Session | Module | Statut |
 |---------|--------|--------|
-| S1–S73 | (voir MEMOIRE_PROJET_S74.md) | ✅ Production |
-| **S74** | **Compensation — Workflow révision salariale** | ✅ **DÉPLOYÉ** |
+| S1–S74 | (voir MEMOIRE_PROJET_S75.md) | ✅ Production |
+| **S75** | **Onboarding — Parcours progressif automatisé** | ✅ **DÉPLOYÉ** |
 
 ---
 
-## Session 74 — Livrables ✅
+## Session 75 — Livrables ✅
 
-- `s74_compensation_workflow.sql` — enum extension, colonnes workflow, table cycles, MVs, RLS
-- `useCompensation.js` — 14 hooks S74 (cycles, workflow 2 niveaux, simulation, stats)
-- `RevisionWorkflow.jsx` — workflow demande → validation → application
-- `CycleRevision.jsx` — gestion cycles annuels
-- `SimulationBudget.jsx` — simulation impact masse salariale
-- `CompensationDashboardEnrichi.jsx` — dashboard KPIs révisions
-- `Compensation.jsx` — 9 onglets avec badges S74
-
-**Hotfixes appliqués :**
-- `review_status` enum : cast `::text` dans MVs (unsafe new enum value)
-- `user_id` au lieu de `employee_id` dans compensation_reviews
-- `old_base_salary`/`new_base_salary` au lieu de `current_salary`/`new_salary`
-- `useTeamRevisionWorkflow` (renommé depuis `useTeamReviews` pour éviter doublon S58)
-- `useUsersList` depuis `useSettings` (au lieu de `useOrgUsers` inexistant)
+- `s75_onboarding_parcours.sql` — 3 enums, 4 tables (templates, steps, assignments, completions), MV `mv_onboarding_progress`, fonction refresh, RLS, index
+- `useOnboarding.js` — 15 hooks S75 appended
+- `OnboardingTemplateManager.jsx` — CRUD templates + étapes, modales, expand/collapse
+- `MyOnboardingJourney.jsx` — timeline visuelle, marquage étapes, modale complétion avec commentaire
+- `TeamOnboardingDashboard.jsx` — KPIs, alertes retard, filtres, cartes collaborateurs
+- `OnboardingAdminDashboard.jsx` — stats donuts SVG, assignation modale, liste search
+- `pages/onboarding/Onboarding.jsx` — hub 4 onglets : Mon parcours / Mon équipe(S75) / Templates(S75) / Administration(S75)
+- `App.jsx` — route `/onboarding` lazy
+- `Sidebar.jsx` — MapPin import + NavItem dans les 3 vues (admin, manager, collaborateur)
 
 ---
 
-## Roadmap S75–S87
+## Roadmap S76–S87
 
 | Session | Module | Priorité | Statut |
 |---------|--------|----------|--------|
-| **S75** | **Onboarding — Parcours progressif automatisé** | 🔴 Haute | 🎯 **Prochaine** |
-| S76 | Performance PULSE — Alertes proactives + calibration | 🟠 Moyenne | ⏳ Planifiée |
+| **S76** | **Performance PULSE — Alertes proactives + calibration** | 🟠 Moyenne | 🎯 **Prochaine** |
 | S77 | Tâches — Dépendances + récurrence + charge | 🟠 Moyenne | ⏳ Planifiée |
 | S78 | OKR — Cycle complet + check-ins + lien évaluation | 🟠 Moyenne | ⏳ Planifiée |
 | S79 | Projets — Connexions + budget + Gantt avancé | 🟠 Moyenne | ⏳ Planifiée |
