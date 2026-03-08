@@ -87,7 +87,7 @@ export default function PublicHolidaysManager() {
             <button
               onClick={() => setInitConfirm(true)}
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium text-amber-300 border border-amber-500/30 hover:bg-amber-500/10 transition-colors">
-              ✨ Importer liste Sénégal
+              ✨ Importer liste Niger
             </button>
           )}
           <button
@@ -103,7 +103,7 @@ export default function PublicHolidaysManager() {
         <div className="rounded-2xl border p-4 flex items-center justify-between gap-3"
           style={{ background:'rgba(245,158,11,0.07)', borderColor:'rgba(245,158,11,0.2)' }}>
           <p className="text-sm text-amber-300/80">
-            Importer les {SENEGAL_PUBLIC_HOLIDAYS_DEFAULT.length} jours fériés sénégalais (2026) ?
+            Importer les {SENEGAL_PUBLIC_HOLIDAYS_DEFAULT.length} jours fériés nigériens (2026) ?
           </p>
           <div className="flex gap-2">
             <button onClick={() => setInitConfirm(false)} className="px-3 py-1.5 rounded-xl text-xs text-white/40 hover:text-white/60 transition-colors">Annuler</button>

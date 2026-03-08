@@ -30,22 +30,22 @@ export const LEAVE_STATUS_BG = {
   rejected:         'rgba(239,68,68,0.1)',
 }
 
+// Jours fériés officiels du Niger (fixes + mobiles islamiques 2026)
 export const SENEGAL_PUBLIC_HOLIDAYS_DEFAULT = [
-  { date: '01-01', name: "Nouvel An",                 is_fixed: true,  is_active: true },
-  { date: '04-04', name: "Fête de l'Indépendance",    is_fixed: true,  is_active: true },
-  { date: '05-01', name: "Fête du Travail",           is_fixed: true,  is_active: true },
-  { date: '08-15', name: "Assomption",                is_fixed: true,  is_active: true },
-  { date: '11-01', name: "Toussaint",                 is_fixed: true,  is_active: true },
-  { date: '12-25', name: "Noël",                      is_fixed: true,  is_active: true },
-  { date: '2026-01-27', name: "Tamkharit",            is_fixed: false, is_active: true },
-  { date: '2026-03-29', name: "Magal de Touba",       is_fixed: false, is_active: true },
-  { date: '2026-04-03', name: "Vendredi Saint",       is_fixed: false, is_active: true },
-  { date: '2026-04-06', name: "Lundi de Pâques",      is_fixed: false, is_active: true },
-  { date: '2026-05-14', name: "Ascension",            is_fixed: false, is_active: true },
-  { date: '2026-05-25', name: "Lundi de Pentecôte",   is_fixed: false, is_active: true },
-  { date: '2026-06-05', name: "Aïd el-Fitr (Korité)", is_fixed: false, is_active: true },
-  { date: '2026-08-12', name: "Aïd el-Adha (Tabaski)",is_fixed: false, is_active: true },
-  { date: '2026-09-01', name: "Maouloud",             is_fixed: false, is_active: true },
+  // ── Jours fériés fixes ──────────────────────────────────────
+  { date: '01-01', name: "Nouvel An",                      is_fixed: true,  is_active: true },
+  { date: '04-24', name: "Fête de la Concorde Nationale",  is_fixed: true,  is_active: true },
+  { date: '05-01', name: "Fête du Travail",                is_fixed: true,  is_active: true },
+  { date: '08-03', name: "Fête de l'Indépendance",         is_fixed: true,  is_active: true },
+  { date: '12-18', name: "Fête de la République",          is_fixed: true,  is_active: true },
+  { date: '12-25', name: "Noël",                           is_fixed: true,  is_active: true },
+  // ── Jours fériés islamiques mobiles (2026) ──────────────────
+  { date: '2026-01-06', name: "Tamkharit (Achoura)",       is_fixed: false, is_active: true },
+  { date: '2026-03-20', name: "Maouloud (Naissance Prophète)", is_fixed: false, is_active: true },
+  { date: '2026-06-18', name: "Laylat al-Qadr",            is_fixed: false, is_active: true },
+  { date: '2026-06-22', name: "Aïd el-Fitr (Korité)",      is_fixed: false, is_active: true },
+  { date: '2026-08-29', name: "Aïd el-Adha (Tabaski)",     is_fixed: false, is_active: true },
+  { date: '2026-09-18', name: "1er Muharram (An islamique)",is_fixed: false, is_active: true },
 ]
 
 export function countWorkDays(start, end, workDays = [1,2,3,4,5], publicHolidays = []) {
