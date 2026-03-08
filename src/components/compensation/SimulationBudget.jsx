@@ -6,7 +6,7 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { TrendingUp, AlertTriangle, BarChart3, PieChart, RefreshCw } from 'lucide-react'
-import { useAuth } from '../../contexts/AuthContext'
+import { usePermission } from '../../hooks/usePermission'
 import {
   useCompensationCycles, useRevisionBudgetSimulation,
   formatSalary, formatSalaryShort
@@ -124,7 +124,8 @@ function TrancheDonut({ tranches }) {
 
 // ─── COMPOSANT PRINCIPAL ──────────────────────────────────────
 export default function SimulationBudget() {
-  const { canAdmin } = useAuth()
+  const { can } = usePermission()
+  const canAdmin = can('compensation', 'simulation', 'admin')
   const { data: cycles = [] } = useCompensationCycles()
   const [selectedCycleId, setSelectedCycleId] = useState('')
 

@@ -19,6 +19,7 @@ import * as XLSX from 'xlsx'
 import { Navigate, Link } from 'react-router-dom'
 // 4. Contexts
 import { useAuth } from '../../contexts/AuthContext'
+import { usePermission } from '../../hooks/usePermission'
 import { useAppSettings } from '../../hooks/useSettings'
 // 5. Hooks projet
 import {
@@ -198,7 +199,9 @@ function buildPrintHTML({ subtitle, leaderboard, myScores, myLog, selectedType }
 
 // ─── COMPOSANT PRINCIPAL ──────────────────────────────────────
 export default function Reports() {
-  const { profile, canManageTeam }  = useAuth()
+  const { profile } = useAuth()
+  const { can } = usePermission()
+  const canManageTeam = can('pulse', 'team', 'read')
   const { data: settings, isLoading: settingsLoading } = useAppSettings()
 
   const [selectedType, setSelectedType]   = useState('daily_individual')

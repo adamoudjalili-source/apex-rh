@@ -13,7 +13,7 @@ import {
   useFinalSettlement,
   useApplySettlementToProcess,
 } from '../../hooks/useOffboardingS85'
-import { useAuth } from '../../contexts/AuthContext'
+import { usePermission } from '../../hooks/usePermission'
 
 // ─── Ligne de détail ─────────────────────────────────────────
 
@@ -35,7 +35,9 @@ function DetailRow({ label, value, sub, highlight }) {
 // ─── Composant principal ──────────────────────────────────────
 
 export default function FinalSettlementCard({ userId, processId, currentAmount }) {
-  const { canAdmin, canManageTeam } = useAuth()
+  const { can } = usePermission()
+  const canAdmin = can('offboarding', 'solde', 'validate')
+  const canManageTeam = can('offboarding', 'team', 'read')
   const canApply = canAdmin || canManageTeam
 
   const { data: settlement, isLoading, isError, refetch, isFetching } = useFinalSettlement(userId)

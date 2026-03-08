@@ -6,6 +6,7 @@
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useAuth }     from '../../contexts/AuthContext'
+import { usePermission } from '../../hooks/usePermission'
 import {
   useWorkloadSummary,
   useNitaWorkloadCorrelation,
@@ -37,7 +38,9 @@ const CORR_LABELS = {
 }
 
 export default function CartographieCharges() {
-  const { profile, canManageTeam } = useAuth()
+  const { profile } = useAuth()
+  const { can } = usePermission()
+  const canManageTeam = can('intelligence', 'effectifs', 'read')
   const isManager   = canManageTeam
 
   const { data: workload = [],   isLoading: wLoading  } = useWorkloadSummary()

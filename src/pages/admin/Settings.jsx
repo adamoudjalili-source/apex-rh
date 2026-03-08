@@ -15,6 +15,7 @@ import {
   BarChart2, BrainCircuit, Zap, ClipboardList, TrendingUp, Plug
 } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
+import { usePermission } from '../../hooks/usePermission'
 import {
   useNotificationSettings,
   useUpdateNotificationSettings,
@@ -1296,7 +1297,9 @@ function PulseSettingsSection() {
 // S69 — MANAGER_ROLES remplacé par canManageTeam
 
 function PulseNotificationsSection() {
-  const { profile, canManageTeam } = useAuth()
+  const { profile } = useAuth()
+  const { can } = usePermission()
+  const isManager = can('evaluations', 'entretiens_team', 'read')
   const isManager = canManageTeam
 
   const { data: settings, isLoading } = useNotificationSettings()
@@ -1988,7 +1991,8 @@ function ReviewCyclesSettingsSection() {
 // ─── PAGE PRINCIPALE ─────────────────────────────────────────
 
 export default function SettingsPage() {
-  const { isAdmin } = useAuth()
+  const { can: canSettings } = usePermission()
+  const isAdmin = canSettings('admin', 'users', 'read')
   const [activeTab, setActiveTab] = useState('profile')
 
   const allTabs = isAdmin ? [...TABS_USER, ...TABS_ADMIN] : TABS_USER

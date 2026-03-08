@@ -13,6 +13,7 @@ import {
   BarChart2, Star,
 } from 'lucide-react'
 import { useAuth }                   from '../../contexts/AuthContext'
+import { usePermission }             from '../../hooks/usePermission'
 import { useRecruitmentGlobalStats } from '../../hooks/useRecruitment'
 
 import JobBoard                     from '../../components/recrutement/JobBoard'
@@ -68,7 +69,10 @@ function KanbanIcon({ size = 13 }) {
 }
 
 export default function Recrutement() {
-  const { profile, canAdmin, canManageOrg } = useAuth()
+  const { profile } = useAuth()
+  const { can } = usePermission()
+  const canAdmin = can('recrutement', 'templates', 'admin')
+  const canManageOrg = can('recrutement', 'pipeline', 'update')
   const role = profile?.role
   const canPipeline     = canManageOrg || role === 'chef_division'
   const canRecruitAdmin = canManageOrg

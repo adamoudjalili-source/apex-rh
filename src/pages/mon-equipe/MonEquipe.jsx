@@ -17,6 +17,7 @@ import {
 } from 'lucide-react'
 import { OVERALL_RATING_LABELS } from '../../hooks/useAnnualReviews'
 import { useAuth }     from '../../contexts/AuthContext'
+import { usePermission } from '../../hooks/usePermission'
 import { useTeamIPR }  from '../../hooks/useIPR'
 import {
   GaugeRing, Sparkline, TrendBadge, iprColor, iprLabel,
@@ -38,7 +39,9 @@ const ROLE_COLORS = {
 
 // ─── Composant principal ─────────────────────────────────────
 export default function MonEquipe() {
-  const { profile, canManageTeam } = useAuth()
+  const { profile } = useAuth()
+  const { can } = usePermission()
+  const canManageTeam = can('employes', 'orgchart', 'read')
   const navigate    = useNavigate()
   const isManager   = canManageTeam
 

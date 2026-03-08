@@ -14,7 +14,7 @@ import {
   ChevronDown, ChevronRight, Zap, Eye, RefreshCw,
   CheckCircle, XCircle, Clock, Target,
 } from 'lucide-react'
-import { useAuth } from '../../contexts/AuthContext'
+import { usePermission } from '../../hooks/usePermission'
 import {
   useDRHGlobalKPIs,
   useDivisionMatrix,
@@ -444,7 +444,9 @@ function TopFlopList({ items, title, ascending=false, color }) {
 
 // ─── COMPOSANT PRINCIPAL ─────────────────────────────────────
 export default function TableauBordDRH() {
-  const { isAdmin, isDirecteur } = useAuth()
+  const { can } = usePermission()
+  const isAdmin = can('intelligence', 'succession', 'admin')
+  const isDirecteur = can('intelligence', 'overview', 'read')
   const [trendMetric,  setTrendMetric]  = useState('pulse')
   const [trendMonths,  setTrendMonths]  = useState(6)
   const [expandedDiv,  setExpandedDiv]  = useState(null)

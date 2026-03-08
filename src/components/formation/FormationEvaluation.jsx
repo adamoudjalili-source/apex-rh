@@ -10,7 +10,7 @@ import {
   useSubmitSatisfaction, useSubmitEffectiveness,
   useGlobalEvaluationStats,
 } from '../../hooks/useFormations'
-import { useAuth } from '../../contexts/AuthContext'
+import { usePermission } from '../../hooks/usePermission'
 
 // ─── StarRating ───────────────────────────────────────────────
 function StarRating({ value, onChange, size = 20 }) {
@@ -268,7 +268,8 @@ function EvaluationStatsPanel() {
 
 // ─── Page principale ──────────────────────────────────────────
 export default function FormationEvaluation() {
-  const { canAdmin } = useAuth()
+  const { can } = usePermission()
+  const canAdmin = can('developpement', 'competences', 'admin')
   const [view, setView] = useState('pending')
 
   return (

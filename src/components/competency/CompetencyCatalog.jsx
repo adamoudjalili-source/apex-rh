@@ -6,7 +6,7 @@
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Plus, X, Edit2, Trash2, ChevronDown, ChevronRight, Book, Tag } from 'lucide-react'
-import { useAuth } from '../../contexts/AuthContext'
+import { usePermission } from '../../hooks/usePermission'
 import {
   useCompetencyCategories,
   useCompetenciesList,
@@ -280,7 +280,8 @@ function CompetencyCard({ comp, onEdit, onDelete, canAdmin }) {
 
 // ─── COMPOSANT PRINCIPAL ─────────────────────────────────────
 export default function CompetencyCatalog() {
-  const { canAdmin } = useAuth()
+  const { can } = usePermission()
+  const canAdmin = can('developpement', 'competences', 'admin')
   const { data: categories = [], isLoading: loadCat } = useCompetencyCategories()
   const { data: competencies = [], isLoading: loadComp } = useCompetenciesList()
   const createCategory   = useCreateCompetencyCategory()

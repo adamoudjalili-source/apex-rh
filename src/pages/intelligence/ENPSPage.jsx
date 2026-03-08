@@ -4,7 +4,7 @@
 // Score global + évolution + segmentation cohortes
 // ============================================================
 import { useState } from 'react'
-import { useAuth } from '../../contexts/AuthContext'
+import { usePermission } from '../../hooks/usePermission'
 import {
   useENPSTrend,
   useCurrentENPS,
@@ -90,7 +90,11 @@ function SurveyENPSPanel({ surveys }) {
 // ─── PAGE PRINCIPALE ─────────────────────────────────────────
 
 export default function ENPSPage() {
-  const { isAdmin, isDirecteur, isChefDivision, isChefService } = useAuth()
+  const { can, hasRole } = usePermission()
+  const isAdmin = can('intelligence', 'succession', 'admin')
+  const isDirecteur = can('intelligence', 'overview', 'read')
+  const isChefDivision = hasRole('chef_division') && !isAdmin
+  const isChefService = hasRole('chef_service') && !isDirecteur && !isChefDivision && !isAdmin
   const isManager = isAdmin || isDirecteur || isChefDivision || isChefService
 
   const [activeTab, setActiveTab] = useState('overview')

@@ -8,6 +8,7 @@
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useAuth } from '../../contexts/AuthContext'
+import { usePermission } from '../../hooks/usePermission'
 import {
   useFeedbackToGive,
   useMyFeedbackRequests,
@@ -877,7 +878,9 @@ function TeamSummaryTab({ teamSummary, isLoading }) {
 // ─── PAGE PRINCIPALE ─────────────────────────────────────────
 
 export default function Feedback360() {
-  const { profile, canManageTeam } = useAuth()
+  const { profile } = useAuth()
+  const { can } = usePermission()
+  const canManageTeam = can('pulse', 'team', 'read')
   const isManager = canManageTeam
   const { data: toGive = [] } = useFeedbackToGive()
 

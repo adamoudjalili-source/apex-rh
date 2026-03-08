@@ -8,7 +8,7 @@ import { PlusCircle, Trash2, Edit3, CheckCircle, X, TrendingUp, DollarSign, Aler
 import {
   useTrainingBudgets, useCreateOrUpdateBudget, useDeleteBudget, useBudgetConsumed,
 } from '../../hooks/useFormations'
-import { useAuth } from '../../contexts/AuthContext'
+import { usePermission } from '../../hooks/usePermission'
 
 const fmt = (n) => new Intl.NumberFormat('fr-FR').format(Math.round(n || 0))
 
@@ -87,7 +87,8 @@ function BudgetForm({ initial, year, onSave, onCancel }) {
 }
 
 export default function FormationBudget() {
-  const { canAdmin } = useAuth()
+  const { can } = usePermission()
+  const canAdmin = can('developpement', 'budget', 'admin')
   const currentYear = new Date().getFullYear()
   const [year, setYear]       = useState(currentYear)
   const [showForm, setShowForm] = useState(false)

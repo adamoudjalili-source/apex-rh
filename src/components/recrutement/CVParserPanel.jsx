@@ -33,7 +33,7 @@ import {
   MAX_FILE_SIZE_MB,
 } from '../../hooks/useCVParser'
 import { useJobPostings } from '../../hooks/useRecruitment'
-import { useAuth }         from '../../contexts/AuthContext'
+import { usePermission }   from '../../hooks/usePermission'
 
 // ─── Animations ───────────────────────────────────────────────
 const stagger = {
@@ -558,7 +558,9 @@ function ParsingSummaryBar({ summary }) {
 
 // ─── Composant principal ──────────────────────────────────────
 export default function CVParserPanel() {
-  const { isAdmin, isDirecteur } = useAuth()
+  const { can } = usePermission()
+  const isAdmin = can('admin', 'users', 'read')
+  const isDirecteur = can('intelligence', 'overview', 'read')
   const isManager = isAdmin || isDirecteur
 
   const [uploadError, setUploadError]     = useState(null)

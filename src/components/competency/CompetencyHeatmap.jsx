@@ -7,7 +7,7 @@
 import { useState, useMemo } from 'react'
 import { motion } from 'framer-motion'
 import { AlertCircle, RefreshCw, Filter } from 'lucide-react'
-import { useAuth } from '../../contexts/AuthContext'
+import { usePermission } from '../../hooks/usePermission'
 import { useOrgAssessments, useCompetenciesList, useCompetencyCategories, useRefreshCompetencyCoverage } from '../../hooks/useCompetencyS84'
 import { useUsersList } from '../../hooks/useSettings'
 
@@ -46,7 +46,8 @@ function Legende() {
 
 // ─── COMPOSANT PRINCIPAL ─────────────────────────────────────
 export default function CompetencyHeatmap() {
-  const { canAdmin } = useAuth()
+  const { can } = usePermission()
+  const canAdmin = can('developpement', 'competences', 'admin')
   const { data: assessments = [], isLoading: loadA } = useOrgAssessments()
   const { data: competencies = [], isLoading: loadC } = useCompetenciesList()
   const { data: categories = [] }                    = useCompetencyCategories()

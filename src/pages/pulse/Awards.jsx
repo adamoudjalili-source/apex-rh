@@ -7,6 +7,7 @@ import { Navigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Trophy, ChevronLeft, ChevronRight, Award, Star, TrendingUp, AlertCircle, Crown, Check, RefreshCw } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
+import { usePermission } from '../../hooks/usePermission'
 import { useAppSettings } from '../../hooks/useSettings'
 import {
   useMonthlyAwards,
@@ -26,7 +27,9 @@ import { AwardCard } from '../../components/pulse/AwardBadge'
 
 // ─── PAGE PRINCIPALE ─────────────────────────────────────────
 export default function Awards() {
-  const { profile, role, canManageTeam } = useAuth()
+  const { profile } = useAuth()
+  const { can } = usePermission()
+  const canManageTeam = can('pulse', 'team', 'read')
   const { data: settings, isLoading: settingsLoading } = useAppSettings()
 
   const isManager = canManageTeam

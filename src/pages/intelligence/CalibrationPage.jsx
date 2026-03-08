@@ -6,6 +6,7 @@
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useAuth } from '../../contexts/AuthContext'
+import { usePermission } from '../../hooks/usePermission'
 import {
   CALIBRATION_STATUS_LABELS,
   CALIBRATION_STATUS_COLORS,
@@ -273,7 +274,12 @@ function SessionDetail({ session, cycleId, isN2, onBack }) {
 // ─── PAGE PRINCIPALE ─────────────────────────────────────────
 
 export default function CalibrationPage() {
-  const { isAdmin, isDirecteur, isChefDivision, isChefService, profile } = useAuth()
+  const { profile } = useAuth()
+  const { can, hasRole } = usePermission()
+  const isAdmin = can('intelligence', 'succession', 'admin')
+  const isDirecteur = can('intelligence', 'overview', 'read')
+  const isChefDivision = hasRole('chef_division') && !isAdmin
+  const isChefService = hasRole('chef_service') && !isDirecteur && !isChefDivision && !isAdmin
   const isManager = isAdmin || isDirecteur || isChefDivision || isChefService
   const isN2      = isAdmin || isDirecteur
 

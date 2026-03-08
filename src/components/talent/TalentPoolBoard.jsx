@@ -17,7 +17,7 @@ import {
 } from '../../hooks/useSuccessionVivier'
 import { useUsersList } from '../../hooks/useSettings'
 import { useKeyPositions } from '../../hooks/useSuccessionPlanning'
-import { useAuth } from '../../contexts/AuthContext'
+import { usePermission } from '../../hooks/usePermission'
 
 // ─── Helpers ─────────────────────────────────────────────────
 function Avatar({ user, size = 32 }) {
@@ -362,7 +362,8 @@ function AddTalentModal({ positionId, positions, onClose }) {
 
 // ─── COMPOSANT PRINCIPAL ─────────────────────────────────────
 export default function TalentPoolBoard({ positionId = null }) {
-  const { canAdmin } = useAuth()
+  const { can } = usePermission()
+  const canAdmin = can('intelligence', 'talents', 'read')
   const { data, isLoading } = useTalentPool(positionId)
   const { data: positions  } = useKeyPositions()
   const removeMutation       = useRemoveFromTalentPool()

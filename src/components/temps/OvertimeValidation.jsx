@@ -5,7 +5,7 @@
 // ============================================================
 import { useState } from 'react'
 import { CheckCircle, XCircle, Clock, ChevronDown, ChevronUp, Users, Filter } from 'lucide-react'
-import { useAuth }             from '../../contexts/AuthContext'
+import { usePermission }       from '../../hooks/usePermission'
 import {
   usePendingOvertimeSheets,
   useApproveOvertime,
@@ -194,7 +194,8 @@ function OtHistory() {
 
 // ─── Composant principal ──────────────────────────────────────
 export default function OvertimeValidation() {
-  const { canValidate } = useAuth()
+  const { can } = usePermission()
+  const canValidate = can('temps', 'team', 'validate')
   const { data: pending = [], isLoading } = usePendingOvertimeSheets()
   const [tab, setTab] = useState('pending')
 

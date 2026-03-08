@@ -7,7 +7,7 @@ import { motion } from 'framer-motion'
 import {
   MapPin, Users, Layers, LayoutDashboard,
 } from 'lucide-react'
-import { useAuth }                    from '../../contexts/AuthContext'
+import { usePermission } from '../../hooks/usePermission'
 import { useOnboardingStats }         from '../../hooks/useOnboarding'
 
 import MyOnboardingJourney       from '../../components/onboarding/MyOnboardingJourney'
@@ -51,7 +51,10 @@ function QuickStats() {
 
 // ─── COMPOSANT PRINCIPAL ──────────────────────────────────────
 export default function Onboarding() {
-  const { canAdmin, canValidate, canManageTeam } = useAuth()
+  const { can } = usePermission()
+  const canAdmin = can('onboarding', 'parcours', 'create')
+  const canValidate = can('conges', 'team', 'validate')
+  const canManageTeam = can('onboarding', 'team', 'read')
 
   const TABS = useMemo(() => {
     const base = [

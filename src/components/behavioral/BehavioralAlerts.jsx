@@ -13,7 +13,7 @@ import {
   ALERT_TYPE_CONFIG,
   RISK_CONFIG,
 } from '../../hooks/useBehavioralIntelligence'
-import { useAuth } from '../../contexts/AuthContext'
+import { usePermission } from '../../hooks/usePermission'
 
 const SEVERITY_CONFIG = {
   info:     { label: 'Info',    color: '#6B7280', bg: 'rgba(107,114,128,0.12)' },
@@ -141,7 +141,9 @@ function AlertItem({ alert, onAcknowledge, onRead }) {
 }
 
 export default function BehavioralAlerts({ compact = false }) {
-  const { isAdmin, isDirecteur } = useAuth()
+  const { can } = usePermission()
+  const isAdmin = can('intelligence', 'succession', 'admin')
+  const isDirecteur = can('intelligence', 'overview', 'read')
   const [filter, setFilter] = useState('all')
   const { data: alerts = [], isLoading, refetch } = useBehavioralAlerts({
     severity: filter !== 'all' ? filter : undefined,

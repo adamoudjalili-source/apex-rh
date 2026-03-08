@@ -5,7 +5,7 @@
 // ============================================================
 import { useState } from 'react'
 import { Clock, Users, Settings, TrendingUp, AlertTriangle } from 'lucide-react'
-import { useAuth }               from '../../contexts/AuthContext'
+import { usePermission } from '../../hooks/usePermission'
 import TimeSheetGrid             from '../../components/temps/TimeSheetGrid'
 import TimeClockWidget           from '../../components/temps/TimeClockWidget'
 import TimeStatsCard             from '../../components/temps/TimeStatsCard'
@@ -188,7 +188,10 @@ function AdminOnglet() {
 
 // ─── PAGE PRINCIPALE ──────────────────────────────────────────
 export default function GestionTemps() {
-  const { canAdmin, canValidate, canManageTeam } = useAuth()
+  const { can } = usePermission()
+  const canAdmin = can('temps', 'regles', 'admin')
+  const canValidate = can('temps', 'team', 'validate')
+  const canManageTeam = can('temps', 'team', 'read')
   const { data: alerts = [] } = useOvertimeAlerts()
   const criticalAlerts = alerts.filter(a => a.severity === 'critical').length
 

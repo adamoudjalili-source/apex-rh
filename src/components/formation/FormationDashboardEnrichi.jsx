@@ -9,7 +9,7 @@ import {
   useOrgTrainingStats, useMyTrainingStats, useTrainingBudgets, useBudgetConsumed,
   useMandatoryCompliance, useGlobalEvaluationStats, useRefreshFormationMVs,
 } from '../../hooks/useFormations'
-import { useAuth } from '../../contexts/AuthContext'
+import { usePermission } from '../../hooks/usePermission'
 
 const fmt = (n) => new Intl.NumberFormat('fr-FR').format(Math.round(n || 0))
 
@@ -282,7 +282,9 @@ function CollabDashboard() {
 }
 
 export default function FormationDashboardEnrichi() {
-  const { canAdmin, canManageTeam } = useAuth()
+  const { can } = usePermission()
+  const canAdmin = can('developpement', 'budget', 'admin')
+  const canManageTeam = can('developpement', 'team', 'read')
 
   return (
     <div className="space-y-4">

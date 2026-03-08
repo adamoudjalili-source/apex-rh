@@ -7,6 +7,7 @@
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useAuth } from '../../contexts/AuthContext'
+import { usePermission } from '../../hooks/usePermission'
 import {
   useMyReports, useTeamReports,
   useGenerateReport, useDeleteReport,
@@ -356,7 +357,9 @@ function ReportGenerator({ serviceId, isManager }) {
 
 // ─── COMPOSANT PRINCIPAL ──────────────────────────────────────
 export default function ReportingIA() {
-  const { profile, canManageTeam } = useAuth()
+  const { profile } = useAuth()
+  const { can } = usePermission()
+  const canManageTeam = can('intelligence', 'effectifs', 'read')
   const isManager   = canManageTeam
   const serviceId   = profile?.service_id
 

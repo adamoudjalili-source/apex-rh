@@ -6,7 +6,7 @@
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Calendar, Plus, Lock, Unlock, TrendingUp, Users, CheckCircle, RefreshCw } from 'lucide-react'
-import { useAuth } from '../../contexts/AuthContext'
+import { usePermission } from '../../hooks/usePermission'
 import {
   useCompensationCycles, useCreateCycle, useUpdateCycle, useDeleteCycle,
   useCyclesProgress, useRevisionBudgetSimulation, useRefreshCompensationMVs,
@@ -241,7 +241,8 @@ function CreateCycleModal({ onClose, onSubmit }) {
 
 // ─── COMPOSANT PRINCIPAL ──────────────────────────────────────
 export default function CycleRevision() {
-  const { canAdmin } = useAuth()
+  const { can } = usePermission()
+  const canAdmin = can('compensation', 'cycles', 'admin')
   const [showCreate, setShowCreate] = useState(false)
   const { data: cycles = [] }   = useCompensationCycles()
   const { data: progress = [] } = useCyclesProgress()

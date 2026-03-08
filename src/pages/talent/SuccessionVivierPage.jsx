@@ -7,7 +7,7 @@
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Users, Map, TrendingDown, RefreshCw } from 'lucide-react'
-import { useAuth } from '../../contexts/AuthContext'
+import { usePermission } from '../../hooks/usePermission'
 import TalentPoolBoard from '../../components/talent/TalentPoolBoard'
 import SuccessionMap   from '../../components/talent/SuccessionMap'
 import GapAnalysisChart from '../../components/talent/GapAnalysisChart'
@@ -23,7 +23,8 @@ const TABS = [
 
 // ─── Bouton refresh MV ───────────────────────────────────────
 function RefreshButton() {
-  const { canAdmin } = useAuth()
+  const { can } = usePermission()
+  const canAdmin = can('intelligence', 'succession', 'admin')
   const [loading, setLoading] = useState(false)
   const [done, setDone]       = useState(false)
 

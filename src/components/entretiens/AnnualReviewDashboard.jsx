@@ -10,6 +10,7 @@ import {
   MessageSquare, Loader2, Edit3, Eye,
 } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
+import { usePermission } from '../../hooks/usePermission'
 import {
   useTeamReviews, useManagerPendingReviews, useActiveCampaigns,
   ANNUAL_REVIEW_STATUS_LABELS, ANNUAL_REVIEW_STATUS_COLORS,
@@ -114,7 +115,9 @@ function ReviewCard({ review, onClick }) {
 // ─── Composant principal ──────────────────────────────────────
 
 export default function AnnualReviewDashboard() {
-  const { profile, isAdmin } = useAuth()
+  const { profile } = useAuth()
+  const { can } = usePermission()
+  const isAdmin = can('admin', 'users', 'read')
   const [selectedCampaignId, setSelectedCampaignId] = useState(null)
   const [search, setSearch] = useState('')
   const [filterStatus, setFilterStatus] = useState('all')

@@ -7,6 +7,7 @@
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { useAuth } from '../../contexts/AuthContext'
+import { usePermission } from '../../hooks/usePermission'
 import {
   Users, GraduationCap, DollarSign,
   TrendingUp, ArrowRight, Shield,
@@ -49,7 +50,15 @@ function HubCard({ icon: Icon, label, description, path, color, badge }) {
 }
 
 export default function ManagementHub() {
-  const { profile, canManageOrg, hasStrategic, isChefDivision, isChefService, isAdmin, isSuperAdmin } = useAuth()
+  const { profile } = useAuth()
+  const { hasRole } = usePermission()
+  const isChefDivision = hasRole('chef_division')
+  const isChefService = hasRole('chef_service')
+  const { can } = usePermission()
+  const canManageOrg = can('intelligence', 'overview', 'read')
+  const hasStrategic = can('intelligence', 'succession', 'read')
+  const isAdmin = can('admin', 'users', 'read')
+  const isSuperAdmin = can('admin', 'super_admin', 'admin')
   const firstName   = profile?.first_name || ''
   const role        = profile?.role
 

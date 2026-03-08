@@ -7,6 +7,7 @@
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useAuth } from '../../contexts/AuthContext'
+import { usePermission } from '../../hooks/usePermission'
 import {
   SURVEY_DIMENSIONS,
   SURVEY_STATUS_LABELS,
@@ -984,7 +985,8 @@ function ManagerView() {
 // ─── PAGE PRINCIPALE ─────────────────────────────────────────
 
 export default function EngagementSurveysPage() {
-  const { isManager } = useAuth()
+  const { can } = usePermission()
+  const isManager = can('evaluations', 'surveys', 'read')
 
   return (
     <div className="space-y-5">

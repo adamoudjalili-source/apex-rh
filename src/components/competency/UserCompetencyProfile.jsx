@@ -4,6 +4,7 @@
 // Props : userId (requis)
 // ============================================================
 import { useState, useMemo } from 'react'
+import { usePermission } from '../../hooks/usePermission'
 import { motion, AnimatePresence } from 'framer-motion'
 import { User, TrendingDown, TrendingUp, Minus, ChevronDown, Plus, X } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
@@ -230,7 +231,10 @@ function AssessmentForm({ userId, competencies, existing, onSave, onCancel }) {
 
 // ─── COMPOSANT PRINCIPAL ─────────────────────────────────────
 export default function UserCompetencyProfile({ userId }) {
-  const { canAdmin, canManageTeam, user: me } = useAuth()
+  const { user: me } = useAuth()
+  const { can } = usePermission()
+  const canAdmin = can('developpement', 'competences', 'admin')
+  const canManageTeam = can('developpement', 'team', 'read')
   const canWrite = canAdmin || canManageTeam
   const { data: users = [] }           = useUsersList()
   const { data: assessments = [], isLoading } = useUserAssessments(userId)

@@ -7,6 +7,7 @@
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useAuth } from '../../contexts/AuthContext'
+import { usePermission } from '../../hooks/usePermission'
 import {
   REVIEW_COMPETENCIES,
   CYCLE_FREQUENCY_LABELS,
@@ -1260,7 +1261,9 @@ const CalibrationPage = lazy(() => import('../intelligence/CalibrationPage'))
 // ─── PAGE PRINCIPALE ─────────────────────────────────────────
 
 export default function ReviewCycles() {
-  const { profile, canManageTeam } = useAuth()
+  const { profile } = useAuth()
+  const { can } = usePermission()
+  const canManageTeam = can('pulse', 'team', 'read')
 
   return (
     <div className="space-y-6 pb-8">

@@ -20,7 +20,7 @@ import {
   Users, CheckCircle, BarChart2, Shield, RefreshCw, Calendar,
   ChevronRight, Award, X, ChevronDown,
 } from 'lucide-react'
-import { useAuth } from '../../contexts/AuthContext'
+import { usePermission } from '../../hooks/usePermission'
 import {
   useDirectionScorecard,
   useDirectionTrend12m,
@@ -394,7 +394,9 @@ function ROICard({ label, value, unit='%', icon: Icon, color, description }) {
 
 // ─── COMPOSANT PRINCIPAL ─────────────────────────────────────
 export default function DashboardDirection() {
-  const { isAdmin, isDirecteur } = useAuth()  // isDirection supprimé B-1
+  const { can } = usePermission()
+  const isAdmin = can('intelligence', 'succession', 'admin')
+  const isDirecteur = can('intelligence', 'overview', 'read')  // isDirection supprimé B-1
   const [drillKPI, setDrillKPI] = useState(null) // QW6 — drill-down KPI actif
 
   const { data: scorecard, isLoading: scLoading } = useDirectionScorecard()

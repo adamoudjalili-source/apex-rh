@@ -15,6 +15,7 @@ import {
   Target, FolderKanban, Zap, Users, TrendingUp, Shield,
 } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
+import { usePermission } from '../../hooks/usePermission'
 import { useAppSettings } from '../../hooks/useSettings'
 import { isPulseEnabled } from '../../lib/pulseHelpers'
 import { useTaskStats, useOkrStats, useProjectStats } from '../../hooks/useDashboard'
@@ -36,7 +37,9 @@ const fadeUp = {
 
 // ─── Composant principal ─────────────────────────────────────
 export default function Dashboard() {
-  const { profile, canManageTeam } = useAuth()
+  const { profile } = useAuth()
+  const { can } = usePermission()
+  const canManageTeam = can('tasks', 'team', 'read')
   const navigate    = useNavigate()
   const { data: settings }    = useAppSettings()
   const pulseOn                = isPulseEnabled(settings)

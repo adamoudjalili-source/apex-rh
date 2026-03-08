@@ -5,6 +5,7 @@
 // ============================================================
 import { useState, useCallback } from 'react'
 import { useAuth } from '../../contexts/AuthContext'
+import { usePermission } from '../../hooks/usePermission'
 import {
   useApiKeys, useApiStats, useApiKeyAudit,
   useCreateApiKey, useRevokeApiKey, useDeleteApiKey,
@@ -1039,7 +1040,8 @@ export default function ApiManager() {
   const { user } = useAuth()
   const [tab, setTab] = useState('keys')
 
-  const { isAdmin } = useAuth()
+  const { can: canApi } = usePermission()
+  const isAdmin = canApi('admin', 'api_keys', 'admin')
 
   if (!isAdmin) {
     return (

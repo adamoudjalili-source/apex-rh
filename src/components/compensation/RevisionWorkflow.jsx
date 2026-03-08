@@ -9,7 +9,7 @@ import {
   CheckCircle, XCircle, Clock, AlertCircle, ChevronRight,
   Plus, DollarSign, User, MessageSquare, TrendingUp, RefreshCw
 } from 'lucide-react'
-import { useAuth } from '../../contexts/AuthContext'
+import { usePermission } from '../../hooks/usePermission'
 import {
   usePendingReviews, useAllReviews, useTeamRevisionWorkflow,
   useCreateRevision, useApproveRevision, useRefuseRevision, useApplyRevision,
@@ -345,7 +345,10 @@ function CreateRevisionModal({ cycles, onClose, onSubmit }) {
 
 // ─── COMPOSANT PRINCIPAL ──────────────────────────────────────
 export default function RevisionWorkflow() {
-  const { canAdmin, canValidate, canManageTeam } = useAuth()
+  const { can } = usePermission()
+  const canAdmin = can('compensation', 'cycles', 'admin')
+  const canValidate = can('compensation', 'revisions', 'read')
+  const canManageTeam = can('compensation', 'team', 'read')
   const [subTab, setSubTab] = useState(canAdmin || canValidate ? 'pending' : 'team')
   const [showCreate, setShowCreate] = useState(false)
   const [filterStatus, setFilterStatus] = useState('')

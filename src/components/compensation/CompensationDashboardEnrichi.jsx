@@ -5,7 +5,7 @@
 // ============================================================
 import { motion } from 'framer-motion'
 import { TrendingUp, DollarSign, Users, CheckCircle, Clock, AlertTriangle } from 'lucide-react'
-import { useAuth } from '../../contexts/AuthContext'
+import { usePermission } from '../../hooks/usePermission'
 import {
   useRevisionStats, useCyclesProgress, useCompensationCycles,
   useOrgCompensationStats, formatSalary, formatSalaryShort,
@@ -139,7 +139,8 @@ function ActiveCycles({ cycles, progress }) {
 
 // ─── COMPOSANT PRINCIPAL ──────────────────────────────────────
 export default function CompensationDashboardEnrichi() {
-  const { canAdmin } = useAuth()
+  const { can } = usePermission()
+  const canAdmin = can('compensation', 'admin', 'read')
   const { data: stats }      = useRevisionStats()
   const { data: cycles = [] } = useCompensationCycles()
   const { data: progress = [] } = useCyclesProgress()

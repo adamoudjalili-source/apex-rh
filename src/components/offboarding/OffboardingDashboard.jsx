@@ -13,7 +13,7 @@ import {
   useAutoCreateOffboarding,
 } from '../../hooks/useOffboardingS85'
 import { OFFBOARDING_STATUS_LABELS, EXIT_REASON_LABELS } from '../../hooks/useOffboarding'
-import { useAuth } from '../../contexts/AuthContext'
+import { usePermission } from '../../hooks/usePermission'
 
 // ─── Helpers ─────────────────────────────────────────────────
 
@@ -135,7 +135,8 @@ function KpiCard({ icon: Icon, label, value, color, sub }) {
 // ─── Composant principal ──────────────────────────────────────
 
 export default function OffboardingDashboard({ onSelectProcess }) {
-  const { canAdmin } = useAuth()
+  const { can } = usePermission()
+  const canAdmin = can('offboarding', 'team', 'read')
   const { data: processes = [], isLoading, refetch, isFetching } = useOffboardingDashboard()
   const autoCreate = useAutoCreateOffboarding()
   const [filter, setFilter] = useState('all') // 'all' | 'alert' | 'on_track'

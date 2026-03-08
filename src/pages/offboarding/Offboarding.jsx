@@ -10,7 +10,8 @@ import {
   ClipboardList, MessageSquare, BookOpen, DollarSign,
   CheckCircle2, XCircle, AlertCircle, LayoutDashboard,
 } from 'lucide-react'
-import { useAuth }                 from '../../contexts/AuthContext'
+import { usePermission }             from '../../hooks/usePermission'
+import { useAuth }                  from '../../contexts/AuthContext'
 import {
   useOffboardingProcesses,
   useOffboardingProcess,
@@ -189,7 +190,8 @@ function ProcessDetail({ processId, onBack }) {
   const { data: process, isLoading } = useOffboardingProcess(processId)
   const cancelOffboarding = useCancelOffboarding()
   const completeOffboarding = useUpdateOffboardingProcess()
-  const { canAdmin } = useAuth()
+  const { can } = usePermission()
+  const canAdmin = can('offboarding', 'team', 'read')
   const [detailTab, setDetailTab] = useState('checklist')
 
   if (isLoading || !process) {
@@ -329,7 +331,8 @@ function ProcessDetail({ processId, onBack }) {
 // ─── Main Page ─────────────────────────────────────────────────
 
 export default function Offboarding() {
-  const { canAdmin } = useAuth()
+  const { can } = usePermission()
+  const canAdmin = can('offboarding', 'team', 'read')
   const { data: processes = [], isLoading } = useOffboardingProcesses()
   const { data: alerts = [] } = useOffboardingAlerts()
 

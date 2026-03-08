@@ -17,6 +17,7 @@ import {
   UserCheck, CalendarRange,
 } from 'lucide-react'
 import { useAuth }        from '../../contexts/AuthContext'
+import { usePermission }  from '../../hooks/usePermission'
 import { useAppSettings } from '../../hooks/useSettings'
 import {
   useMyReview, useActiveCampaigns, useManagerPendingReviews,
@@ -39,7 +40,9 @@ const CalibrationPage = lazy(() => import('../intelligence/CalibrationPage'))
 
 // S81 — Feedback 360° tab
 function Feedback360Tab() {
-  const { profile, canAdmin } = useAuth()
+  const { profile } = useAuth()
+  const { can } = usePermission()
+  const canAdmin = can('evaluations', 'cycles', 'admin')
   const { data: activeCycle } = useActiveFeedback360Cycle()
   const { data: toComplete = [], isLoading } = useMyFeedback360ToComplete(activeCycle?.id)
   const [selected, setSelected]   = useState(null)  // request en cours d'évaluation
@@ -509,7 +512,11 @@ function QuickStatsEntretiens() {
 }
 
 export default function EntretiensAnnuels() {
-  const { profile, canAdmin, hasStrategic, canManageTeam } = useAuth()
+  const { profile } = useAuth()
+  const { can: canDo } = usePermission()
+  const canAdmin = canDo('evaluations', 'cycles', 'admin')
+  const hasStrategic = canDo('evaluations', 'feedback360', 'read')
+  const canManageTeam = canDo('evaluations', 'entretiens_team', 'read')
   const { data: settings }   = useAppSettings()
   const [tab, setTab]        = useState('mine')
 

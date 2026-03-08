@@ -17,7 +17,7 @@ import {
   Users, TrendingUp, Zap, Eye, Pencil, Archive,
   RefreshCw, Filter, Clock, Check,
 } from 'lucide-react'
-import { useAuth } from '../../contexts/AuthContext'
+import { usePermission } from '../../hooks/usePermission'
 import { useNineBoxStats, NINEBOX_CELLS } from '../../hooks/useTalentNineBox'
 import {
   useKeyPositions,
@@ -458,7 +458,11 @@ function TabRisks() {
 
 // ─── Composant principal ─────────────────────────────────────
 export default function TalentMapping() {
-  const { isAdmin, isDirecteur, isChefDivision, isChefService } = useAuth()
+  const { can, hasRole } = usePermission()
+  const isAdmin = can('intelligence', 'succession', 'admin')
+  const isDirecteur = can('intelligence', 'overview', 'read')
+  const isChefDivision = hasRole('chef_division') && !isAdmin
+  const isChefService = hasRole('chef_service') && !isDirecteur && !isChefDivision && !isAdmin
   const isManager = isAdmin || isDirecteur || isChefDivision || isChefService
   const canManage = isAdmin || isDirecteur
 

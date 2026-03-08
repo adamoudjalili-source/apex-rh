@@ -4,6 +4,7 @@
 // Session 10 — Sélecteur + gestion des périodes OKR
 // ============================================================
 import { useState } from 'react'
+import { usePermission } from '../../hooks/usePermission'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Calendar, Plus, X, Check, Trash2 } from 'lucide-react'
 import { useOkrPeriods, useCreatePeriod, useDeletePeriod } from '../../hooks/useOkrPeriods'
@@ -11,7 +12,9 @@ import { useAuth } from '../../contexts/AuthContext'
 import { formatDateFr } from '../../lib/objectiveHelpers'
 
 export default function OkrPeriodSelector({ selectedPeriodId, onSelect }) {
-  const { profile, canAdmin } = useAuth()
+  const { profile } = useAuth()
+  const { can } = usePermission()
+  const canAdmin = can('performance', 'okr_cycle', 'admin')
   const { data: periods = [], isLoading } = useOkrPeriods()
   const createPeriod = useCreatePeriod()
   const deletePeriod = useDeletePeriod()

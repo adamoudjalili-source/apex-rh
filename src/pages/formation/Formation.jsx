@@ -12,6 +12,7 @@ import {
   Star, LayoutDashboard,
 } from 'lucide-react'
 import { useAuth }           from '../../contexts/AuthContext'
+import { usePermission }     from '../../hooks/usePermission'
 import { useMyTrainingStats, useMyPendingEvaluations, useMyMandatoryStatus } from '../../hooks/useFormations'
 
 import FormationCatalog            from '../../components/formation/FormationCatalog'
@@ -71,7 +72,10 @@ function QuickStats() {
 }
 
 export default function Formation() {
-  const { profile, canAdmin, canManageTeam } = useAuth()
+  const { profile } = useAuth()
+  const { can } = usePermission()
+  const canAdmin = can('developpement', 'budget', 'admin')
+  const canManageTeam = can('developpement', 'team', 'read')
   const role = profile?.role
 
   const TABS = useMemo(() => {

@@ -15,7 +15,7 @@ import {
   COMPLIANCE_STATUS_LABELS, COMPLIANCE_STATUS_COLORS, getComplianceInfo,
 } from '../../hooks/useFormations'
 import { useTrainingCatalog } from '../../hooks/useFormations'
-import { useAuth } from '../../contexts/AuthContext'
+import { usePermission } from '../../hooks/usePermission'
 
 const ROLE_OPTIONS = [
   { value: 'collaborateur',  label: 'Collaborateur' },
@@ -232,7 +232,8 @@ function AdminRulesPanel() {
 }
 
 export default function FormationObligatoire() {
-  const { canAdmin } = useAuth()
+  const { can } = usePermission()
+  const canAdmin = can('developpement', 'competences', 'admin')
   const [view, setView] = useState(canAdmin ? 'admin' : 'me')
 
   return (

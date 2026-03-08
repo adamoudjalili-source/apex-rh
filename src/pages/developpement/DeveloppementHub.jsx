@@ -12,7 +12,6 @@ import {
   ShieldCheck, Star,
 } from 'lucide-react'
 import { usePermission }           from '../../hooks/usePermission'
-import { useAuth }                  from '../../contexts/AuthContext'
 import {
   useMyTrainingStats,
   useMyPendingEvaluations,

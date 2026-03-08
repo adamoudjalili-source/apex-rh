@@ -3,6 +3,7 @@
 // Session 67 — Panel approbation manager / RH
 // ============================================================
 import { useState } from 'react'
+import { usePermission } from '../../hooks/usePermission'
 import { Check, X, MessageSquare, Calendar, Loader2, AlertCircle } from 'lucide-react'
 import {
   useTeamLeaveRequests,
@@ -162,7 +163,9 @@ function RequestRow({ request, approveLevel, onApprove, onReject, approving, rej
 }
 
 export default function LeaveApprovalPanel() {
-  const { profile, canAdmin } = useAuth()
+  const { profile } = useAuth()
+  const { can } = usePermission()
+  const canAdmin = can('conges', 'team', 'validate')
   const role = profile?.role
   const isHR = canAdmin
 

@@ -8,7 +8,7 @@ import {
   CalendarOff, Users, Settings2, Plus, Download,
   Bell, AlertTriangle,
 } from 'lucide-react'
-import { useAuth } from '../../contexts/AuthContext'
+import { usePermission } from '../../hooks/usePermission'
 
 import LeaveBalanceCard      from '../../components/conges/LeaveBalanceCard'
 import LeaveRequestCard      from '../../components/conges/LeaveRequestCard'
@@ -215,7 +215,10 @@ function Administration() {
 
 // ─── HUB PRINCIPAL ────────────────────────────────────────────
 export default function GestionConges() {
-  const { canAdmin, canManageTeam, canValidate } = useAuth()
+  const { can } = usePermission()
+  const canAdmin = can('conges', 'regles', 'admin')
+  const canManageTeam = can('conges', 'team', 'read')
+  const canValidate = can('conges', 'team', 'validate')
   const { data: alerts = [] } = useLeaveAlerts()
   const criticalAlerts = alerts.filter(a => a.severity === 'high').length
 

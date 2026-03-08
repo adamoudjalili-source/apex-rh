@@ -6,6 +6,7 @@
 // ============================================================
 import { useState } from 'react'
 import { useAuth } from '../../contexts/AuthContext'
+import { usePermission } from '../../hooks/usePermission'
 import {
   useMyAICoachAnalyses,
   useLatestMyAnalysis,
@@ -527,7 +528,9 @@ function ManagerView() {
 
 // ─── COMPOSANT PRINCIPAL ─────────────────────────────────────
 export default function AICoach() {
-  const { profile, canManageTeam } = useAuth()
+  const { profile } = useAuth()
+  const { can } = usePermission()
+  const canManageTeam = can('pulse', 'team', 'read')
 
   return (
     <div className="space-y-6 pb-8">

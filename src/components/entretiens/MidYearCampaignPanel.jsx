@@ -3,6 +3,7 @@
 // Session 80 — Panneau campagne mi-année
 // ============================================================
 import { useState } from 'react'
+import { usePermission } from '../../hooks/usePermission'
 import {
   CalendarRange, Users, Plus, Loader2, CheckCircle,
   AlertTriangle, Play, Clock, BookOpen,
@@ -171,7 +172,8 @@ function LaunchMidYearModal({ campaign, onClose }) {
 // ─── Main ─────────────────────────────────────────────────────
 
 export default function MidYearCampaignPanel() {
-  const { canManageTeam } = useAuth()
+  const { can } = usePermission()
+  const canManageTeam = can('evaluations', 'entretiens_team', 'read')
   const { data: midYearReviews = [], isLoading } = useMidYearReviews()
   const { data: campaigns = [] } = useActiveCampaigns()
   const activeCampaign = campaigns[0]

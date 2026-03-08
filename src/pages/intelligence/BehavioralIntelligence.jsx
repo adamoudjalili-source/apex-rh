@@ -16,7 +16,7 @@ import {
   RefreshCw, Download, ChevronDown, Users, TrendingUp, TrendingDown,
   Shield, Eye, EyeOff,
 } from 'lucide-react'
-import { useAuth } from '../../contexts/AuthContext'
+import { usePermission } from '../../hooks/usePermission'
 import {
   useAttritionRisk,
   useAttritionStats,
@@ -36,7 +36,9 @@ import BehavioralAlerts from '../../components/behavioral/BehavioralAlerts'
 // ─── Onglet 1 : Attrition Prédictive ─────────────────────────
 
 function AttritionTab() {
-  const { isAdmin, isDirecteur } = useAuth()
+  const { can } = usePermission()
+  const isAdmin = can('intelligence', 'succession', 'admin')
+  const isDirecteur = can('intelligence', 'overview', 'read')
   const isTopLevel = isAdmin || isDirecteur
   const [search, setSearch]     = useState('')
   const [riskFilter, setRisk]   = useState('all')

@@ -16,7 +16,7 @@ import {
   PIPELINE_STAGES, APPLICATION_SOURCE_LABELS, APPLICATION_SOURCE_COLORS,
   getScoreInfo, SCORE_LABELS,
 } from '../../hooks/useRecruitment'
-import { useAuth } from '../../contexts/AuthContext'
+import { usePermission } from '../../hooks/usePermission'
 
 // ─── Stat Card ────────────────────────────────────────────────
 function StatCard({ icon: Icon, label, value, sub, color = '#6366F1' }) {
@@ -332,7 +332,8 @@ function StageTimings({ applications }) {
 
 // ─── DASHBOARD PRINCIPAL ──────────────────────────────────────
 export default function RecruitmentDashboard() {
-  const { canAdmin } = useAuth()
+  const { can } = usePermission()
+  const canAdmin = can('recrutement', 'pipeline', 'update')
   const { data: stats }        = useRecruitmentGlobalStats()
   const { data: applications = [] } = useJobApplicationsEnriched()
   const { data: dashboard = [] }    = useRecruitmentDashboard()
