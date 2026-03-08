@@ -9,7 +9,7 @@ import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useAppSettings } from '../../hooks/useSettings'
 import { useAuth } from '../../contexts/AuthContext'
-import { BarChart3, MessageSquare, ClipboardList, Activity, Wifi, TrendingUp, GitBranch, LayoutDashboard, Building2, Grid3x3, Brain, Star, Gauge, Target, BarChart2, Bell, SlidersHorizontal } from 'lucide-react'
+import { BarChart3, MessageSquare, ClipboardList, Activity, Wifi, TrendingUp, GitBranch, LayoutDashboard, Building2, Grid3x3, Brain, Star, Gauge, Target, BarChart2, Bell, SlidersHorizontal, FileText } from 'lucide-react'
 
 import PulseAlertCenter          from '../../components/pulse/PulseAlertCenter'    // S76
 import TeamPulseHeatmap          from '../../components/pulse/TeamPulseHeatmap'    // S76
@@ -28,6 +28,7 @@ import BehavioralIntelligence    from './BehavioralIntelligence'   // S54
 import ENPSPage                  from './ENPSPage'                  // S55
 import AdoptionDashboard          from './AdoptionDashboard'           // S40 — Étape 8
 import CartographieCharges        from './CartographieCharges'          // S42 — Étape 8
+import HRIntelligencePage         from './HRIntelligencePage'           // S82 — Bilan social
 
 // Groupes sémantiques (pour documentation) :
 //   Mesure    : performance, analytics, analytics_predictifs, activite, cartographie_charges
@@ -64,6 +65,7 @@ const TABS = [
   { id:'drh',                  group:'strategie',  label:'Tableau DRH',         icon:LayoutDashboard,  component:TableauBordDRH,          color:'#EC4899', moduleKey:null, adminOnly:true },
   { id:'direction',            group:'strategie',  label:'Direction Générale',  icon:Building2,        component:DashboardDirection,      color:'#C9A227', moduleKey:null, adminOnly:true },
   { id:'adoption',             group:'strategie',  label:'Adoption',            icon:Star,             component:AdoptionDashboard,       color:'#818CF8', moduleKey:null, adminOnly:true },
+  { id:'bilan_social',         group:'strategie',  label:'Bilan Social',        icon:FileText,         component:HRIntelligencePage,      color:'#6366F1', moduleKey:null, adminOnly:true },  // S82
 ]
 
 export default function IntelligenceRH() {
