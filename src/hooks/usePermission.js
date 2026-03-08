@@ -1,6 +1,8 @@
 // ============================================================
 // APEX RH — usePermission.js
 // Session 91 — Phase A RBAC (wrapper transparent AuthContext)
+// Session 101 — Extension module pulse (journal · board · calibration · analytics)
+// Session 102 — Extension modules okr + calibration (transverses)
 // Hook unifié V2 : can() · scope() · hasRole()
 // Zéro requête Supabase — wraps les helpers AuthContext existants
 // ============================================================
@@ -314,6 +316,56 @@ const PERMISSION_MATRIX = {
     notifications: {
       read: ({ canAdmin }) => canAdmin,
       admin: ({ canAdmin }) => canAdmin,
+    },
+  },
+
+  // --- OKR (module transverse — composants okr/) ---
+  okr: {
+    own: {
+      read:   () => true,
+      create: () => true,
+      update: () => true,
+      delete: () => true,
+    },
+    team: {
+      read:   ({ canManageTeam }) => canManageTeam,
+      create: ({ canManageTeam }) => canManageTeam,
+    },
+    division: {
+      read:   ({ isChefDivision, canManageOrg }) => isChefDivision || canManageOrg,
+      create: ({ isChefDivision, canManageOrg }) => isChefDivision || canManageOrg,
+    },
+    strategic: {
+      read:   ({ hasStrategic }) => hasStrategic,
+      create: ({ canManageOrg }) => canManageOrg,
+    },
+    cycles: {
+      admin: ({ canAdmin }) => canAdmin,
+    },
+    checkin: {
+      create:   () => true,
+      validate: ({ canManageTeam }) => canManageTeam,
+    },
+  },
+
+  // --- Calibration (module transverse — composants calibration/) ---
+  calibration: {
+    own: {
+      read: () => true,
+    },
+    team: {
+      read:    ({ canManageTeam }) => canManageTeam,
+      propose: ({ canManageTeam }) => canManageTeam,
+    },
+    division: {
+      read:     ({ isChefDivision, canManageOrg }) => isChefDivision || canManageOrg,
+      validate: ({ isChefDivision, canManageOrg }) => isChefDivision || canManageOrg,
+    },
+    sessions: {
+      admin: ({ canAdmin }) => canAdmin,
+    },
+    history: {
+      read: ({ canManageTeam }) => canManageTeam,
     },
   },
 

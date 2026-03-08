@@ -1,6 +1,7 @@
 // ============================================================
 // APEX RH — src/pages/performance/PerformanceHub.jsx
 // Session 93 — Module 5 : Performance — Hub unifié V2
+// Session 102 — Phase C RBAC batch 3 : useAuth import inutile retiré
 // Route : /performance
 // Onglets : Mes OKR · OKR Équipe · OKR Division · OKR Stratégiques
 //           Mon Pulse · Dashboard Équipe · Calibration
@@ -16,7 +17,6 @@ import {
 } from 'lucide-react'
 
 import { usePermission }              from '../../hooks/usePermission'
-import { useAuth }                    from '../../contexts/AuthContext'
 
 // ── OKR composants ────────────────────────────────────────────
 import OKRDashboard                   from '../../components/okr/OKRDashboard'

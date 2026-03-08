@@ -1,12 +1,13 @@
 // ============================================================
 // APEX RH — OKRCycleManager.jsx
 // Session 78 — Gestion des cycles OKR (admin/directeur)
+// Session 102 — Phase C RBAC batch 3 : useAuth → usePermission can('performance','okr_cycle','admin')
 // ============================================================
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Plus, Calendar, Lock, Archive, Play, Edit2, ChevronDown, ChevronUp, AlertTriangle } from 'lucide-react'
 import { useOKRCycles, useCreateCycle, useUpdateCycle, useCloseCycle, useOKRCycleStats } from '../../hooks/useObjectives'
-import { useAuth } from '../../contexts/AuthContext'
+import { usePermission } from '../../hooks/usePermission'
 
 const CADENCE_LABELS = {
   quarterly: 'Trimestriel',
@@ -160,7 +161,8 @@ function CycleForm({ initial, onSave, onCancel }) {
 }
 
 export default function OKRCycleManager({ onCycleSelect }) {
-  const { canAdmin, canManageOrg } = useAuth()
+  const { can } = usePermission()
+  const canManageOkrCycles = can('performance', 'okr_cycle', 'admin')
   const { data: cycles = [], isLoading } = useOKRCycles()
   const createCycle = useCreateCycle()
   const updateCycle = useUpdateCycle()
@@ -205,7 +207,7 @@ export default function OKRCycleManager({ onCycleSelect }) {
           <h3 className="text-lg font-semibold text-white">Cycles OKR</h3>
           <p className="text-xs text-gray-400 mt-0.5">{cycles.length} cycle{cycles.length > 1 ? 's' : ''} configuré{cycles.length > 1 ? 's' : ''}</p>
         </div>
-        {canManageOrg && (
+        {canManageOkrCycles && (
           <button
             onClick={() => setShowCreate(true)}
             className="flex items-center gap-2 px-3 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-sm font-medium transition-colors"
@@ -236,7 +238,7 @@ export default function OKRCycleManager({ onCycleSelect }) {
         <div className="text-center py-12 text-gray-500">
           <Calendar className="w-10 h-10 mx-auto mb-3 opacity-30" />
           <p className="text-sm">Aucun cycle OKR créé</p>
-          {canManageOrg && (
+          {canManageOkrCycles && (
             <button onClick={() => setShowCreate(true)} className="mt-3 text-indigo-400 hover:text-indigo-300 text-sm">
               Créer le premier cycle →
             </button>
@@ -309,7 +311,7 @@ export default function OKRCycleManager({ onCycleSelect }) {
                         {cycle.description && (
                           <p className="text-sm text-gray-400 mb-3">{cycle.description}</p>
                         )}
-                        {canManageOrg && (
+                        {canManageOkrCycles && (
                           <div className="flex gap-2 flex-wrap">
                             {cycle.status === 'draft' && (
                               <button
