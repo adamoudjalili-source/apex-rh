@@ -207,9 +207,36 @@ get_feedback360_summary(p_evaluatee_id uuid, p_cycle_id uuid)
   → comp_key, avg_rating, response_count, min_rating, max_rating, trend_vs_prev
 ```
 
----
+### Succession & Vivier (S83)
+```sql
+talent_pool_entries (
+  organization_id, user_id, target_role, target_position_id,
+  readiness,    -- talent_readiness: 'ready_now'|'ready_1y'|'ready_2y'
+  skills_gap,   -- jsonb: [{skill, required_level, current_level, gap, priority}]
+  notes, added_by
+)
+--  UNIQUE(organization_id, user_id, target_position_id)
 
-## 5. Modules en production (S1 → S82)
+succession_gaps (
+  organization_id, position_id, required_skills jsonb,
+  current_coverage_pct, last_assessed_at, assessed_by
+)
+--  UNIQUE(organization_id, position_id)
+
+-- Materialized View
+mv_succession_coverage
+  -- pool_count, ready_now_count, ready_1y_count, ready_2y_count,
+  -- coverage_pct, is_at_risk
+  -- REVOKE ALL appliqué
+
+-- RPC
+get_talent_gap_analysis(p_org_id uuid)
+  → skill, avg_required, avg_current, avg_gap, affected_count, priority
+get_succession_coverage(p_org_id uuid)
+  → position_id, position_title, criticality_level, pool_count, ready_*_count, coverage_pct, is_at_risk
+```
+
+ (S1 → S82)
 
 | Module | Session | Tables principales |
 |--------|---------|-------------------|
@@ -240,6 +267,7 @@ get_feedback360_summary(p_evaluatee_id uuid, p_cycle_id uuid)
 | Entretiens — Mi-année + auto-éval + suivi managérial | S80 | `review_self_assessments`, `review_development_plans` |
 | Feedback 360° — Cycles planifiés + tendances | S81 | `feedback360_templates`, `feedback360_cycles`, `feedback360_requests` |
 | Intelligence RH — Bilan social + turnover | S82 | `employee_departures`, `mv_headcount_stats`, `mv_turnover_stats`, `mv_absenteeism_stats` |
+| Succession & Talents — Vivier + gap analysis | S83 | `talent_pool_entries`, `succession_gaps`, `mv_succession_coverage` |
 
 ---
 
@@ -295,4 +323,11 @@ supabase/functions/
 ✅ mv_headcount_stats / mv_turnover_stats / mv_absenteeism_stats — REVOKE ALL appliqué, jamais exposées directement
 ✅ get_social_report(p_org_id, p_year) — RPC SECURITY DEFINER avec vérification org du caller
 ✅ HRIntelligencePage intégré dans IntelligenceRH.jsx onglet "Bilan Social" groupe Stratégie (adminOnly)
+✅ talent_pool_entries.UNIQUE(organization_id, user_id, target_position_id) — upsert par triplet (S83)
+✅ succession_gaps.UNIQUE(organization_id, position_id) — upsert par paire (S83)
+✅ talent_readiness enum : 'ready_now' | 'ready_1y' | 'ready_2y' (S83)
+✅ mv_succession_coverage — REVOKE ALL appliqué, jamais exposée directement (S83)
+✅ get_talent_gap_analysis + get_succession_coverage — SECURITY DEFINER avec vérif org (S83)
+✅ succession_plans et talent_assessments existent depuis S51/S55 — ne jamais recréer
+✅ key_positions existe depuis S51 — talent_pool_entries.target_position_id la référence
 ```
