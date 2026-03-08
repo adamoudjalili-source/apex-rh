@@ -35,6 +35,7 @@ import { useAppSettings } from '../../hooks/useSettings'
 import { useTodayScore }  from '../../hooks/usePulse'
 import { getScoreColor, isPulseEnabled } from '../../lib/pulseHelpers'
 import { useUnreadCount } from '../../hooks/useCommunication'
+import NotificationBell   from '../NotificationBell'  /* S86 */
 import logoNita from '../../assets/logo-nita.png'
 
 const ROLE_COLORS = {
@@ -290,6 +291,10 @@ export default function Sidebar() {
 
       {/* Profil */}
       <div className="px-3 py-4 border-t border-white/[0.06] space-y-2 flex-shrink-0">
+        {/* Cloche notifications S86 */}
+        <div className="flex items-center justify-center px-1 pb-1">
+          <NotificationBell collapsed={collapsed} />
+        </div>
         <div className="rounded-xl p-3 flex items-center gap-3 overflow-hidden"
           style={{ background:'rgba(255,255,255,0.03)' }}>
           <div className="w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold flex-shrink-0 text-white uppercase"
