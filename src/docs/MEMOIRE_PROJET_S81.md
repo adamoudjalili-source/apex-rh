@@ -1,5 +1,5 @@
 # MEMOIRE_PROJET.md — APEX RH
-> Mis à jour : Session 80 — Entretiens Annuels — Mi-année + auto-éval + suivi managérial ✅ DÉPLOYÉ (08/03/2026)
+> Mis à jour : Session 81 — Feedback 360° — Cycles planifiés + tendances ✅ DÉPLOYÉ (08/03/2026)
 
 ## 🔴 RÈGLE D'OR — LIVRAISON OBLIGATOIRE (chaque session)
 
@@ -14,12 +14,12 @@
 
 **Commande ZIP :**
 ```bash
-cd /home/claude && zip -r /mnt/user-data/outputs/src_S80.zip src/
+cd /home/claude && zip -r /mnt/user-data/outputs/src_S81.zip src/
 ```
 
 **Commande Git :**
 ```bash
-cd C:\Users\DELL\APEX_RH\apex-rh && git add -A && git commit -m "feat(S80): Entretiens Annuels — Mi-année + auto-éval + suivi managérial" && git push
+cd C:\Users\DELL\APEX_RH\apex-rh && git add -A && git commit -m "feat(S81): Feedback 360° — Cycles planifiés + tendances" && git push
 ```
 
 ---
@@ -28,7 +28,7 @@ cd C:\Users\DELL\APEX_RH\apex-rh && git add -A && git commit -m "feat(S80): Entr
 - **URL production** : https://apex-rh-h372.vercel.app
 - **Supabase** : ptpxoczdycajphrshdnk
 - **Stack** : React 18 + Vite + TailwindCSS + Supabase + Vercel
-- **Sessions déployées** : 1 → 80
+- **Sessions déployées** : 1 → 81
 - **Nature** : Outil interne NITA (pas un SaaS commercialisé)
 
 ---
@@ -51,14 +51,15 @@ cd C:\Users\DELL\APEX_RH\apex-rh && git add -A && git commit -m "feat(S80): Entr
 14. **Tâches — Dépendances + récurrence + charge DÉPLOYÉ (S77)**.
 15. **OKR — Cycles + Check-ins + Lien évaluation DÉPLOYÉ (S78)**.
 16. **Projets — Connexions OKR + budget + Gantt avancé DÉPLOYÉ (S79)**.
-17. **Entretiens — Mi-année + auto-éval + suivi managérial DÉPLOYÉ (S80)** :
-    - `s80_annual_reviews_advanced.sql` — enum review_type, colonne annual_reviews.review_type, 2 tables, 1 RPC, RLS
-    - `useAnnualReviews.js` — 6 hooks S80 appended
-    - `ReviewSelfAssessmentForm.jsx` — formulaire 4 étapes avec notation étoiles, objectifs dynamiques
-    - `ReviewDevelopmentPlan.jsx` — PDI avec objectifs, actions, suivi statut, commentaire manager
-    - `ReviewManagerDashboard.jsx` — tableau de bord suivi : stats, filtres, historique campagnes
-    - `MidYearCampaignPanel.jsx` — campagne mi-année, lancement multi-sélection équipe
-    - `EntretiensAnnuels.jsx` — +3 onglets : Auto-évaluation / Suivi / Mi-année
+17. **Entretiens — Mi-année + auto-éval + suivi managérial DÉPLOYÉ (S80)**.
+18. **Feedback 360° — Cycles planifiés + tendances DÉPLOYÉ (S81)** :
+    - `s81_feedback360_advanced.sql` — 3 tables, 1 MV, 1 RPC, RLS, indexes
+    - `useFeedback360.js` — 14 hooks S81 appended (cycles, templates, requests, summary, trends)
+    - `Feedback360Form.jsx` — formulaire multi-étapes par compétences, notation étoiles, brouillon
+    - `Feedback360Summary.jsx` — radar SVG, scores par compétence, tendance delta, verbatims
+    - `Feedback360Trends.jsx` — courbes SVG historiques, tableau récapitulatif, sélection compétences
+    - `Feedback360CycleAdmin.jsx` — création cycle, statuts, stats taux de réponse, actions
+    - `EntretiensAnnuels.jsx` — +1 onglet Feedback 360° avec badge en attente
 
 ---
 
@@ -81,20 +82,31 @@ const { canAdmin, canValidate, canManageTeam, canManageOrg } = useAuth()
 | `users` | id, organization_id, role, manager_id | PAS `profiles` |
 | `compensation_records` | employee_id, salary_amount, **is_current** | `is_current` PAS `current` |
 | `compensation_reviews` | **user_id**, old_base_salary, new_base_salary | `increase_amount/pct` GENERATED |
-| `annual_reviews` | ..., **review_type** | NEW S80 : 'annual' \| 'mid_year' \| 'probation' |
-| `review_self_assessments` | organization_id, review_id, user_id, answers, submitted_at | NEW S80 |
-| `review_development_plans` | organization_id, review_id, user_id, goals, next_check_date, status | NEW S80 |
+| `annual_reviews` | ..., **review_type** | S80 : 'annual' \| 'mid_year' \| 'probation' |
+| `review_self_assessments` | organization_id, review_id, user_id, answers | S80 |
+| `review_development_plans` | organization_id, review_id, user_id, goals | S80 |
+| `feedback360_templates` | organization_id, name, competences jsonb | NEW S81 |
+| `feedback360_cycles` | organization_id, title, start_date, end_date, status, template_id | NEW S81 |
+| `feedback360_requests` | cycle_id, evaluatee_id, evaluator_id, relationship, status, answers, is_anonymous | NEW S81 |
 
-## Hooks disponibles — Entretiens S80 (référence rapide)
+## Hooks S81 — référence rapide
 
 ```
-useReviewSelfAssessment(reviewId)     — auto-éval d'un entretien
-useSubmitSelfAssessment()             — sauvegarder/soumettre auto-éval
-useReviewDevelopmentPlan(reviewId)    — PDI lié à un entretien
-useUpsertDevelopmentPlan()            — créer/MAJ PDI
-useReviewCompletionStats(managerId)   — stats suivi manager (RPC)
-useMidYearReviews()                   — entretiens mi-année actifs
-useCreateMidYearReviews()             — lancer mi-année pour une équipe
+useFeedback360Templates()              — templates de l'org
+useUpsertFeedback360Template()         — créer/MAJ template
+useFeedback360Cycles()                 — tous les cycles
+useActiveFeedback360Cycle()            — cycle actif (status='active')
+useCreateFeedback360Cycle()            — créer un cycle
+useUpdateFeedback360CycleStatus()      — lancer/clôturer un cycle
+useMyFeedback360ToComplete(cycleId)    — évaluations à compléter
+useMyFeedback360Requests(cycleId)      — demandes reçues sur moi
+useSubmitFeedback360Advanced()         — soumettre une évaluation
+useSaveFeedback360Draft()              — brouillon
+useCreateFeedback360Requests()         — bulk insert demandes
+useFeedback360CycleStats(cycleId)      — stats taux réponse
+useFeedback360Summary(evaluateeId, cycleId) — synthèse (RPC)
+useFeedback360Trends(userId)           — tendances (MV)
+useFeedback360Verbatims(evaluateeId, cycleId) — commentaires anonymes
 ```
 
 ---
@@ -107,6 +119,8 @@ useCreateMidYearReviews()             — lancer mi-année pour une équipe
 - ✅ `useUsersList()` depuis `useSettings.js`
 - ✅ Sidebar : `src/Sidebar.jsx` UNIQUEMENT
 - ✅ RLS sur toutes les nouvelles tables
+- ✅ `REVOKE ALL` sur mv_feedback360_trends
+- ✅ `feedback360_requests.UNIQUE(cycle_id, evaluatee_id, evaluator_id)` — upsert par triplet
 - ✅ `project_advanced_milestones` ≠ `milestones` (deux tables distinctes depuis S79)
-- ✅ `review_self_assessments` UNIQUE(review_id, user_id) — toujours upsert
+- ✅ `review_self_assessments` et `review_development_plans` créées en S80 — ne pas recréer
 - ✅ `annual_reviews.review_type = 'mid_year'` pour les entretiens mi-année

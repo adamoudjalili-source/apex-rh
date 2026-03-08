@@ -37,6 +37,215 @@ import MidYearCampaignPanel     from '../../components/entretiens/MidYearCampaig
 
 const CalibrationPage = lazy(() => import('../intelligence/CalibrationPage'))
 
+// S81 — Feedback 360° tab
+function Feedback360Tab() {
+  const { profile, canAdmin } = useAuth()
+  const { data: activeCycle } = useActiveFeedback360Cycle()
+  const { data: toComplete = [], isLoading } = useMyFeedback360ToComplete(activeCycle?.id)
+  const [selected, setSelected]   = useState(null)  // request en cours d'évaluation
+  const [view, setView]           = useState('list') // 'list' | 'form' | 'summary' | 'trends' | 'admin'
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <Loader2 size={20} className="animate-spin text-white/30"/>
+      </div>
+    )
+  }
+
+  if (view === 'form' && selected) {
+    return (
+      <div className="flex flex-col h-full min-h-0">
+        <button onClick={() => { setView('list'); setSelected(null) }}
+          className="text-sm text-indigo-400 hover:text-indigo-300 transition-colors mb-4">
+          ← Retour à la liste
+        </button>
+        <Feedback360Form request={selected} onDone={() => { setView('list'); setSelected(null) }}/>
+      </div>
+    )
+  }
+
+  if (view === 'summary') {
+    return (
+      <div>
+        <div className="flex items-center gap-3 mb-4">
+          <button onClick={() => setView('list')}
+            className="text-sm text-indigo-400 hover:text-indigo-300 transition-colors">
+            ← Retour
+          </button>
+          <div className="flex gap-2">
+            <button onClick={() => setView('summary')}
+              className="text-xs px-2.5 py-1 rounded-lg"
+              style={{ background: 'rgba(129,140,248,0.15)', color: '#818CF8', border: '1px solid rgba(129,140,248,0.3)' }}>
+              Ma synthèse
+            </button>
+            <button onClick={() => setView('trends')}
+              className="text-xs px-2.5 py-1 rounded-lg text-white/40 hover:text-white/60 transition-colors"
+              style={{ background: 'rgba(255,255,255,0.04)' }}>
+              Tendances
+            </button>
+          </div>
+        </div>
+        {activeCycle ? (
+          <Feedback360Summary
+            evaluateeId={profile.id}
+            cycleId={activeCycle.id}
+            evaluateeName={`${profile.first_name} ${profile.last_name}`}/>
+        ) : (
+          <p className="text-sm text-white/30 text-center py-8">Aucun cycle actif.</p>
+        )}
+      </div>
+    )
+  }
+
+  if (view === 'trends') {
+    return (
+      <div>
+        <div className="flex items-center gap-3 mb-4">
+          <button onClick={() => setView('list')}
+            className="text-sm text-indigo-400 hover:text-indigo-300 transition-colors">
+            ← Retour
+          </button>
+          <div className="flex gap-2">
+            <button onClick={() => setView('summary')}
+              className="text-xs px-2.5 py-1 rounded-lg text-white/40 hover:text-white/60 transition-colors"
+              style={{ background: 'rgba(255,255,255,0.04)' }}>
+              Ma synthèse
+            </button>
+            <button onClick={() => setView('trends')}
+              className="text-xs px-2.5 py-1 rounded-lg"
+              style={{ background: 'rgba(129,140,248,0.15)', color: '#818CF8', border: '1px solid rgba(129,140,248,0.3)' }}>
+              Tendances
+            </button>
+          </div>
+        </div>
+        <Feedback360Trends userId={profile.id}/>
+      </div>
+    )
+  }
+
+  if (view === 'admin' && canAdmin) {
+    return (
+      <div>
+        <button onClick={() => setView('list')}
+          className="text-sm text-indigo-400 hover:text-indigo-300 transition-colors mb-4 block">
+          ← Retour
+        </button>
+        <Feedback360CycleAdmin/>
+      </div>
+    )
+  }
+
+  // Liste principale
+  const pending   = toComplete.filter(r => r.status !== 'submitted')
+  const submitted = toComplete.filter(r => r.status === 'submitted')
+
+  return (
+    <div className="flex flex-col gap-4">
+      {/* Actions rapides */}
+      <div className="flex flex-wrap gap-2">
+        <button onClick={() => setView('summary')}
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs transition-all"
+          style={{ background: 'rgba(129,140,248,0.1)', color: '#A5B4FC', border: '1px solid rgba(129,140,248,0.2)' }}>
+          <BarChart3 size={12}/> Ma synthèse
+        </button>
+        <button onClick={() => setView('trends')}
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs transition-all"
+          style={{ background: 'rgba(129,140,248,0.1)', color: '#A5B4FC', border: '1px solid rgba(129,140,248,0.2)' }}>
+          <RefreshCw size={12}/> Tendances
+        </button>
+        {canAdmin && (
+          <button onClick={() => setView('admin')}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs transition-all"
+            style={{ background: 'rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.5)' }}>
+            <Settings size={12}/> Gérer les cycles
+          </button>
+        )}
+      </div>
+
+      {/* Cycle actif */}
+      {activeCycle && (
+        <div className="rounded-xl px-4 py-3 flex items-center gap-3"
+          style={{ background: 'rgba(34,197,94,0.06)', border: '1px solid rgba(34,197,94,0.15)' }}>
+          <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse flex-shrink-0"/>
+          <div className="min-w-0 flex-1">
+            <p className="text-sm font-medium text-green-300">{activeCycle.title}</p>
+            <p className="text-xs text-white/35">
+              Clôture : {new Date(activeCycle.end_date).toLocaleDateString('fr-FR')}
+            </p>
+          </div>
+          <span className="text-xs text-green-400/60">{pending.length} à compléter</span>
+        </div>
+      )}
+
+      {/* Évaluations à compléter */}
+      {pending.length > 0 && (
+        <div>
+          <p className="text-xs font-medium text-white/40 mb-2 uppercase tracking-wider">À compléter</p>
+          <div className="flex flex-col gap-2">
+            {pending.map(req => (
+              <button key={req.id}
+                onClick={() => { setSelected(req); setView('form') }}
+                className="w-full flex items-center gap-3 rounded-xl px-4 py-3 text-left transition-all hover:bg-white/5"
+                style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
+                <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 text-xs font-bold text-white"
+                  style={{ background: 'rgba(99,102,241,0.2)' }}>
+                  {req.evaluatee?.first_name?.[0]}{req.evaluatee?.last_name?.[0]}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm text-white font-medium">
+                    {req.evaluatee?.first_name} {req.evaluatee?.last_name}
+                  </p>
+                  <p className="text-xs text-white/35">
+                    {req.relationship === 'peer' ? 'Collègue' : req.relationship === 'manager' ? 'Manager' : req.relationship === 'direct_report' ? 'Collaborateur' : req.relationship}
+                    {req.status === 'in_progress' && <span className="ml-2 text-amber-400">· En cours</span>}
+                  </p>
+                </div>
+                <ChevronRight size={14} className="text-white/20 flex-shrink-0"/>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Soumises */}
+      {submitted.length > 0 && (
+        <div>
+          <p className="text-xs font-medium text-white/40 mb-2 uppercase tracking-wider">Soumises</p>
+          <div className="flex flex-col gap-1.5">
+            {submitted.map(req => (
+              <div key={req.id} className="flex items-center gap-3 rounded-xl px-4 py-2.5"
+                style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.04)' }}>
+                <CheckCircle size={14} className="text-green-400 flex-shrink-0"/>
+                <span className="text-sm text-white/60">
+                  {req.evaluatee?.first_name} {req.evaluatee?.last_name}
+                </span>
+                <span className="text-xs text-white/25 ml-auto">
+                  {req.submitted_at ? new Date(req.submitted_at).toLocaleDateString('fr-FR') : ''}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {!activeCycle && toComplete.length === 0 && (
+        <div className="flex flex-col items-center justify-center py-16 gap-3">
+          <RefreshCw size={40} className="text-white/10"/>
+          <p className="text-sm text-white/30">Aucun cycle 360° actif.</p>
+          {canAdmin && (
+            <button onClick={() => setView('admin')}
+              className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-medium text-white mt-1"
+              style={{ background: 'rgba(99,102,241,0.2)', border: '1px solid rgba(99,102,241,0.3)', color: '#A5B4FC' }}>
+              <Settings size={13}/> Créer un cycle
+            </button>
+          )}
+        </div>
+      )}
+    </div>
+  )
+}
+
 // S69 — guards via AuthContext helpers (MANAGERS/ADMINS locaux supprimés)
 
 // ─── Mon entretien (tab collaborateur) ───────────────────────
@@ -309,6 +518,10 @@ export default function EntretiensAnnuels() {
   const moduleEnabled = settings?.modules?.entretiens_annuels_enabled !== false
 
   const { data: pendingReviews = [] } = useManagerPendingReviews()
+  // S81 — badge 360° à compléter
+  const { data: activeCycle360 } = useActiveFeedback360Cycle()
+  const { data: toComplete360 = [] } = useMyFeedback360ToComplete(activeCycle360?.id)
+  const feedback360Pending = toComplete360.filter(r => r.status !== 'submitted').length
 
   if (!moduleEnabled) {
     return (
@@ -326,6 +539,10 @@ export default function EntretiensAnnuels() {
   const TABS = [
     { id: 'mine',     label: 'Mon entretien',   icon: ClipboardList },
     { id: 'autoeval', label: 'Auto-évaluation', icon: UserCheck },
+    {
+      id: 'feedback360', label: 'Feedback 360°', icon: RefreshCw,
+      badge: feedback360Pending > 0 ? feedback360Pending : null,
+    },
     { id: 'history',  label: 'Historique',      icon: History },
     ...(canManageTeam ? [{
       id: 'team',
@@ -400,6 +617,8 @@ export default function EntretiensAnnuels() {
             {validTab === 'mine'        && <MyReviewTab/>}
             {/* S80 — Auto-évaluation structurée */}
             {validTab === 'autoeval'    && <AutoEvalTab/>}
+            {/* S81 — Feedback 360° */}
+            {validTab === 'feedback360' && <Feedback360Tab/>}
             {validTab === 'history'     && <AnnualReviewHistory/>}
             {validTab === 'team'        && canManageTeam && <AnnualReviewDashboard/>}
             {/* S80 — Suivi managérial et mi-année */}

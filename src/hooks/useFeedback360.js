@@ -455,3 +455,292 @@ export function computeAverageScores(responses) {
 
   return result
 }
+
+// ─── S81 — Cycles planifiés + tendances ──────────────────────────────────────
+
+import { useQueryClient } from '@tanstack/react-query'
+
+/** Templates 360° de l'organisation */
+export function useFeedback360Templates() {
+  const { profile } = useAuth()
+  return useQuery({
+    queryKey: ['feedback360-templates', profile?.organization_id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('feedback360_templates')
+        .select('id, name, description, competences, is_default, created_at')
+        .order('is_default', { ascending: false })
+        .order('name')
+      if (error) throw error
+      return data ?? []
+    },
+    enabled: !!profile?.id,
+    staleTime: 120_000,
+  })
+}
+
+/** Upsert un template 360° */
+export function useUpsertFeedback360Template() {
+  const queryClient = useQueryClient()
+  const { profile } = useAuth()
+  return useMutation({
+    mutationFn: async (template) => {
+      const payload = { ...template, organization_id: profile.organization_id }
+      if (template.id) {
+        const { error } = await supabase.from('feedback360_templates').update(payload).eq('id', template.id)
+        if (error) throw error
+      } else {
+        const { error } = await supabase.from('feedback360_templates').insert({ ...payload, created_by: profile.id })
+        if (error) throw error
+      }
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['feedback360-templates'] }),
+  })
+}
+
+/** Tous les cycles 360° de l'organisation */
+export function useFeedback360Cycles() {
+  const { profile } = useAuth()
+  return useQuery({
+    queryKey: ['feedback360-cycles', profile?.organization_id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('feedback360_cycles')
+        .select(`
+          id, title, description, start_date, end_date, status, scope,
+          launched_at, closed_at, created_at,
+          template:feedback360_templates(id, name),
+          creator:users!feedback360_cycles_created_by_fkey(id, first_name, last_name)
+        `)
+        .order('created_at', { ascending: false })
+      if (error) throw error
+      return data ?? []
+    },
+    enabled: !!profile?.id,
+    staleTime: 60_000,
+  })
+}
+
+/** Cycle 360° actif */
+export function useActiveFeedback360Cycle() {
+  const { data: cycles = [], ...rest } = useFeedback360Cycles()
+  return { data: cycles.find(c => c.status === 'active') ?? null, ...rest }
+}
+
+/** Créer un cycle 360° */
+export function useCreateFeedback360Cycle() {
+  const queryClient = useQueryClient()
+  const { profile } = useAuth()
+  return useMutation({
+    mutationFn: async (cycle) => {
+      const { error } = await supabase
+        .from('feedback360_cycles')
+        .insert({ ...cycle, organization_id: profile.organization_id, created_by: profile.id, status: 'draft' })
+      if (error) throw error
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['feedback360-cycles'] }),
+  })
+}
+
+/** Mettre à jour le statut d'un cycle */
+export function useUpdateFeedback360CycleStatus() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async ({ cycleId, status }) => {
+      const patch = { status }
+      if (status === 'active') patch.launched_at = new Date().toISOString()
+      if (status === 'closed') patch.closed_at   = new Date().toISOString()
+      const { error } = await supabase.from('feedback360_cycles').update(patch).eq('id', cycleId)
+      if (error) throw error
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['feedback360-cycles'] }),
+  })
+}
+
+/** Évaluations à compléter pour moi */
+export function useMyFeedback360ToComplete(cycleId) {
+  const { profile } = useAuth()
+  return useQuery({
+    queryKey: ['feedback360-to-complete', cycleId, profile?.id],
+    queryFn: async () => {
+      let q = supabase
+        .from('feedback360_requests')
+        .select(`
+          id, cycle_id, relationship, status, submitted_at, answers, is_anonymous, created_at,
+          evaluatee:users!feedback360_requests_evaluatee_id_fkey(id, first_name, last_name, role),
+          cycle:feedback360_cycles(id, title, end_date, template_id,
+            template:feedback360_templates(competences))
+        `)
+        .eq('evaluator_id', profile.id)
+        .neq('status', 'declined')
+        .order('created_at', { ascending: false })
+      if (cycleId) q = q.eq('cycle_id', cycleId)
+      const { data, error } = await q
+      if (error) throw error
+      return data ?? []
+    },
+    enabled: !!profile?.id,
+    staleTime: 30_000,
+  })
+}
+
+/** Demandes reçues sur moi */
+export function useMyFeedback360Requests(cycleId) {
+  const { profile } = useAuth()
+  return useQuery({
+    queryKey: ['feedback360-my-requests', cycleId, profile?.id],
+    queryFn: async () => {
+      let q = supabase
+        .from('feedback360_requests')
+        .select('id, cycle_id, relationship, status, submitted_at, is_anonymous, evaluator:users!feedback360_requests_evaluator_id_fkey(id, first_name, last_name)')
+        .eq('evaluatee_id', profile.id)
+        .order('created_at', { ascending: false })
+      if (cycleId) q = q.eq('cycle_id', cycleId)
+      const { data, error } = await q
+      if (error) throw error
+      return data ?? []
+    },
+    enabled: !!profile?.id,
+    staleTime: 30_000,
+  })
+}
+
+/** Soumettre une évaluation 360° */
+export function useSubmitFeedback360Advanced() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async ({ requestId, answers }) => {
+      const { error } = await supabase
+        .from('feedback360_requests')
+        .update({ answers, status: 'submitted', submitted_at: new Date().toISOString() })
+        .eq('id', requestId)
+      if (error) throw error
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['feedback360-to-complete'] })
+      queryClient.invalidateQueries({ queryKey: ['feedback360-summary'] })
+      queryClient.invalidateQueries({ queryKey: ['feedback360-cycle-stats'] })
+    },
+  })
+}
+
+/** Sauvegarder un brouillon */
+export function useSaveFeedback360Draft() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async ({ requestId, answers }) => {
+      const { error } = await supabase
+        .from('feedback360_requests')
+        .update({ answers, status: 'in_progress' })
+        .eq('id', requestId)
+      if (error) throw error
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['feedback360-to-complete'] }),
+  })
+}
+
+/** Créer les demandes pour un cycle (bulk) */
+export function useCreateFeedback360Requests() {
+  const queryClient = useQueryClient()
+  const { profile } = useAuth()
+  return useMutation({
+    mutationFn: async ({ cycleId, assignments }) => {
+      const rows = assignments.map(a => ({
+        cycle_id: cycleId, evaluatee_id: a.evaluatee_id, evaluator_id: a.evaluator_id,
+        relationship: a.relationship ?? 'peer', is_anonymous: a.is_anonymous ?? true,
+        status: 'pending', organization_id: profile.organization_id,
+      }))
+      const { error } = await supabase.from('feedback360_requests')
+        .upsert(rows, { onConflict: 'cycle_id,evaluatee_id,evaluator_id', ignoreDuplicates: true })
+      if (error) throw error
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['feedback360-cycle-stats'] })
+      queryClient.invalidateQueries({ queryKey: ['feedback360-to-complete'] })
+    },
+  })
+}
+
+/** Stats d'un cycle (taux de réponse) */
+export function useFeedback360CycleStats(cycleId) {
+  return useQuery({
+    queryKey: ['feedback360-cycle-stats', cycleId],
+    queryFn: async () => {
+      if (!cycleId) return null
+      const { data, error } = await supabase
+        .from('feedback360_requests')
+        .select('id, evaluatee_id, status, relationship')
+        .eq('cycle_id', cycleId)
+      if (error) throw error
+      const total     = data.length
+      const submitted = data.filter(r => r.status === 'submitted').length
+      const pending   = data.filter(r => r.status === 'pending').length
+      const declined  = data.filter(r => r.status === 'declined').length
+      return {
+        total, submitted, pending, declined,
+        response_rate: total > 0 ? Math.round((submitted / total) * 100) : 0,
+        evaluatee_count: [...new Set(data.map(r => r.evaluatee_id))].length,
+      }
+    },
+    enabled: !!cycleId,
+    staleTime: 30_000,
+  })
+}
+
+/** Synthèse scores 360° (via RPC) */
+export function useFeedback360Summary(evaluateeId, cycleId) {
+  const { profile } = useAuth()
+  return useQuery({
+    queryKey: ['feedback360-summary', evaluateeId, cycleId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .rpc('get_feedback360_summary', { p_evaluatee_id: evaluateeId, p_cycle_id: cycleId })
+      if (error) throw error
+      return data ?? []
+    },
+    enabled: !!evaluateeId && !!cycleId && !!profile?.id,
+    staleTime: 60_000,
+  })
+}
+
+/** Tendances historiques (depuis MV) */
+export function useFeedback360Trends(userId) {
+  const { profile } = useAuth()
+  const uid = userId ?? profile?.id
+  return useQuery({
+    queryKey: ['feedback360-trends', uid],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('mv_feedback360_trends')
+        .select('*')
+        .eq('evaluatee_id', uid)
+        .order('cycle_end_date', { ascending: true })
+      if (error) throw error
+      return data ?? []
+    },
+    enabled: !!uid && !!profile?.id,
+    staleTime: 120_000,
+  })
+}
+
+/** Verbatims anonymisés */
+export function useFeedback360Verbatims(evaluateeId, cycleId) {
+  return useQuery({
+    queryKey: ['feedback360-verbatims', evaluateeId, cycleId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('feedback360_requests')
+        .select('answers, relationship, submitted_at')
+        .eq('evaluatee_id', evaluateeId)
+        .eq('cycle_id', cycleId)
+        .eq('status', 'submitted')
+        .eq('is_anonymous', true)
+      if (error) throw error
+      return (data ?? [])
+        .map(r => ({ relationship: r.relationship, comment: r.answers?.overall_comment ?? '', submitted_at: r.submitted_at }))
+        .filter(v => v.comment.trim())
+    },
+    enabled: !!evaluateeId && !!cycleId,
+    staleTime: 60_000,
+  })
+}
