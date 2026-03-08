@@ -46,53 +46,87 @@ const PAGE_SIZE = 20
 // ---- Sous-composant : Journal RBAC ----
 function RbacJournal({ orgId }) {
   const [logs, setLogs]         = useState([])
-  const [loading, setLoading]   = useState(true)
+  const [loading, setLoading]   = useState(false)   // false — évite boucle si orgId null
+  const [error, setError]       = useState(null)
   const [search, setSearch]     = useState('')
   const [category, setCategory] = useState('rbac')
   const [page, setPage]         = useState(0)
   const [total, setTotal]       = useState(0)
   const [users, setUsers]       = useState({})
+  const [colsAvailable, setColsAvailable] = useState({ org: true, cat: true }) // colonnes S90
 
   const fetchUsers = useCallback(async () => {
     if (!orgId) return
-    const { data } = await supabase
-      .from('users')
-      .select('id, first_name, last_name, email, role')
-      .eq('organization_id', orgId)
-    if (data) {
-      const map = {}
-      data.forEach(u => { map[u.id] = u })
-      setUsers(map)
-    }
+    try {
+      const { data } = await supabase
+        .from('users')
+        .select('id, first_name, last_name, email, role')
+        .eq('organization_id', orgId)
+      if (data) {
+        const map = {}
+        data.forEach(u => { map[u.id] = u })
+        setUsers(map)
+      }
+    } catch (_) { /* non bloquant */ }
   }, [orgId])
 
   const fetchLogs = useCallback(async () => {
     if (!orgId) return
     setLoading(true)
+    setError(null)
     try {
+      // Tentative avec les colonnes S90 (organization_id + category)
       let query = supabase
         .from('audit_logs')
         .select('*', { count: 'exact' })
-        .eq('organization_id', orgId)
         .order('created_at', { ascending: false })
         .range(page * PAGE_SIZE, (page + 1) * PAGE_SIZE - 1)
 
-      if (category !== 'all') {
+      // Filtre organization_id uniquement si la colonne est connue comme disponible
+      if (colsAvailable.org) {
+        query = query.eq('organization_id', orgId)
+      }
+      // Filtre category uniquement si la colonne est disponible et filtre actif
+      if (colsAvailable.cat && category !== 'all') {
         query = query.eq('category', category)
       }
       if (search.trim()) {
         query = query.ilike('action', `%${search.trim()}%`)
       }
 
-      const { data, error, count } = await query
-      if (!error) {
-        setLogs(data || [])
-        setTotal(count || 0)
+      const { data, error: qErr, count } = await query
+
+      if (qErr) {
+        // Colonnes S90 absentes (migration non jouée) → retry sans les filtres S90
+        const msg = qErr.message || ''
+        if (msg.includes('organization_id') || msg.includes('category') || msg.includes('column')) {
+          setColsAvailable({ org: false, cat: false })
+          // Retry minimaliste — toutes les entrées, pas de filtre S90
+          const { data: d2, error: e2, count: c2 } = await supabase
+            .from('audit_logs')
+            .select('*', { count: 'exact' })
+            .order('created_at', { ascending: false })
+            .range(page * PAGE_SIZE, (page + 1) * PAGE_SIZE - 1)
+
+          if (e2) throw e2
+          setLogs(d2 || [])
+          setTotal(c2 || 0)
+          return
+        }
+        throw qErr
       }
+
+      setLogs(data || [])
+      setTotal(count || 0)
+    } catch (e) {
+      console.error('Journal RBAC — erreur:', e)
+      setError(e?.message || 'Erreur lors du chargement des logs')
+      setLogs([])
+      setTotal(0)
     } finally {
       setLoading(false)
     }
-  }, [orgId, category, page, search])
+  }, [orgId, category, page, search, colsAvailable])
 
   useEffect(() => { fetchUsers() }, [fetchUsers])
   useEffect(() => { fetchLogs() }, [fetchLogs])
@@ -190,10 +224,31 @@ function RbacJournal({ orgId }) {
           <div className="flex items-center justify-center py-16">
             <RefreshCw size={18} className="animate-spin text-white/20" />
           </div>
+        ) : error ? (
+          <div className="flex flex-col items-center justify-center py-16 gap-3">
+            <Shield size={28} className="text-red-500/30" />
+            <p className="text-sm text-white/40 text-center max-w-sm">Impossible de charger les logs</p>
+            <p className="text-[11px] text-white/25 text-center max-w-sm font-mono bg-white/5 px-3 py-1.5 rounded">{error}</p>
+            {error.includes('column') || error.includes('relation') ? (
+              <p className="text-[11px] text-amber-400/70 text-center max-w-sm mt-1">
+                ⚠️ La migration SQL S90 (<code>s90_rbac_fixes.sql</code>) n'a pas encore été exécutée sur Supabase.
+                Les colonnes <code>organization_id</code> et <code>category</code> sont manquantes dans <code>audit_logs</code>.
+              </p>
+            ) : null}
+            <button onClick={fetchLogs}
+              className="mt-2 px-3 py-1.5 rounded-lg border border-white/10 text-xs text-white/50 hover:text-white/70 transition-colors">
+              Réessayer
+            </button>
+          </div>
         ) : logs.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16 gap-2">
             <Shield size={28} className="text-white/15" />
             <p className="text-sm text-white/30">Aucune entrée d'audit pour ce filtre</p>
+            {!colsAvailable.cat && (
+              <p className="text-[11px] text-amber-400/60 mt-1 text-center max-w-xs">
+                Filtre catégorie indisponible — colonne <code>category</code> absente (migration S90 requise)
+              </p>
+            )}
           </div>
         ) : (
           logs.map((log, i) => {
