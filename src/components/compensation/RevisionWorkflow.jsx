@@ -11,13 +11,13 @@ import {
 } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
 import {
-  usePendingReviews, useAllReviews, useTeamReviews,
+  usePendingReviews, useAllReviews, useTeamRevisionWorkflow,
   useCreateRevision, useApproveRevision, useRefuseRevision, useApplyRevision,
   useRevisionStats, useCompensationCycles,
   REVIEW_WORKFLOW_STATUS_LABELS, REVIEW_WORKFLOW_STATUS_COLORS,
   REVIEW_REASON_WORKFLOW_LABELS, formatSalary
 } from '../../hooks/useCompensation'
-import { useOrgUsers } from '../../hooks/useOrganizations'
+import { useUsersList } from '../../hooks/useSettings'
 
 // ─── Badge statut ────────────────────────────────────────────
 function StatusBadge({ status }) {
@@ -229,7 +229,7 @@ function RevisionCard({ review, onApprove, onRefuse, onApply, showActions }) {
 
 // ─── Modal création révision ──────────────────────────────────
 function CreateRevisionModal({ cycles, onClose, onSubmit }) {
-  const { data: orgUsers } = useOrgUsers()
+  const { data: orgUsers } = useUsersList()
   const [form, setForm] = useState({
     employee_id: '', review_reason: 'annuelle', current_salary: '', new_salary: '',
     currency: 'XOF', review_notes: '', review_cycle_id: '',
@@ -352,7 +352,7 @@ export default function RevisionWorkflow() {
 
   const { data: pending = [] }   = usePendingReviews()
   const { data: allReviews = [] } = useAllReviews({ status: filterStatus || undefined })
-  const { data: teamReviews = [] } = useTeamReviews()
+  const { data: teamReviews = [] } = useTeamRevisionWorkflow()
   const { data: stats }           = useRevisionStats()
   const { data: cycles = [] }     = useCompensationCycles()
 
