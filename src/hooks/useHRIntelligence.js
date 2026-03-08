@@ -10,6 +10,7 @@ import { useAuth } from '../contexts/AuthContext'
 const currentYear = new Date().getFullYear()
 
 // ─── useHeadcountStats ───────────────────────────────────────
+// ✅ Fix S89 (BUG-M4) : v_headcount_stats_secure (RLS-safe) au lieu de mv_headcount_stats
 export function useHeadcountStats(year = currentYear) {
   const { user } = useAuth()
   const orgId = user?.organization_id
@@ -17,63 +18,48 @@ export function useHeadcountStats(year = currentYear) {
   return useQuery({
     queryKey: ['headcount_stats', orgId, year],
     queryFn: async () => {
-      const startDate = `${year}-01-01`
-      const endDate   = `${year}-12-31`
-      const { data, error } = await supabase.rpc('query_mv', {
-        mv_name: 'mv_headcount_stats',
-        p_org_id: orgId
-      }).select('*')
-      // Direct MV query via RPC not available — use direct select via function
-      // Fallback: query users + departures directly
-      const { data: users, error: e1 } = await supabase
-        .from('users')
-        .select('id, role, created_at')
-        .eq('organization_id', orgId)
-      if (e1) throw e1
+      const startStr = `${year}-01-01`
+      const endStr   = `${year}-12-31`
 
-      const { data: departures, error: e2 } = await supabase
-        .from('employee_departures')
-        .select('user_id, departure_date')
-        .eq('organization_id', orgId)
-      if (e2) throw e2
+      // Vue sécurisée — filtre organization_id via auth.uid() côté Supabase
+      const { data: rows, error } = await supabase
+        .from('v_headcount_stats_secure')
+        .select('month_start, headcount, collaborateurs, managers, direction, departed_count')
+        .gte('month_start', startStr)
+        .lte('month_start', endStr)
+        .order('month_start', { ascending: true })
+      if (error) throw error
 
-      const deptSet = new Set(departures?.map(d => d.user_id) || [])
-      const active  = (users || []).filter(u => !deptSet.has(u.id))
+      const months = (rows || []).map(r => ({
+        month:    new Date(r.month_start).toLocaleString('fr-FR', { month: 'short' }),
+        monthStr: r.month_start?.slice(0, 7),
+        headcount: r.headcount,
+        collaborateurs: r.collaborateurs,
+        managers:  r.managers,
+        direction: r.direction,
+        departed:  r.departed_count,
+      }))
 
-      // Monthly headcount for the year
-      const months = Array.from({ length: 12 }, (_, i) => {
-        const m     = new Date(year, i, 1)
-        const label = m.toLocaleString('fr-FR', { month: 'short' })
-        const monthStr = `${year}-${String(i + 1).padStart(2, '0')}`
-        const activeAtMonth = (users || []).filter(u => {
-          const created = u.created_at?.slice(0, 7) || '2020-01'
-          if (created > monthStr) return false
-          const dep = departures?.find(d => d.user_id === u.id)
-          if (dep && dep.departure_date?.slice(0, 7) <= monthStr) return false
-          return true
-        })
-        return { month: label, monthStr, headcount: activeAtMonth.length }
-      })
-
-      // Role breakdown
-      const byRole = active.reduce((acc, u) => {
-        acc[u.role] = (acc[u.role] || 0) + 1
-        return acc
-      }, {})
+      const latest = rows?.[rows.length - 1]
+      const byRole = latest ? {
+        collaborateur: latest.collaborateurs,
+        manager:       latest.managers,
+        direction:     latest.direction,
+      } : {}
 
       return {
-        total: active.length,
+        total:  latest?.headcount ?? 0,
         byRole,
         months,
-        activeUsers: active
       }
     },
     enabled: !!orgId,
-    staleTime: 5 * 60 * 1000
+    staleTime: 5 * 60 * 1000,
   })
 }
 
 // ─── useTurnoverStats ────────────────────────────────────────
+// ✅ Fix S89 (BUG-M4) : v_turnover_stats_secure (RLS-safe) au lieu de mv_turnover_stats
 export function useTurnoverStats(year = currentYear) {
   const { user } = useAuth()
   const orgId = user?.organization_id
@@ -81,55 +67,55 @@ export function useTurnoverStats(year = currentYear) {
   return useQuery({
     queryKey: ['turnover_stats', orgId, year],
     queryFn: async () => {
-      // Departures this year
-      const { data: departures, error } = await supabase
-        .from('employee_departures')
-        .select('id, user_id, departure_date, reason, type, rehirable, notes')
-        .eq('organization_id', orgId)
-        .gte('departure_date', `${year}-01-01`)
-        .lte('departure_date', `${year}-12-31`)
-        .order('departure_date', { ascending: false })
+      const startStr = `${year}-01-01`
+      const endStr   = `${year}-12-31`
+
+      const { data: rows, error } = await supabase
+        .from('v_turnover_stats_secure')
+        .select('dep_month, reason, departure_type, rehirable, departure_count, total_active, turnover_rate_pct')
+        .gte('dep_month', startStr)
+        .lte('dep_month', endStr)
+        .order('dep_month', { ascending: true })
       if (error) throw error
 
-      // Total headcount (beginning of year)
-      const { count: totalHeadcount } = await supabase
-        .from('users')
-        .select('id', { count: 'exact', head: true })
-        .eq('organization_id', orgId)
-
-      const byReason = (departures || []).reduce((acc, d) => {
-        acc[d.reason] = (acc[d.reason] || 0) + 1
+      const byReason = (rows || []).reduce((acc, r) => {
+        acc[r.reason] = (acc[r.reason] || 0) + (r.departure_count || 0)
         return acc
       }, {})
 
       const byMonth = Array.from({ length: 12 }, (_, i) => {
         const monthStr = `${year}-${String(i + 1).padStart(2, '0')}`
-        const cnt = (departures || []).filter(d => d.departure_date?.startsWith(monthStr)).length
+        const monthRows = (rows || []).filter(r => r.dep_month?.startsWith(monthStr))
+        const cnt = monthRows.reduce((s, r) => s + (r.departure_count || 0), 0)
+        const rate = monthRows[0]?.turnover_rate_pct ?? 0
         return {
           month: new Date(year, i, 1).toLocaleString('fr-FR', { month: 'short' }),
-          count: cnt
+          count: cnt,
+          turnoverRate: parseFloat(rate),
         }
       })
 
-      const totalDepartures = departures?.length || 0
-      const turnoverRate    = totalHeadcount ? ((totalDepartures / totalHeadcount) * 100).toFixed(1) : 0
-      const rehirableCount  = (departures || []).filter(d => d.rehirable).length
+      const totalDepartures = (rows || []).reduce((s, r) => s + (r.departure_count || 0), 0)
+      const avgTurnoverRate = rows?.length
+        ? (rows.reduce((s, r) => s + parseFloat(r.turnover_rate_pct || 0), 0) / rows.length).toFixed(1)
+        : 0
+      const rehirableCount = (rows || []).filter(r => r.rehirable).reduce((s, r) => s + (r.departure_count || 0), 0)
 
       return {
-        total:           totalDepartures,
-        turnoverRate:    parseFloat(turnoverRate),
+        total:        totalDepartures,
+        turnoverRate: parseFloat(avgTurnoverRate),
         byReason,
         byMonth,
         rehirableCount,
-        departures:      departures || []
       }
     },
     enabled: !!orgId,
-    staleTime: 5 * 60 * 1000
+    staleTime: 5 * 60 * 1000,
   })
 }
 
 // ─── useAbsenteeismStats ─────────────────────────────────────
+// ✅ Fix S89 (BUG-M4) : v_absenteeism_stats_secure (RLS-safe) au lieu de mv_absenteeism_stats
 export function useAbsenteeismStats(year = currentYear) {
   const { user } = useAuth()
   const orgId = user?.organization_id
@@ -137,56 +123,55 @@ export function useAbsenteeismStats(year = currentYear) {
   return useQuery({
     queryKey: ['absenteeism_stats', orgId, year],
     queryFn: async () => {
-      const { data: leaves, error } = await supabase
-        .from('leave_requests')
-        .select('id, user_id, start_date, end_date, duration_days, leave_type, status')
-        .eq('organization_id', orgId)
-        .eq('status', 'approved')
-        .gte('start_date', `${year}-01-01`)
-        .lte('start_date', `${year}-12-31`)
+      const startStr = `${year}-01-01`
+      const endStr   = `${year}-12-31`
+
+      const { data: rows, error } = await supabase
+        .from('v_absenteeism_stats_secure')
+        .select('absence_month, leave_type, request_count, total_days, headcount, total_working_days_month, absenteeism_rate_pct')
+        .gte('absence_month', startStr)
+        .lte('absence_month', endStr)
+        .order('absence_month', { ascending: true })
       if (error) throw error
 
-      const { count: headcount } = await supabase
-        .from('users')
-        .select('id', { count: 'exact', head: true })
-        .eq('organization_id', orgId)
-
-      const workingDaysYear = (headcount || 0) * 22 * 12
-
-      const byType = (leaves || []).reduce((acc, l) => {
-        const t = l.leave_type || 'Autre'
+      const byType = (rows || []).reduce((acc, r) => {
+        const t = r.leave_type || 'Autre'
         if (!acc[t]) acc[t] = { count: 0, days: 0 }
-        acc[t].count++
-        acc[t].days += l.duration_days || 0
+        acc[t].count += r.request_count || 0
+        acc[t].days  += r.total_days    || 0
         return acc
       }, {})
 
       const byMonth = Array.from({ length: 12 }, (_, i) => {
         const monthStr = `${year}-${String(i + 1).padStart(2, '0')}`
-        const monthLeaves = (leaves || []).filter(l => l.start_date?.startsWith(monthStr))
-        const totalDays   = monthLeaves.reduce((s, l) => s + (l.duration_days || 0), 0)
-        const rate        = headcount ? ((totalDays / (headcount * 22)) * 100).toFixed(1) : 0
+        const monthRows = (rows || []).filter(r => r.absence_month?.startsWith(monthStr))
+        const totalDays = monthRows.reduce((s, r) => s + (r.total_days || 0), 0)
+        const count     = monthRows.reduce((s, r) => s + (r.request_count || 0), 0)
+        const rate      = monthRows[0]?.absenteeism_rate_pct ?? 0
         return {
           month: new Date(year, i, 1).toLocaleString('fr-FR', { month: 'short' }),
           days:  totalDays,
-          count: monthLeaves.length,
-          rate:  parseFloat(rate)
+          count,
+          rate:  parseFloat(rate),
         }
       })
 
-      const totalDays = (leaves || []).reduce((s, l) => s + (l.duration_days || 0), 0)
-      const annualRate = workingDaysYear ? ((totalDays / workingDaysYear) * 100).toFixed(1) : 0
+      const totalDays = (rows || []).reduce((s, r) => s + (r.total_days || 0), 0)
+      const totalRequests = (rows || []).reduce((s, r) => s + (r.request_count || 0), 0)
+      const annualRate = rows?.length
+        ? (rows.reduce((s, r) => s + parseFloat(r.absenteeism_rate_pct || 0), 0) / rows.length).toFixed(1)
+        : 0
 
       return {
         totalDays,
-        annualRate:   parseFloat(annualRate),
-        totalRequests: leaves?.length || 0,
+        annualRate:    parseFloat(annualRate),
+        totalRequests,
         byType,
-        byMonth
+        byMonth,
       }
     },
     enabled: !!orgId,
-    staleTime: 5 * 60 * 1000
+    staleTime: 5 * 60 * 1000,
   })
 }
 

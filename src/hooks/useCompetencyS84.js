@@ -322,3 +322,72 @@ export function useRefreshCompetencyCoverage() {
     },
   })
 }
+
+// ─── useCompetencyCoverageStats ───────────────────────────────
+// ✅ Fix S89 (BUG-M4) : v_competency_coverage_secure (RLS-safe) au lieu de mv_competency_coverage
+// Colonnes : organization_id, user_id, user_name, user_role, competency_id,
+//            competency_name, category_name, category_color, best_level, required_level, gap
+export function useCompetencyCoverageStats(userId = null) {
+  const { user } = useAuth()
+  const orgId    = user?.organization_id
+
+  return useQuery({
+    queryKey: ['competency_coverage_secure', orgId, userId],
+    enabled: !!orgId,
+    staleTime: 5 * 60 * 1000,
+    queryFn: async () => {
+      let query = supabase
+        .from('v_competency_coverage_secure')
+        .select('user_id, user_name, user_role, competency_id, competency_name, category_name, category_color, best_level, required_level, gap')
+        .order('category_name', { ascending: true })
+        .order('competency_name', { ascending: true })
+
+      if (userId) query = query.eq('user_id', userId)
+
+      const { data, error } = await query
+      if (error) throw error
+
+      const rows = data || []
+
+      // Agréger par compétence (toute l'org ou pour un user)
+      const byCompetency = rows.reduce((acc, r) => {
+        const key = r.competency_id
+        if (!acc[key]) {
+          acc[key] = {
+            competency_id:   r.competency_id,
+            competency_name: r.competency_name,
+            category_name:   r.category_name,
+            category_color:  r.category_color,
+            required_level:  r.required_level,
+            levels:          [],
+            gaps:            [],
+          }
+        }
+        acc[key].levels.push(r.best_level)
+        acc[key].gaps.push(r.gap)
+        return acc
+      }, {})
+
+      const competencies = Object.values(byCompetency).map(c => ({
+        ...c,
+        avg_level: c.levels.length
+          ? parseFloat((c.levels.reduce((s, v) => s + v, 0) / c.levels.length).toFixed(1))
+          : 0,
+        avg_gap: c.gaps.length
+          ? parseFloat((c.gaps.reduce((s, v) => s + v, 0) / c.gaps.length).toFixed(1))
+          : 0,
+        covered_count: c.gaps.filter(g => g <= 0).length,
+        total_count:   c.gaps.length,
+      }))
+
+      // Stats globales
+      const totalGap    = rows.reduce((s, r) => s + Math.max(r.gap, 0), 0)
+      const gapCount    = rows.filter(r => r.gap > 0).length
+      const coveredPct  = rows.length
+        ? Math.round((rows.filter(r => r.gap <= 0).length / rows.length) * 100)
+        : 0
+
+      return { rows, competencies, totalGap, gapCount, coveredPct }
+    },
+  })
+}

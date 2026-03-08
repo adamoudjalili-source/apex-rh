@@ -1,12 +1,13 @@
 // ============================================================
 // APEX RH — AdministrationHub.jsx · Réorg UX Hub & Spoke
 // Hub administration — accessible aux admins uniquement
-//   Utilisateurs · Organisation · API & Connecteurs · Paramètres · Super Admin
+// Session 91 — Ajout carte "Contrôle d'accès" (Matrice RBAC + Journal)
+//   Utilisateurs · Organisation · Contrôle d'accès · API & Connecteurs · Paramètres · Super Admin
 // ============================================================
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import {
-  UserCog, Building2, Plug, Settings, ShieldCheck, ArrowRight,
+  UserCog, Building2, Plug, Settings, ShieldCheck, ArrowRight, KeyRound,
 } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
 
@@ -84,6 +85,13 @@ export default function AdministrationHub() {
             icon={Building2} label="Organisation" color="#F97316"
             description="Structure de l'entreprise, divisions, services et hiérarchie."
             path="/admin/organisation"
+          />
+
+          <HubCard
+            icon={KeyRound} label="Contrôle d'accès" color="#F59E0B"
+            description="Matrice des permissions par rôle et journal d'audit RBAC."
+            path="/admin/access-control"
+            badge="S91"
           />
 
           <HubCard

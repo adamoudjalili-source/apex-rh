@@ -218,6 +218,7 @@ export function useTalentGapAnalysis() {
 }
 
 // ─── HOOK 7 : useSuccessionCoverage ──────────────────────────
+// ✅ Fix S89 (BUG-M4) : v_succession_coverage_secure (RLS-safe) au lieu de RPC get_succession_coverage
 export function useSuccessionCoverage() {
   const { user } = useAuth()
   const orgId    = user?.organization_id
@@ -225,18 +226,20 @@ export function useSuccessionCoverage() {
   return useQuery({
     queryKey: ['succession_coverage', orgId],
     enabled: !!orgId,
+    staleTime: 5 * 60 * 1000,
     queryFn: async () => {
-      const { data, error } = await supabase.rpc('get_succession_coverage', {
-        p_org_id: orgId,
-      })
+      const { data, error } = await supabase
+        .from('v_succession_coverage_secure')
+        .select('position_id, position_title, criticality_level, is_active, pool_count, ready_now_count, ready_1y_count, ready_2y_count, coverage_pct, is_at_risk')
+        .order('criticality_level', { ascending: false })
       if (error) throw error
 
       const rows    = data || []
       const atRisk  = rows.filter(r => r.is_at_risk)
-      const covered = rows.filter(r => r.coverage_pct >= 50)
+      const covered = rows.filter(r => Number(r.coverage_pct) >= 50)
 
       return {
-        positions: rows,
+        positions:      rows,
         atRisk,
         covered,
         totalPositions: rows.length,

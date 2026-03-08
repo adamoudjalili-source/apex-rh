@@ -23,6 +23,7 @@ const AdministrationHub = lazy(() => import('./pages/administration/Administrati
 // ── Pages existantes (lazy) ───────────────────────────────────
 const UsersPage      = lazy(() => import('./pages/admin/Users'))
 const Organisation   = lazy(() => import('./pages/admin/Organisation'))
+const AccessControl  = lazy(() => import('./pages/admin/AccessControl'))
 const SettingsPage   = lazy(() => import('./pages/admin/Settings'))
 const SuperAdmin     = lazy(() => import('./pages/admin/SuperAdmin'))
 const ApiManager     = lazy(() => import('./pages/admin/ApiManager'))
@@ -130,8 +131,9 @@ export default function App() {
           <Route path="/communication/fils"     element={<S><FilsPage /></S>} />
 
           {/* ── Administration (sous-pages depuis AdminHub) ── */}
-          <Route path="/admin/users"        element={<S><UsersPage /></S>} />
-          <Route path="/admin/organisation" element={<S><Organisation /></S>} />
+          <Route path="/admin/users"         element={<S><UsersPage /></S>} />
+          <Route path="/admin/organisation"  element={<S><Organisation /></S>} />
+          <Route path="/admin/access-control" element={<S><AccessControl /></S>} />
           <Route path="/admin/settings"     element={<S><SettingsPage /></S>} />
           <Route path="/admin/super-admin"  element={<S><SuperAdmin /></S>} />
           <Route path="/admin/api-manager"  element={<S><ApiManager /></S>} />
