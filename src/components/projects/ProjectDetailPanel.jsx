@@ -2,12 +2,13 @@
 // APEX RH — ProjectDetailPanel.jsx
 // Session 11 — Panneau détail projet avec onglets
 // Session 16 fix — Chef de projet = membre avec rôle chef_projet (pas owner)
+// Session 79 — +3 onglets : OKR / Budget / Jalons avancés
 // ============================================================
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   X, Info, Calendar, Milestone, FileCheck, ShieldAlert,
-  Users, Pencil, Trash2, DollarSign, TrendingUp,
+  Users, Pencil, Trash2, DollarSign, TrendingUp, Target, Diamond,
 } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
 import { useProject, useDeleteProject } from '../../hooks/useProjects'
@@ -18,12 +19,17 @@ import {
   canEditDeliverables, canEditRisks,
 } from '../../lib/projectHelpers'
 
-// Sous-composants
+// Sous-composants existants
 import MilestoneList from './MilestoneList'
 import DeliverableList from './DeliverableList'
 import RiskRegister from './RiskRegister'
 import ProjectMembers from './ProjectMembers'
 import GanttChart from './GanttChart'
+
+// Sous-composants S79
+import ProjectOKRLinker from './ProjectOKRLinker'
+import ProjectBudgetPanel from './ProjectBudgetPanel'
+import ProjectAdvancedMilestones from './ProjectAdvancedMilestones'
 
 const TABS = [
   { id: 'overview', icon: Info, label: 'Aperçu' },
@@ -32,6 +38,10 @@ const TABS = [
   { id: 'deliverables', icon: FileCheck, label: 'Livrables' },
   { id: 'risks', icon: ShieldAlert, label: 'Risques' },
   { id: 'team', icon: Users, label: 'Équipe' },
+  // S79
+  { id: 'okr', icon: Target, label: 'OKR' },
+  { id: 'budget', icon: DollarSign, label: 'Budget' },
+  { id: 'jalons', icon: Diamond, label: 'Jalons+' },
 ]
 
 export default function ProjectDetailPanel({ projectId, onClose, onEdit }) {
@@ -221,6 +231,22 @@ export default function ProjectDetailPanel({ projectId, onClose, onEdit }) {
                 )}
                 {activeTab === 'team' && (
                   <ProjectMembers members={members} projectId={project.id} canManage={userCanManageMembers} />
+                )}
+                {/* S79 — nouveaux onglets */}
+                {activeTab === 'okr' && (
+                  <div className="p-1">
+                    <ProjectOKRLinker projectId={project.id} canEdit={userCanEdit} />
+                  </div>
+                )}
+                {activeTab === 'budget' && (
+                  <div className="p-1">
+                    <ProjectBudgetPanel projectId={project.id} canEdit={userCanEdit} />
+                  </div>
+                )}
+                {activeTab === 'jalons' && (
+                  <div className="p-1">
+                    <ProjectAdvancedMilestones projectId={project.id} canEdit={userCanEditMs} />
+                  </div>
                 )}
               </div>
             </div>

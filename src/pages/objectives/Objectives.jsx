@@ -1,21 +1,22 @@
 // ============================================================
 // APEX RH — Objectives.jsx (page principale)
 // Session 10 — Module OKR complet
+// Session 78 — +3 vues : Cycles / Cascade alignement / Dashboard
 // ============================================================
 import { useState, useMemo } from 'react'
 import { motion } from 'framer-motion'
 import {
   Target, Plus, LayoutList, GitBranch, BarChart3,
-  TrendingUp, AlertCircle
+  TrendingUp, AlertCircle, RefreshCw, Network, LayoutDashboard
 } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
-import { useObjectives, useUpdateKeyResult, useDeleteKeyResult, useDeleteObjective } from '../../hooks/useObjectives'
+import { useObjectives, useUpdateKeyResult, useDeleteKeyResult, useDeleteObjective, useCurrentCycle } from '../../hooks/useObjectives'
 import {
   canCreateObjective, getLevelInfo, getScoreColor, formatScore,
   formatScorePercent, LEVEL_ORDER, OBJECTIVE_LEVELS
 } from '../../lib/objectiveHelpers'
 
-// Composants
+// Composants existants
 import OkrPeriodSelector from '../../components/objectives/OkrPeriodSelector'
 import OkrFilters from '../../components/objectives/OkrFilters'
 import ObjectiveCard from '../../components/objectives/ObjectiveCard'
@@ -26,13 +27,20 @@ import ObjectiveDetailPanel from '../../components/objectives/ObjectiveDetailPan
 import ExportButton from '../../components/ui/ExportButton'
 import { exportObjectives } from '../../lib/exportExcel'
 
+// Composants S78
+import OKRCycleManager from '../../components/okr/OKRCycleManager'
+import OKRCascadeView from '../../components/okr/OKRCascadeView'
+import OKRDashboard from '../../components/okr/OKRDashboard'
+
 export default function Objectives() {
   const { profile } = useAuth()
 
   // État
   const [selectedPeriodId, setSelectedPeriodId] = useState(null)
-  const [view, setView] = useState('list') // 'list' | 'cascade' | 'stats'
+  const [view, setView] = useState('list') // 'list'|'cascade'|'stats'|'cycles'|'alignment'|'dashboard'
   const [filters, setFilters] = useState({ search: '', level: '', status: '' })
+  const [activeCycleId, setActiveCycleId] = useState(null)
+  const { data: currentCycle } = useCurrentCycle()
 
   // Modales
   const [showObjForm, setShowObjForm] = useState(false)
@@ -174,6 +182,9 @@ export default function Objectives() {
                 { id: 'list', icon: LayoutList, label: 'Liste' },
                 { id: 'cascade', icon: GitBranch, label: 'Cascade' },
                 { id: 'stats', icon: BarChart3, label: 'Stats' },
+                { id: 'cycles', icon: RefreshCw, label: 'Cycles' },
+                { id: 'alignment', icon: Network, label: 'Alignement' },
+                { id: 'dashboard', icon: LayoutDashboard, label: 'Dashboard' },
               ].map((v) => (
                 <button
                   key={v.id}
@@ -241,6 +252,26 @@ export default function Objectives() {
           {/* Vue Stats */}
           {!isLoading && view === 'stats' && stats && (
             <StatsView objectives={objectives} stats={stats} />
+          )}
+
+          {/* ── S78 : Vue Cycles ── */}
+          {view === 'cycles' && (
+            <OKRCycleManager
+              onCycleSelect={(cycle) => {
+                setActiveCycleId(cycle.id)
+                setView('alignment')
+              }}
+            />
+          )}
+
+          {/* ── S78 : Vue Alignement ── */}
+          {view === 'alignment' && (
+            <OKRCascadeView cycleId={activeCycleId || currentCycle?.id} />
+          )}
+
+          {/* ── S78 : Vue Dashboard ── */}
+          {view === 'dashboard' && (
+            <OKRDashboard cycleId={activeCycleId || currentCycle?.id} />
           )}
         </>
       )}

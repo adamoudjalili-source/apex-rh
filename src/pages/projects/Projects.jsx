@@ -6,7 +6,7 @@ import { useState, useMemo } from 'react'
 import { motion } from 'framer-motion'
 import {
   FolderKanban, Plus, LayoutList, Columns3, BarChart3,
-  TrendingUp, AlertTriangle, DollarSign,
+  TrendingUp, AlertTriangle, DollarSign, GanttChartSquare,
 } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
 import { useProjects, useDeleteProject } from '../../hooks/useProjects'
@@ -20,6 +20,7 @@ import ProjectCard from '../../components/projects/ProjectCard'
 import ProjectForm from '../../components/projects/ProjectForm'
 import ProjectDetailPanel from '../../components/projects/ProjectDetailPanel'
 import PortfolioView from '../../components/projects/PortfolioView'
+import ProjectGanttAdvanced from '../../components/projects/ProjectGanttAdvanced'
 import ExportButton from '../../components/ui/ExportButton'
 import { exportProjects } from '../../lib/exportExcel'
 
@@ -27,7 +28,7 @@ export default function Projects() {
   const { profile } = useAuth()
 
   // État
-  const [view, setView] = useState('list') // 'list' | 'portfolio'
+  const [view, setView] = useState('list') // 'list' | 'portfolio' | 'gantt'
   const [filters, setFilters] = useState({ search: '', status: '', priority: '' })
 
   // Modales
@@ -142,6 +143,7 @@ export default function Projects() {
           {[
             { id: 'list', icon: LayoutList, label: 'Liste' },
             { id: 'portfolio', icon: Columns3, label: 'Portefeuille' },
+            { id: 'gantt', icon: GanttChartSquare, label: 'Gantt' },
           ].map((v) => (
             <button
               key={v.id}
@@ -203,6 +205,11 @@ export default function Projects() {
             onSelect={(proj) => setDetailProjectId(proj.id)}
           />
         )
+      )}
+
+      {/* Vue Gantt avancé */}
+      {view === 'gantt' && (
+        <ProjectGanttAdvanced />
       )}
 
       {/* Modale formulaire */}

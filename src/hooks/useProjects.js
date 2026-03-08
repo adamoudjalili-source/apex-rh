@@ -528,3 +528,220 @@ export function useOrgStructure() {
     staleTime: 60000,
   })
 }
+// ─── S79 ─────────────────────────────────────────────────────
+
+// useProjectOKRLinks : OKRs liés à un projet
+export function useProjectOKRLinks(projectId) {
+  return useQuery({
+    queryKey: ['project-okr-links', projectId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('project_okr_links')
+        .select(`
+          id, objective_id, created_at,
+          objective:objectives(
+            id, title, status, progress, level,
+            key_results(id, title, current_value, target_value, unit, confidence_level)
+          )
+        `)
+        .eq('project_id', projectId)
+      if (error) throw error
+      return data || []
+    },
+    enabled: !!projectId,
+    staleTime: 15000,
+  })
+}
+
+// useLinkProjectToOKR : lier projet ↔ objectif
+export function useLinkProjectToOKR() {
+  const qc = useQueryClient()
+  const { profile } = useAuth()
+  return useMutation({
+    mutationFn: async ({ projectId, objectiveId }) => {
+      const { data, error } = await supabase
+        .from('project_okr_links')
+        .insert({
+          project_id: projectId,
+          objective_id: objectiveId,
+          organization_id: profile.organization_id,
+        })
+        .select()
+        .single()
+      if (error) throw error
+      return data
+    },
+    onSuccess: (_, { projectId }) => {
+      qc.invalidateQueries({ queryKey: ['project-okr-links', projectId] })
+    },
+  })
+}
+
+// useUnlinkProjectOKR : délier projet ↔ objectif
+export function useUnlinkProjectOKR() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: async ({ linkId, projectId }) => {
+      const { error } = await supabase
+        .from('project_okr_links')
+        .delete()
+        .eq('id', linkId)
+      if (error) throw error
+      return { projectId }
+    },
+    onSuccess: (res) => {
+      qc.invalidateQueries({ queryKey: ['project-okr-links', res.projectId] })
+    },
+  })
+}
+
+// useProjectBudget : lignes budget + variance
+export function useProjectBudget(projectId) {
+  return useQuery({
+    queryKey: ['project-budget', projectId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('project_budget_lines')
+        .select('*')
+        .eq('project_id', projectId)
+        .order('category')
+      if (error) throw error
+      return data || []
+    },
+    enabled: !!projectId,
+    staleTime: 15000,
+  })
+}
+
+// useUpsertBudgetLine : créer ou mettre à jour une ligne budget
+export function useUpsertBudgetLine() {
+  const qc = useQueryClient()
+  const { profile } = useAuth()
+  return useMutation({
+    mutationFn: async ({ id, projectId, category, label, amount_planned, amount_actual, note }) => {
+      if (id) {
+        const { error } = await supabase
+          .from('project_budget_lines')
+          .update({ category, label, amount_planned, amount_actual, note, updated_at: new Date().toISOString() })
+          .eq('id', id)
+        if (error) throw error
+        return { projectId }
+      } else {
+        const { error } = await supabase
+          .from('project_budget_lines')
+          .insert({ project_id: projectId, category, label, amount_planned, amount_actual, note, organization_id: profile.organization_id })
+        if (error) throw error
+        return { projectId }
+      }
+    },
+    onSuccess: (res) => {
+      qc.invalidateQueries({ queryKey: ['project-budget', res.projectId] })
+    },
+  })
+}
+
+// useDeleteBudgetLine
+export function useDeleteBudgetLine() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: async ({ id, projectId }) => {
+      const { error } = await supabase.from('project_budget_lines').delete().eq('id', id)
+      if (error) throw error
+      return { projectId }
+    },
+    onSuccess: (res) => {
+      qc.invalidateQueries({ queryKey: ['project-budget', res.projectId] })
+    },
+  })
+}
+
+// useAdvancedMilestones : jalons avancés d'un projet
+export function useAdvancedMilestones(projectId) {
+  return useQuery({
+    queryKey: ['project-adv-milestones', projectId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('project_advanced_milestones')
+        .select(`
+          *,
+          key_result:key_results(id, title, current_value, target_value, unit)
+        `)
+        .eq('project_id', projectId)
+        .order('due_date')
+      if (error) throw error
+      return data || []
+    },
+    enabled: !!projectId,
+    staleTime: 15000,
+  })
+}
+
+// useCreateAdvancedMilestone
+export function useCreateAdvancedMilestone() {
+  const qc = useQueryClient()
+  const { profile } = useAuth()
+  return useMutation({
+    mutationFn: async (payload) => {
+      const { data, error } = await supabase
+        .from('project_advanced_milestones')
+        .insert({ ...payload, organization_id: profile.organization_id })
+        .select()
+        .single()
+      if (error) throw error
+      return data
+    },
+    onSuccess: (data) => {
+      qc.invalidateQueries({ queryKey: ['project-adv-milestones', data.project_id] })
+    },
+  })
+}
+
+// useUpdateAdvancedMilestone
+export function useUpdateAdvancedMilestone() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: async ({ id, projectId, ...updates }) => {
+      const { error } = await supabase
+        .from('project_advanced_milestones')
+        .update({ ...updates, updated_at: new Date().toISOString() })
+        .eq('id', id)
+      if (error) throw error
+      return { projectId }
+    },
+    onSuccess: (res) => {
+      qc.invalidateQueries({ queryKey: ['project-adv-milestones', res.projectId] })
+    },
+  })
+}
+
+// useDeleteAdvancedMilestone
+export function useDeleteAdvancedMilestone() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: async ({ id, projectId }) => {
+      const { error } = await supabase.from('project_advanced_milestones').delete().eq('id', id)
+      if (error) throw error
+      return { projectId }
+    },
+    onSuccess: (res) => {
+      qc.invalidateQueries({ queryKey: ['project-adv-milestones', res.projectId] })
+    },
+  })
+}
+
+// useProjectsGantt : tâches + jalons pour Gantt multi-projets (RPC)
+export function useProjectsGantt(start, end) {
+  return useQuery({
+    queryKey: ['projects-gantt', start, end],
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc('get_projects_gantt', {
+        p_start: start,
+        p_end: end,
+      })
+      if (error) throw error
+      return data || { projects: [] }
+    },
+    enabled: !!(start && end),
+    staleTime: 15000,
+  })
+}
