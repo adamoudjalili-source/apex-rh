@@ -227,6 +227,31 @@ const PERMISSION_MATRIX = {
 
   // --- Module 8 : Intelligence RH ---
   intelligence: {
+    // V2 — 7 onglets (S95)
+    overview: {
+      read: ({ canManageOrg }) => canManageOrg,
+    },
+    effectifs: {
+      read: ({ canManageOrg }) => canManageOrg,
+    },
+    absenteisme: {
+      read: ({ canManageOrg }) => canManageOrg,
+    },
+    competences: {
+      read: ({ canManageOrg }) => canManageOrg,
+    },
+    succession: {
+      read: ({ hasStrategic }) => hasStrategic,   // chef_division+
+      admin: ({ canAdmin }) => canAdmin,
+    },
+    predictif: {
+      read: ({ canManageOrg }) => canManageOrg,
+    },
+    exports: {
+      read: ({ canManageOrg }) => canManageOrg,
+      export: ({ canManageOrg }) => canManageOrg,
+    },
+    // Legacy — conservé pour rétrocompatibilité Phase C
     drh_dashboard: {
       read: ({ canManageOrg }) => canManageOrg,
     },
@@ -236,10 +261,6 @@ const PERMISSION_MATRIX = {
     },
     talents: {
       read: ({ hasStrategic }) => hasStrategic,
-    },
-    succession: {
-      read: ({ hasStrategic }) => hasStrategic,
-      admin: ({ canAdmin }) => canAdmin,
     },
     behavioral: {
       read: ({ canManageOrg }) => canManageOrg,
