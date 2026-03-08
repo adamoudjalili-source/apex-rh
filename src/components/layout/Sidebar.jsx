@@ -33,7 +33,7 @@ import {
   ChevronLeft, ChevronRight, LogOut,
   BriefcaseIcon, ClipboardList, ClipboardCheck, Settings,
   Home, ShieldCheck, MessageCircle, Clock, CalendarOff, DoorOpen,
-  Globe, UserCheck, UserSquare2, GraduationCap,
+  Globe, UserCheck, UserSquare2, GraduationCap, RefreshCw,
 } from 'lucide-react'
 import { useAuth }        from '../../contexts/AuthContext'
 import { useAppSettings } from '../../hooks/useSettings'
@@ -174,15 +174,13 @@ export default function Sidebar() {
             <NavItem icon={TrendingUp}      label="Performance"        path="/performance"    color="#818CF8" collapsed={collapsed}/>
             <NavItem icon={ClipboardCheck}  label="Évaluations"        path="/evaluations"    color="#A78BFA" collapsed={collapsed}/>
             <NavItem icon={GraduationCap}   label="Formation & Dév"    path="/developpement"  color="#10B981" collapsed={collapsed}/>
+            <NavItem icon={RefreshCw}        label="Cycle RH"           path="/cycle-rh"       color="#C9A227" collapsed={collapsed}/>
             <Section label="Analyse" collapsed={collapsed}/>
             <NavItem icon={BarChart3}        label="Intelligence RH"    path="/intelligence"   color="#8B5CF6" collapsed={collapsed}/>
-            <Section label="Acquisition & Éval" collapsed={collapsed}/>
-            <NavItem icon={BriefcaseIcon}    label="Recrutement"        path="/recrutement"    color="#818CF8" collapsed={collapsed}/>
+            <Section label="Évaluation" collapsed={collapsed}/>
             <NavItem icon={ClipboardList}    label="Entretiens annuels" path="/entretiens"     color="#A78BFA" collapsed={collapsed}/>
             <Section label="Communication" collapsed={collapsed}/>
             <NavItem icon={MessageCircle}    label="Communication"      path="/communication"  color="#06B6D4" badge={unreadCount || null} collapsed={collapsed}/>
-            <Section label="Séparation" collapsed={collapsed}/>
-            <NavItem icon={DoorOpen}         label="Offboarding"        path="/offboarding"    color="#EF4444" collapsed={collapsed}/>
             <Section label="Admin" collapsed={collapsed}/>
             <NavItem icon={ShieldCheck}      label="Administration"     path="/administration" color="#EF4444" collapsed={collapsed}/>
           </>
@@ -202,7 +200,7 @@ export default function Sidebar() {
             <NavItem icon={TrendingUp}      label="Performance"        path="/performance"    color="#818CF8" collapsed={collapsed}/>
             <NavItem icon={ClipboardCheck}  label="Évaluations"        path="/evaluations"    color="#A78BFA" collapsed={collapsed}/>
             <NavItem icon={GraduationCap}   label="Formation & Dév"    path="/developpement"  color="#10B981" collapsed={collapsed}/>
-            <NavItem icon={BriefcaseIcon}    label="Recrutement"        path="/recrutement"    color="#818CF8" collapsed={collapsed}/>
+            <NavItem icon={RefreshCw}        label="Cycle RH"           path="/cycle-rh"       color="#C9A227" collapsed={collapsed}/>
             <NavItem icon={ClipboardList}    label="Entretiens annuels" path="/entretiens"     color="#A78BFA" collapsed={collapsed}/>
             <Section label="Communication" collapsed={collapsed}/>
             <NavItem icon={MessageCircle}    label="Communication"      path="/communication"  color="#06B6D4" badge={unreadCount || null} collapsed={collapsed}/>
@@ -224,7 +222,7 @@ export default function Sidebar() {
             <NavItem icon={GraduationCap}   label="Formation & Dév"    path="/developpement"  color="#10B981" collapsed={collapsed}/>
             <Section label="Analyse & Acquisition" collapsed={collapsed}/>
             <NavItem icon={BarChart3}        label="Intelligence RH"    path="/intelligence"   color="#8B5CF6" collapsed={collapsed}/>
-            <NavItem icon={BriefcaseIcon}    label="Recrutement"        path="/recrutement"    color="#818CF8" collapsed={collapsed}/>
+            <NavItem icon={RefreshCw}        label="Cycle RH"           path="/cycle-rh"       color="#C9A227" collapsed={collapsed}/>
             <NavItem icon={ClipboardList}    label="Entretiens annuels" path="/entretiens"     color="#A78BFA" collapsed={collapsed}/>
             <Section label="Communication" collapsed={collapsed}/>
             <NavItem icon={MessageCircle}    label="Communication"      path="/communication"  color="#06B6D4" badge={unreadCount || null} collapsed={collapsed}/>
@@ -244,6 +242,7 @@ export default function Sidebar() {
             <NavItem icon={TrendingUp}      label="Performance"        path="/performance"    color="#818CF8" collapsed={collapsed}/>
             <NavItem icon={ClipboardCheck}  label="Évaluations"        path="/evaluations"    color="#A78BFA" collapsed={collapsed}/>
             <NavItem icon={GraduationCap}   label="Formation & Dév"    path="/developpement"  color="#10B981" collapsed={collapsed}/>
+            <NavItem icon={RefreshCw}        label="Cycle RH"           path="/cycle-rh"       color="#C9A227" collapsed={collapsed}/>
             <NavItem icon={ClipboardList}    label="Entretiens annuels" path="/entretiens"     color="#A78BFA" collapsed={collapsed}/>
             <Section label="Communication" collapsed={collapsed}/>
             <NavItem icon={MessageCircle}    label="Communication"      path="/communication"  color="#06B6D4" badge={unreadCount || null} collapsed={collapsed}/>
@@ -256,14 +255,14 @@ export default function Sidebar() {
             <NavItem icon={LayoutDashboard} label="Mon Tableau de Bord" path="/mon-tableau-de-bord" color="#C9A227" collapsed={collapsed}/>
             <Section label="Mon espace" collapsed={collapsed}/>
             <NavItem icon={Home}            label="Mon Espace"           path="/mon-espace"          color="#4F46E5" collapsed={collapsed}/>
-            <NavItem icon={UserCheck}       label="Mon Onboarding"       path="/onboarding"          color="#10B981" collapsed={collapsed}/>
+            <NavItem icon={UserCheck}       label="Mon Onboarding"       path="/cycle-rh"            color="#10B981" collapsed={collapsed}/>
             <Section label="Mon RH" collapsed={collapsed}/>
             <NavItem icon={Clock}           label="Temps & Absences"    path="/temps-absences"      color="#34D399" collapsed={collapsed}/>
             <NavItem icon={TrendingUp}     label="Performance"         path="/performance"          color="#818CF8" collapsed={collapsed}/>
             <NavItem icon={ClipboardCheck} label="Évaluations"         path="/evaluations"          color="#A78BFA" collapsed={collapsed}/>
             <NavItem icon={GraduationCap}  label="Formation & Dév"     path="/developpement"        color="#10B981" collapsed={collapsed}/>
             <NavItem icon={ClipboardList}   label="Mon entretien"        path="/entretiens"          color="#A78BFA" collapsed={collapsed}/>
-            <NavItem icon={BriefcaseIcon}   label="Candidature interne"  path="/recrutement"         color="#818CF8" collapsed={collapsed}/>
+            <NavItem icon={BriefcaseIcon}   label="Candidature interne"  path="/cycle-rh"            color="#818CF8" collapsed={collapsed}/>
             <Section label="Communication" collapsed={collapsed}/>
             <NavItem icon={MessageCircle}   label="Communication"         path="/communication"       color="#06B6D4" badge={unreadCount || null} collapsed={collapsed}/>
           </>

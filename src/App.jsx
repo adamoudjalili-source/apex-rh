@@ -38,6 +38,7 @@ const IntelligenceRH = lazy(() => import('./pages/intelligence/IntelligenceRH'))
 const EngagementHub  = lazy(() => import('./pages/engagement/EngagementHub'))
 const Formation         = lazy(() => import('./pages/formation/Formation'))
 const DeveloppementHub  = lazy(() => import('./pages/developpement/DeveloppementHub'))
+const CycleRHHub        = lazy(() => import('./pages/cycle-rh/CycleRHHub'))
 const Compensation   = lazy(() => import('./pages/compensation/Compensation'))
 const Recrutement    = lazy(() => import('./pages/recrutement/Recrutement'))
 const EntretiensAnnuels = lazy(() => import('./pages/entretiens/EntretiensAnnuels'))
@@ -132,15 +133,16 @@ export default function App() {
           <Route path="/employes" element={<S><EmployesHub /></S>} />
 
           {/* ── RH Opérationnel (sidebar directe) ── */}
-          <Route path="/recrutement" element={<S><Recrutement /></S>} />
+          <Route path="/recrutement" element={<Navigate to="/cycle-rh" replace />} />  {/* S98 redirect */}
+          <Route path="/cycle-rh"    element={<S><CycleRHHub /></S>} />             {/* Module 4 V2 */}
           <Route path="/entretiens"  element={<S><EntretiensAnnuels /></S>} />
           <Route path="/temps-absences"  element={<S><GestionTempsAbsences /></S>} />
           <Route path="/temps"           element={<Navigate to="/temps-absences" replace />} />
           <Route path="/conges"          element={<Navigate to="/temps-absences" replace />} />
           <Route path="/performance"     element={<S><PerformanceHub /></S>} />
           <Route path="/evaluations"     element={<S><EvaluationsHub /></S>} />
-          <Route path="/offboarding" element={<S><Offboarding /></S>} />
-          <Route path="/onboarding"  element={<S><Onboarding  /></S>} />
+          <Route path="/offboarding" element={<Navigate to="/cycle-rh" replace />} />  {/* S98 redirect */}
+          <Route path="/onboarding"  element={<Navigate to="/cycle-rh" replace />} />  {/* S98 redirect */}
 
           {/* ── Communication S65 ── */}
           <Route path="/communication"          element={<S><CommunicationPage /></S>} />
