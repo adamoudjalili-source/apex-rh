@@ -2,6 +2,8 @@
 // APEX RH — useObjectives.js
 // Session 19 — Fix useLinkTaskToKr / useUnlinkTaskFromKr :
 //   invalidation ciblée ['objective', objectiveId] au lieu de ['objective'] (trop large)
+// 🐛 Session 89 (WARN-3) — queryKey trop large sur toutes les mutations :
+//   ['objectives'] → ['objectives', periodId] pour cibler uniquement la période concernée
 // ============================================================
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '../lib/supabase'
@@ -116,7 +118,8 @@ export function useCreateObjective() {
     },
     onSuccess: (data) => {
       logAudit('objective_created', 'objective', data.id, { title: data.title, level: data.level })
-      qc.invalidateQueries({ queryKey: ['objectives'] })
+      // ✅ S89 : cibler uniquement la période de l'objectif créé
+      qc.invalidateQueries({ queryKey: ['objectives', data.period_id] })
     },
   })
 }
@@ -135,8 +138,9 @@ export function useUpdateObjective() {
       if (error) throw error
       return data
     },
-    onSuccess: (_, { id }) => {
-      qc.invalidateQueries({ queryKey: ['objectives'] })
+    onSuccess: (data, { id }) => {
+      // ✅ S89 : cibler uniquement la période concernée
+      qc.invalidateQueries({ queryKey: ['objectives', data.period_id] })
       qc.invalidateQueries({ queryKey: ['objective', id] })
     },
   })
@@ -146,14 +150,20 @@ export function useUpdateObjective() {
 export function useDeleteObjective() {
   const qc = useQueryClient()
   return useMutation({
-    mutationFn: async (id) => {
+    // ✅ S89 : passer { id, periodId } pour invalider uniquement la période
+    mutationFn: async ({ id, periodId }) => {
       const { error } = await supabase.from('objectives').delete().eq('id', id)
       if (error) throw error
-      return id
+      return { id, periodId }
     },
-    onSuccess: (id) => {
+    onSuccess: ({ id, periodId }) => {
       logAudit('objective_deleted', 'objective', id)
-      qc.invalidateQueries({ queryKey: ['objectives'] })
+      if (periodId) {
+        qc.invalidateQueries({ queryKey: ['objectives', periodId] })
+      } else {
+        qc.invalidateQueries({ queryKey: ['objectives'] })
+      }
+      qc.removeQueries({ queryKey: ['objective', id] })
     },
   })
 }
@@ -174,8 +184,12 @@ export function useCreateKeyResult() {
       return data
     },
     onSuccess: (data) => {
-      qc.invalidateQueries({ queryKey: ['objectives'] })
+      // ✅ S89 : KR créé → invalider uniquement l'objectif parent (periodId via objectif)
       qc.invalidateQueries({ queryKey: ['objective', data.objective_id] })
+      // Invalider la liste de la période si connue (passée dans krData.periodId)
+      if (data.periodId) {
+        qc.invalidateQueries({ queryKey: ['objectives', data.periodId] })
+      }
     },
   })
 }
@@ -194,8 +208,11 @@ export function useUpdateKeyResult() {
       return data
     },
     onSuccess: (data) => {
-      qc.invalidateQueries({ queryKey: ['objectives'] })
+      // ✅ S89 : cibler uniquement l'objectif parent du KR modifié
       qc.invalidateQueries({ queryKey: ['objective', data.objective_id] })
+      if (data.periodId) {
+        qc.invalidateQueries({ queryKey: ['objectives', data.periodId] })
+      }
     },
   })
 }
@@ -203,14 +220,18 @@ export function useUpdateKeyResult() {
 export function useDeleteKeyResult() {
   const qc = useQueryClient()
   return useMutation({
-    mutationFn: async ({ id, objectiveId }) => {
+    // ✅ S89 : accepte { id, objectiveId, periodId? }
+    mutationFn: async ({ id, objectiveId, periodId }) => {
       const { error } = await supabase.from('key_results').delete().eq('id', id)
       if (error) throw error
-      return { objectiveId }
+      return { objectiveId, periodId }
     },
     onSuccess: (res) => {
-      qc.invalidateQueries({ queryKey: ['objectives'] })
+      // ✅ S89 : cibler uniquement l'objectif parent
       qc.invalidateQueries({ queryKey: ['objective', res.objectiveId] })
+      if (res.periodId) {
+        qc.invalidateQueries({ queryKey: ['objectives', res.periodId] })
+      }
     },
   })
 }
@@ -222,19 +243,22 @@ export function useDeleteKeyResult() {
 export function useLinkTaskToKr() {
   const qc = useQueryClient()
   return useMutation({
-    mutationFn: async ({ taskId, keyResultId, objectiveId }) => {
+    // ✅ S89 : accepte periodId optionnel pour invalidation ciblée
+    mutationFn: async ({ taskId, keyResultId, objectiveId, periodId }) => {
       const { error } = await supabase
         .from('task_key_results')
         .insert({ task_id: taskId, key_result_id: keyResultId })
       if (error) throw error
-      return { objectiveId }
+      return { objectiveId, periodId }
     },
     onSuccess: (res) => {
-      qc.invalidateQueries({ queryKey: ['objectives'] })
+      // ✅ S89 : cibler uniquement l'objectif + la période si connue
       if (res.objectiveId) {
         qc.invalidateQueries({ queryKey: ['objective', res.objectiveId] })
       }
-      // Invalider aussi les tâches (pour la section liaisons inter-modules)
+      if (res.periodId) {
+        qc.invalidateQueries({ queryKey: ['objectives', res.periodId] })
+      }
       qc.invalidateQueries({ queryKey: ['tasks'] })
     },
   })
@@ -243,19 +267,23 @@ export function useLinkTaskToKr() {
 export function useUnlinkTaskFromKr() {
   const qc = useQueryClient()
   return useMutation({
-    mutationFn: async ({ taskId, keyResultId, objectiveId }) => {
+    // ✅ S89 : accepte periodId optionnel
+    mutationFn: async ({ taskId, keyResultId, objectiveId, periodId }) => {
       const { error } = await supabase
         .from('task_key_results')
         .delete()
         .eq('task_id', taskId)
         .eq('key_result_id', keyResultId)
       if (error) throw error
-      return { objectiveId }
+      return { objectiveId, periodId }
     },
     onSuccess: (res) => {
-      qc.invalidateQueries({ queryKey: ['objectives'] })
+      // ✅ S89 : cibler uniquement l'objectif + la période si connue
       if (res.objectiveId) {
         qc.invalidateQueries({ queryKey: ['objective', res.objectiveId] })
+      }
+      if (res.periodId) {
+        qc.invalidateQueries({ queryKey: ['objectives', res.periodId] })
       }
       qc.invalidateQueries({ queryKey: ['tasks'] })
     },
@@ -278,8 +306,11 @@ export function useSelfEvaluate() {
         .eq('id', id)
       if (error) throw error
     },
-    onSuccess: (_, { id }) => {
-      qc.invalidateQueries({ queryKey: ['objectives'] })
+    onSuccess: (_, { id, periodId }) => {
+      // ✅ S89 : cibler la période si fournie
+      if (periodId) {
+        qc.invalidateQueries({ queryKey: ['objectives', periodId] })
+      }
       qc.invalidateQueries({ queryKey: ['objective', id] })
     },
   })
@@ -299,8 +330,11 @@ export function useValidateN1() {
         .eq('id', id)
       if (error) throw error
     },
-    onSuccess: (_, { id }) => {
-      qc.invalidateQueries({ queryKey: ['objectives'] })
+    onSuccess: (_, { id, periodId }) => {
+      // ✅ S89 : cibler la période si fournie
+      if (periodId) {
+        qc.invalidateQueries({ queryKey: ['objectives', periodId] })
+      }
       qc.invalidateQueries({ queryKey: ['objective', id] })
     },
   })
@@ -321,8 +355,11 @@ export function useCalibrateRH() {
         .eq('id', id)
       if (error) throw error
     },
-    onSuccess: (_, { id }) => {
-      qc.invalidateQueries({ queryKey: ['objectives'] })
+    onSuccess: (_, { id, periodId }) => {
+      // ✅ S89 : cibler la période si fournie
+      if (periodId) {
+        qc.invalidateQueries({ queryKey: ['objectives', periodId] })
+      }
       qc.invalidateQueries({ queryKey: ['objective', id] })
     },
   })
@@ -446,6 +483,7 @@ export function useCloseCycle() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['okr-cycles'] })
       qc.invalidateQueries({ queryKey: ['okr-cycle-current'] })
+      // ✅ S89 : clôture d'un cycle → invalide tous les objectifs (justifié ici)
       qc.invalidateQueries({ queryKey: ['objectives'] })
     },
   })
@@ -495,9 +533,11 @@ export function useCreateCheckin() {
         .eq('id', key_result_id)
       return data
     },
-    onSuccess: (_, { key_result_id }) => {
+    onSuccess: (_, { key_result_id, objectiveId, periodId }) => {
       qc.invalidateQueries({ queryKey: ['okr-checkins', key_result_id] })
-      qc.invalidateQueries({ queryKey: ['objectives'] })
+      // ✅ S89 : cibler uniquement l'objectif + la période si fournis
+      if (objectiveId) qc.invalidateQueries({ queryKey: ['objective', objectiveId] })
+      if (periodId)    qc.invalidateQueries({ queryKey: ['objectives', periodId] })
     },
   })
 }
