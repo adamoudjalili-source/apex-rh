@@ -458,8 +458,6 @@ export function computeAverageScores(responses) {
 
 // ─── S81 — Cycles planifiés + tendances ──────────────────────────────────────
 
-import { useQueryClient } from '@tanstack/react-query'
-
 /** Templates 360° de l'organisation */
 export function useFeedback360Templates() {
   const { profile } = useAuth()
