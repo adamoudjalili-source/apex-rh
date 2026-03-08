@@ -1,5 +1,6 @@
 // ============================================================
 // APEX RH — IntelligenceRH.jsx  ·  Réorg UX Hub & Spoke
+// S76 — +3 onglets PULSE : Alertes / Heatmap équipe / Calibration
 // Navigation 2 niveaux :
 //   Groupes : Mesure · Évaluation · Talent · Stratégie
 //   Onglets : filtrés par groupe actif + droits rôle
@@ -8,8 +9,11 @@ import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useAppSettings } from '../../hooks/useSettings'
 import { useAuth } from '../../contexts/AuthContext'
-import { BarChart3, MessageSquare, ClipboardList, Activity, Wifi, TrendingUp, GitBranch, LayoutDashboard, Building2, Grid3x3, Brain, Star, Gauge, Target, BarChart2 } from 'lucide-react'
+import { BarChart3, MessageSquare, ClipboardList, Activity, Wifi, TrendingUp, GitBranch, LayoutDashboard, Building2, Grid3x3, Brain, Star, Gauge, Target, BarChart2, Bell, SlidersHorizontal } from 'lucide-react'
 
+import PulseAlertCenter          from '../../components/pulse/PulseAlertCenter'    // S76
+import TeamPulseHeatmap          from '../../components/pulse/TeamPulseHeatmap'    // S76
+import PulseCalibration          from '../../components/pulse/PulseCalibration'    // S76
 import BoardPage                 from '../pulse/Board'
 import AnalyticsPage             from '../pulse/Analytics'
 import Feedback360Page           from '../pulse/Feedback360'
@@ -40,8 +44,11 @@ const GROUPS = [
 
 const TABS = [
   // ─── Groupe Mesure ───────────────────────────────────────────
-  { id:'performance',          group:'mesure',     label:'Performance PULSE',   icon:Activity,         component:BoardPage,               color:'#4F46E5', moduleKey:null },
-  { id:'analytics',            group:'mesure',     label:'Analytics',           icon:BarChart3,        component:AnalyticsPage,           color:'#8B5CF6', moduleKey:'analytics_enabled' },
+  { id:'performance',          group:'mesure',     label:'Performance PULSE',   icon:Activity,           component:BoardPage,               color:'#4F46E5', moduleKey:null },
+  { id:'alertes_pulse',        group:'mesure',     label:'Alertes PULSE',       icon:Bell,               component:PulseAlertCenter,        color:'#EF4444', moduleKey:null },                         // S76
+  { id:'heatmap_pulse',        group:'mesure',     label:'Heatmap équipe',      icon:Grid3x3,            component:TeamPulseHeatmap,        color:'#8B5CF6', moduleKey:null, managerOnly:true },        // S76
+  { id:'calibration_pulse',    group:'mesure',     label:'Calibration',         icon:SlidersHorizontal,  component:PulseCalibration,        color:'#C9A227', moduleKey:null, adminOnly:true },           // S76
+  { id:'analytics',            group:'mesure',     label:'Analytics',           icon:BarChart3,          component:AnalyticsPage,           color:'#8B5CF6', moduleKey:'analytics_enabled' },
   { id:'analytics_predictifs', group:'mesure',     label:'Prédictifs',          icon:GitBranch,        component:AnalyticsPredictifs,     color:'#A78BFA', moduleKey:null },
   { id:'activite',             group:'mesure',     label:'Activité Réelle',     icon:Wifi,             component:ActiviteReelle,          color:'#F59E0B', moduleKey:null },
   { id:'cartographie_charges', group:'mesure',     label:'Charges',             icon:BarChart3,        component:CartographieCharges,     color:'#F97316', moduleKey:null, managerOnly:true },

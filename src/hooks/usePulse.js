@@ -423,3 +423,285 @@ export function useTodayScore() {
     staleTime: 60000,
   })
 }
+
+// ============================================================
+// S76 — Performance PULSE : Alertes proactives + Calibration
+// ============================================================
+
+// ─── ALERTES ─────────────────────────────────────────────────
+
+/** Mes alertes actives (vue collaborateur) */
+export function usePulseAlerts() {
+  const { profile } = useAuth()
+
+  return useQuery({
+    queryKey: ['pulse', 's76', 'alerts', profile?.id],
+    queryFn: async () => {
+      if (!profile?.id) return []
+      const { data, error } = await supabase
+        .from('pulse_alerts')
+        .select('*, rule:pulse_alert_rules(name, alert_type)')
+        .eq('user_id', profile.id)
+        .order('triggered_at', { ascending: false })
+        .limit(50)
+      if (error) throw error
+      return data || []
+    },
+    enabled: !!profile?.id,
+    staleTime: 60000,
+  })
+}
+
+/** Alertes actives de l'équipe (manager/rh/admin) */
+export function useTeamPulseAlerts() {
+  const { profile } = useAuth()
+
+  return useQuery({
+    queryKey: ['pulse', 's76', 'team-alerts', profile?.organization_id],
+    queryFn: async () => {
+      if (!profile?.organization_id) return []
+      const { data, error } = await supabase
+        .from('pulse_alerts')
+        .select(`
+          *,
+          rule:pulse_alert_rules(name, alert_type),
+          user:users(id, full_name, role, manager_id)
+        `)
+        .eq('organization_id', profile.organization_id)
+        .in('status', ['active', 'acknowledged'])
+        .order('triggered_at', { ascending: false })
+        .limit(100)
+      if (error) throw error
+      return data || []
+    },
+    enabled: !!profile?.organization_id,
+    staleTime: 30000,
+  })
+}
+
+/** Règles d'alerte de l'organisation */
+export function usePulseAlertRules() {
+  const { profile } = useAuth()
+
+  return useQuery({
+    queryKey: ['pulse', 's76', 'alert-rules', profile?.organization_id],
+    queryFn: async () => {
+      if (!profile?.organization_id) return []
+      const { data, error } = await supabase
+        .from('pulse_alert_rules')
+        .select('*')
+        .eq('organization_id', profile.organization_id)
+        .order('created_at', { ascending: false })
+      if (error) throw error
+      return data || []
+    },
+    enabled: !!profile?.organization_id,
+  })
+}
+
+/** Créer une règle d'alerte */
+export function useCreateAlertRule() {
+  const { profile } = useAuth()
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async (payload) => {
+      const { data, error } = await supabase
+        .from('pulse_alert_rules')
+        .insert({ ...payload, organization_id: profile.organization_id, created_by: profile.id })
+        .select()
+        .single()
+      if (error) throw error
+      return data
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['pulse', 's76', 'alert-rules'] })
+    },
+  })
+}
+
+/** Mettre à jour une règle d'alerte */
+export function useUpdateAlertRule() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async ({ id, ...payload }) => {
+      const { data, error } = await supabase
+        .from('pulse_alert_rules')
+        .update({ ...payload, updated_at: new Date().toISOString() })
+        .eq('id', id)
+        .select()
+        .single()
+      if (error) throw error
+      return data
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['pulse', 's76', 'alert-rules'] })
+    },
+  })
+}
+
+/** Supprimer une règle d'alerte */
+export function useDeleteAlertRule() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async (id) => {
+      const { error } = await supabase
+        .from('pulse_alert_rules')
+        .delete()
+        .eq('id', id)
+      if (error) throw error
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['pulse', 's76', 'alert-rules'] })
+    },
+  })
+}
+
+/** Acquitter (acknowledge) une alerte */
+export function useAcknowledgeAlert() {
+  const { profile } = useAuth()
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async ({ id, status = 'acknowledged', resolution_note = null }) => {
+      const { data, error } = await supabase
+        .from('pulse_alerts')
+        .update({
+          status,
+          acknowledged_by: profile.id,
+          acknowledged_at: new Date().toISOString(),
+          resolution_note,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', id)
+        .select()
+        .single()
+      if (error) throw error
+      return data
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['pulse', 's76'] })
+    },
+  })
+}
+
+// ─── CALIBRATION ─────────────────────────────────────────────
+
+/** Config calibration de l'organisation */
+export function usePulseCalibration() {
+  const { profile } = useAuth()
+
+  return useQuery({
+    queryKey: ['pulse', 's76', 'calibration', profile?.organization_id],
+    queryFn: async () => {
+      if (!profile?.organization_id) return []
+      const { data, error } = await supabase
+        .from('pulse_calibration')
+        .select('*')
+        .eq('organization_id', profile.organization_id)
+        .order('dimension')
+      if (error) throw error
+      return data || []
+    },
+    enabled: !!profile?.organization_id,
+  })
+}
+
+/** Mettre à jour la calibration */
+export function useUpdateCalibration() {
+  const { profile } = useAuth()
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async ({ dimension, ...payload }) => {
+      const { data, error } = await supabase
+        .from('pulse_calibration')
+        .upsert({
+          organization_id: profile.organization_id,
+          dimension,
+          ...payload,
+          updated_by: profile.id,
+          updated_at: new Date().toISOString(),
+        }, { onConflict: 'organization_id,dimension' })
+        .select()
+        .single()
+      if (error) throw error
+      return data
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['pulse', 's76', 'calibration'] })
+    },
+  })
+}
+
+// ─── TENDANCES (MV mv_pulse_trends) ──────────────────────────
+
+/** Tendances d'un utilisateur (7j / 30j) */
+export function usePulseTrends(userId = null) {
+  const { profile } = useAuth()
+  const targetId = userId || profile?.id
+
+  return useQuery({
+    queryKey: ['pulse', 's76', 'trends', targetId],
+    queryFn: async () => {
+      if (!targetId) return null
+      const { data, error } = await supabase
+        .rpc('get_pulse_trends_for_user', { p_user_id: targetId })
+        .maybeSingle()
+      // Fallback: requête directe sur performance_scores si la RPC n'existe pas
+      if (error) {
+        const { data: scores } = await supabase
+          .from('performance_scores')
+          .select('score_date, total_score')
+          .eq('user_id', targetId)
+          .eq('score_period', 'daily')
+          .gte('score_date', new Date(Date.now() - 30 * 86400000).toISOString().split('T')[0])
+          .order('score_date', { ascending: true })
+        return scores || []
+      }
+      return data
+    },
+    enabled: !!targetId,
+    staleTime: 300000,
+  })
+}
+
+/** Tendances de toute l'équipe (pour la heatmap) */
+export function useTeamPulseTrends() {
+  const { profile } = useAuth()
+
+  return useQuery({
+    queryKey: ['pulse', 's76', 'team-trends', profile?.organization_id],
+    queryFn: async () => {
+      if (!profile?.organization_id) return []
+      // On charge les scores des 30 derniers jours pour toute l'org
+      const since = new Date(Date.now() - 30 * 86400000).toISOString().split('T')[0]
+      const { data, error } = await supabase
+        .from('performance_scores')
+        .select(`
+          user_id, score_date, total_score,
+          user:users!inner(id, full_name, organization_id, manager_id)
+        `)
+        .eq('user.organization_id', profile.organization_id)
+        .eq('score_period', 'daily')
+        .gte('score_date', since)
+        .order('score_date', { ascending: true })
+      if (error) throw error
+      return data || []
+    },
+    enabled: !!profile?.organization_id,
+    staleTime: 300000,
+  })
+}
+
+/** Rafraîchir les MVs PULSE S76 */
+export function useRefreshPulseTrendsMV() {
+  return useMutation({
+    mutationFn: async () => {
+      const { error } = await supabase.rpc('refresh_pulse_trends_mv')
+      if (error) throw error
+    },
+  })
+}
