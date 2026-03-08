@@ -36,7 +36,6 @@ import MorningPlanForm                from '../../components/pulse/MorningPlanFo
 import ScoreCard                      from '../../components/pulse/ScoreCard'
 
 // ── Calibration composants ────────────────────────────────────
-import CalibrationMatrix              from '../../components/calibration/CalibrationMatrix'
 import CalibrationHistory             from '../../components/calibration/CalibrationHistory'
 import PulseCalibration               from '../../components/pulse/PulseCalibration'
 
@@ -497,16 +496,15 @@ function OngletDashboardEquipe({ pulseEnabled }) {
 
 // ── Onglet Calibration ────────────────────────────────────────
 function OngletCalibration() {
-  const [activeTab, setActiveTab] = useState('matrice')
+  const [activeTab, setActiveTab] = useState('pulse')
 
   return (
     <motion.div variants={fadeIn} initial="hidden" animate="visible" className="space-y-6">
       {/* Sous-navigation */}
       <div className="flex gap-2">
         {[
-          { id: 'matrice',   label: 'Matrice',       icon: SlidersHorizontal },
-          { id: 'pulse',     label: 'Pulse',          icon: Activity },
-          { id: 'historique', label: 'Historique',    icon: Clock },
+          { id: 'pulse',      label: 'Pulse',      icon: Activity },
+          { id: 'historique', label: 'Historique', icon: Clock },
         ].map(({ id, label, icon: Icon }) => (
           <button
             key={id}
@@ -527,13 +525,6 @@ function OngletCalibration() {
       </div>
 
       <AnimatePresence mode="wait">
-        {activeTab === 'matrice' && (
-          <motion.div key="matrice" variants={fadeIn} initial="hidden" animate="visible" exit="exit">
-            <SectionCard title="Matrice de calibration">
-              <CalibrationMatrix />
-            </SectionCard>
-          </motion.div>
-        )}
         {activeTab === 'pulse' && (
           <motion.div key="pulse" variants={fadeIn} initial="hidden" animate="visible" exit="exit">
             <SectionCard title="Calibration Pulse — Pondération dimensions">
