@@ -46,12 +46,12 @@ export function useTeamAlerts(settings) {
 
       const alerts = []
 
-      // 1. Alertes en base (performance_alerts)
+      // 1. Alertes en base — FIX S88 : table renommée pulse_alerts (S76)
       const { data: dbAlerts } = await supabase
-        .from('performance_alerts')
+        .from('pulse_alerts')
         .select(`
           *,
-          user:users!performance_alerts_user_id_fkey(id, first_name, last_name)
+          user:users!pulse_alerts_user_id_fkey(id, first_name, last_name)
         `)
         .eq('alert_date', today)
         .eq('is_resolved', false)
@@ -188,7 +188,7 @@ export function useMyAlerts() {
       if (!profile?.id) return []
 
       const { data, error } = await supabase
-        .from('performance_alerts')
+        .from('pulse_alerts') // FIX S88
         .select('*')
         .eq('user_id', profile.id)
         .eq('is_resolved', false)
@@ -211,7 +211,7 @@ export function useResolveAlert() {
   return useMutation({
     mutationFn: async (alertId) => {
       const { error } = await supabase
-        .from('performance_alerts')
+        .from('pulse_alerts') // FIX S88
         .update({ is_resolved: true, resolved_at: new Date().toISOString() })
         .eq('id', alertId)
       if (error) throw error

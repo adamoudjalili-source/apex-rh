@@ -28,7 +28,7 @@ import {
   Activity, BookOpen, Trophy, Users, BarChart3,
   ChevronLeft, ChevronRight, ChevronDown,
   LogOut, Settings, Building2, UserCog, GraduationCap, DollarSign, BriefcaseIcon, ClipboardList, MessageCircle,
-  MapPin,
+  MapPin, CalendarDays, Clock, UserMinus, // FIX S88 : icônes Congés, Temps, Offboarding
 } from 'lucide-react'
 import { useAuth }        from '../../contexts/AuthContext'
 import { useAppSettings } from '../../hooks/useSettings'
@@ -154,6 +154,9 @@ export default function Sidebar() {
             <NavItem icon={Trophy}   label="Engagement & Rapports" path="/engagement" color="#C9A227" collapsed={collapsed}/>
             <NavItem icon={GraduationCap} label="Formation & Certifications" path="/formation" color="#10B981" collapsed={collapsed}/> {/* S57 */}
             <NavItem icon={MapPin}        label="Onboarding"                 path="/onboarding" color="#6366F1" collapsed={collapsed}/> {/* S75 */}
+            <NavItem icon={UserMinus}     label="Offboarding"                path="/offboarding" color="#F87171" collapsed={collapsed}/> {/* S68+S85 — FIX S88 */}
+            <NavItem icon={CalendarDays}  label="Congés & Absences"          path="/conges"      color="#34D399" collapsed={collapsed}/> {/* S67+S70 — FIX S88 */}
+            <NavItem icon={Clock}         label="Gestion des Temps"          path="/temps"       color="#FBBF24" collapsed={collapsed}/> {/* S66+S71 — FIX S88 */}
             <NavItem icon={DollarSign}    label="Compensation & Benchmark"   path="/compensation" color="#34D399" collapsed={collapsed}/> {/* S58 */}
             <NavItem icon={BriefcaseIcon} label="Recrutement"                 path="/recrutement"  color="#818CF8" collapsed={collapsed}/> {/* S59 */}
             <NavItem icon={ClipboardList} label="Entretiens Annuels"          path="/entretiens"   color="#A78BFA" collapsed={collapsed}/> {/* S60 */}
@@ -214,6 +217,9 @@ export default function Sidebar() {
             <NavItem icon={Trophy}   label="Engagement équipe"  path="/engagement"    color="#C9A227" collapsed={collapsed}/>
             <NavItem icon={GraduationCap} label="Formation"     path="/formation"     color="#10B981" collapsed={collapsed}/> {/* S57 */}
             <NavItem icon={MapPin}        label="Onboarding"    path="/onboarding"    color="#6366F1" collapsed={collapsed}/> {/* S75 */}
+            <NavItem icon={UserMinus}     label="Offboarding"   path="/offboarding"   color="#F87171" collapsed={collapsed}/> {/* S85 — FIX S88 */}
+            <NavItem icon={CalendarDays}  label="Congés"        path="/conges"        color="#34D399" collapsed={collapsed}/> {/* S70 — FIX S88 */}
+            <NavItem icon={Clock}         label="Temps"         path="/temps"         color="#FBBF24" collapsed={collapsed}/> {/* S71 — FIX S88 */}
             <NavItem icon={DollarSign}    label="Compensation"   path="/compensation"  color="#34D399" collapsed={collapsed}/> {/* S58 */}
             <NavItem icon={BriefcaseIcon} label="Recrutement"    path="/recrutement"   color="#818CF8" collapsed={collapsed}/> {/* S59 */}
             <NavItem icon={ClipboardList} label="Entretiens"      path="/entretiens"    color="#A78BFA" collapsed={collapsed}/> {/* S60 */}

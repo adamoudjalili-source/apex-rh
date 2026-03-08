@@ -35,6 +35,7 @@ import {
   useUpdateNotificationPreferences,
 } from '../../hooks/useNotifications'
 import IntegrationsPage from './Integrations'
+import NotificationRulesAdmin from '../../components/NotificationRulesAdmin' // FIX S88 — S86
 
 // ─── CONSTANTES ──────────────────────────────────────────────
 const ROLE_LABELS = {
@@ -1858,6 +1859,7 @@ const TABS_ADMIN = [
   { id: 'company', label: 'Entreprise', icon: Building2 },
   { id: 'modules', label: 'Modules & Cycles', icon: Blocks },
   { id: 'pulse', label: 'PULSE', icon: Activity },
+  { id: 'notification-rules', label: 'Règles Notifications', icon: Bell }, // FIX S88 — S86 NotificationRulesAdmin
   { id: 'feedback360-settings', label: 'Feedback 360°', icon: MessageSquare },
   { id: 'surveys-settings', label: 'Surveys Engagement', icon: BarChart2 },
   { id: 'ia-coach-settings', label: 'IA Coach', icon: BrainCircuit },
@@ -2001,6 +2003,7 @@ export default function SettingsPage() {
       case 'company': return <CompanySection />
       case 'modules': return <ModulesSection />
       case 'pulse': return <PulseSettingsSection />
+      case 'notification-rules': return <NotificationRulesAdmin /> {/* FIX S88 — S86 */}
       case 'feedback360-settings': return <Feedback360SettingsSection />
       case 'surveys-settings': return <SurveysEngagementSettingsSection />
       case 'ia-coach-settings': return <IACoachSettingsSection />

@@ -633,17 +633,21 @@ export function getComplianceInfo(status) {
 // ─── BUDGET FORMATION ─────────────────────────────────────────
 
 export function useTrainingBudgets(year = new Date().getFullYear()) {
+  const { profile } = useAuth() // FIX S88
+  const orgId = profile?.organization_id // FIX S88
   return useQuery({
-    queryKey: ['training-budget', year],
+    queryKey: ['training-budget', orgId, year], // FIX S88 : orgId dans queryKey
     queryFn: async () => {
       const { data, error } = await supabase
         .from('training_budget')
         .select('*')
+        .eq('organization_id', orgId) // FIX S88 : filtre org manquant
         .eq('year', year)
         .order('division_id', { ascending: true, nullsFirst: true })
       if (error) throw error
       return data || []
     },
+    enabled: !!orgId, // FIX S88 : guard manquant
     staleTime: 2 * 60 * 1000,
   })
 }
@@ -670,7 +674,7 @@ export function useCreateOrUpdateBudget() {
         return data
       }
     },
-    onSuccess: (_, vars) => qc.invalidateQueries({ queryKey: ['training-budget', vars.year] }),
+    onSuccess: (_, vars) => qc.invalidateQueries({ queryKey: ['training-budget'] }), // FIX S88
   })
 }
 
@@ -682,20 +686,22 @@ export function useDeleteBudget() {
       if (error) throw error
       return year
     },
-    onSuccess: (year) => qc.invalidateQueries({ queryKey: ['training-budget', year] }),
+    onSuccess: (year) => qc.invalidateQueries({ queryKey: ['training-budget'] }), // FIX S88 : préfixe large
   })
 }
 
 // Budget consommé depuis inscriptions (en temps réel)
 export function useBudgetConsumed(year = new Date().getFullYear()) {
+  const { profile } = useAuth() // FIX S88
+  const orgId = profile?.organization_id // FIX S88
   return useQuery({
-    queryKey: ['training-budget-consumed', year],
+    queryKey: ['training-budget-consumed', orgId, year], // FIX S88
     queryFn: async () => {
       const { data, error } = await supabase
         .from('training_enrollments')
         .select(`
           status, enrolled_at,
-          training_catalog!training_id(budget_cost)
+          training_catalog!training_id(budget_cost, organization_id)
         `)
         .in('status', ['inscrit', 'en_cours', 'termine'])
       if (error) throw error
@@ -705,6 +711,7 @@ export function useBudgetConsumed(year = new Date().getFullYear()) {
       })
       return rows.reduce((sum, e) => sum + (e.training_catalog?.budget_cost || 0), 0)
     },
+    enabled: !!orgId, // FIX S88
     staleTime: 60 * 1000,
   })
 }
