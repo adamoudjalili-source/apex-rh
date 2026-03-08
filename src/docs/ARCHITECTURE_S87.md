@@ -1,7 +1,7 @@
 # ARCHITECTURE.md — APEX RH
 
 > Décisions techniques, patterns et règles à ne jamais violer.
-> Mis à jour : Session 81 — Mars 2026
+> Mis à jour : Session 86 — Mars 2026
 
 ---
 
@@ -269,6 +269,8 @@ get_succession_coverage(p_org_id uuid)
 | Intelligence RH — Bilan social + turnover | S82 | `employee_departures`, `mv_headcount_stats`, `mv_turnover_stats`, `mv_absenteeism_stats` |
 | Succession & Talents — Vivier + gap analysis | S83 | `talent_pool_entries`, `succession_gaps`, `mv_succession_coverage` |
 | Référentiel Compétences — Cartographie + gaps | S84 | `competency_categories`, `competencies`, `role_competency_requirements`, `user_competency_assessments`, `mv_competency_coverage` |
+| Offboarding — Automatisation + solde auto | S85 | ALTER `offboarding_processes` (+departure_id, +auto_triggered), `v_offboarding_dashboard` |
+| Notifications — Moteur de règles + escalade | S86 | `notification_rules`, `notification_inbox` |
 
 ---
 
@@ -338,6 +340,12 @@ supabase/functions/
 ✅ mv_competency_coverage — REVOKE ALL appliqué, jamais exposée directement (S84)
 ✅ get_competency_gaps + refresh_competency_coverage_mv — SECURITY DEFINER avec vérif org (S84)
 ✅ source enum assessments : 'manager' | 'self' | '360' | 'import' (S84)
+✅ useNotifications.js (S12) + NotificationCenter.jsx (S56) — NE PAS ÉCRASER — hooks S86 dans useNotificationsS86.js (S86)
+✅ notification_inbox (S86) ≠ notifications (S12) — deux systèmes coexistants, ne pas confondre
+✅ dispatch_notification — SECURITY DEFINER, silencieux sur erreur (RAISE WARNING), ne bloque jamais la mutation appelante (S86)
+✅ process_notification_escalations — à appeler via cron ou Edge Function, jamais inline dans une mutation (S86)
+✅ notification_rules.target_roles[] — tableau de rôles, pas un enum, peut être vide (S86)
+✅ notification_inbox.escalated_from — uuid auto-référence pour tracer la chaîne d'escalade (S86)
 ```
 
 ---
@@ -372,3 +380,143 @@ supabase/functions/
 - `auto_create_offboarding` idempotent — ne double pas si processus in_progress existant
 - Trigger silencieux : RAISE WARNING mais ne bloque pas l'INSERT
 - `calculate_final_settlement` taux journalier = salaire mensuel / 21.67
+
+---
+
+## S86 — Notifications — Moteur de règles + escalade (08/03/2026)
+
+### Nouveaux fichiers
+- `src/sql/s86_notification_engine.sql`
+- `src/hooks/useNotificationsS86.js`
+- `src/components/NotificationBell.jsx`
+- `src/components/NotificationInbox.jsx`
+- `src/components/NotificationRulesAdmin.jsx`
+
+### Fichiers modifiés
+- `src/Sidebar.jsx` — import NotificationBell, cloche ajoutée au-dessus de la zone profil
+
+### Nouvelles tables
+
+#### `notification_rules`
+```sql
+notification_rules (
+  id                  uuid PK,
+  organization_id     uuid NOT NULL REFERENCES organizations(id),
+  name                text NOT NULL,
+  trigger_event       text NOT NULL,
+  -- 'leave_refused' | 'leave_approved' | 'departure_registered'
+  -- 'onboarding_overdue' | 'offboarding_alert' | 'review_due'
+  -- 'feedback360_due' | 'settlement_applied'
+  conditions          jsonb NOT NULL DEFAULT '{}',
+  target_roles        text[] NOT NULL DEFAULT '{}',
+  message_template    text NOT NULL,
+  -- variables : {{employee_name}}, {{event_date}}, {{details}}
+  is_active           boolean NOT NULL DEFAULT true,
+  escalate_after_days integer,   -- NULL = pas d'escalade
+  escalate_to_role    text,      -- NULL = pas d'escalade
+  created_by          uuid REFERENCES users(id)
+)
+-- RLS : SELECT pour tous les membres de l'org, ALL pour administrateur/directeur
+```
+
+#### `notification_inbox`
+```sql
+notification_inbox (
+  id               uuid PK,
+  organization_id  uuid NOT NULL,
+  user_id          uuid NOT NULL REFERENCES users(id),
+  rule_id          uuid REFERENCES notification_rules(id),
+  title            text NOT NULL,
+  body             text NOT NULL,
+  event_type       text NOT NULL,
+  reference_id     uuid,         -- ID de l'entité concernée
+  reference_type   text,         -- 'leave_request' | 'departure' | ...
+  priority         text DEFAULT 'normal',  -- 'low'|'normal'|'high'|'urgent'
+  read_at          timestamptz,   -- NULL = non lu
+  archived_at      timestamptz,   -- NULL = non archivé
+  escalated_at     timestamptz,   -- NULL = pas encore escaladé
+  escalated_from   uuid REFERENCES notification_inbox(id)  -- auto-ref escalade
+)
+-- RLS : SELECT/UPDATE pour owner (user_id = auth.uid()),
+--        SELECT pour admin de l'org
+```
+
+### Nouvelles fonctions
+
+- `dispatch_notification(p_org_id, p_event_type, p_reference_id, p_data jsonb) → integer`
+  — SECURITY DEFINER, évalue les règles actives, insère dans notification_inbox, silencieux (RAISE WARNING)
+  — `p_data` : `{title, employee_name, event_date, details, priority, reference_type, target_user_id, exclude_user_id}`
+
+- `process_notification_escalations() → integer`
+  — SECURITY DEFINER, à appeler en cron quotidien
+  — escalade les notifs non lues après escalate_after_days jours
+
+- `mark_notification_read(p_notification_id uuid) → void`
+  — SECURITY DEFINER, owner uniquement
+
+- `mark_all_notifications_read(p_org_id uuid) → integer`
+  — SECURITY DEFINER, owner uniquement
+
+### Hooks S86 — référence rapide
+```
+useNotificationInbox({ limit, onlyUnread })    — notification_inbox non archivées
+useUnreadCountS86()                             — count + realtime Supabase subscribe
+useMarkRead()                                   — RPC mark_notification_read
+useMarkAllRead()                                — RPC mark_all_notifications_read
+useArchiveNotification()                        — update archived_at = now()
+useNotificationRules()                          — notification_rules de l'org
+useUpsertRule()                                 — upsert notification_rules
+useDeleteRule()                                 — delete notification_rules
+useDispatchNotification()                       — RPC dispatch_notification
+```
+
+### Règles d'or S86
+- `useNotifications.js` (S12) + `NotificationCenter.jsx` (S56) — NE PAS ÉCRASER
+- `notification_inbox` (S86) ≠ `notifications` (S12) — coexistent, ne pas confondre
+- `dispatch_notification` — silencieux sur erreur, ne jamais await en bloquant une mutation critique
+- `process_notification_escalations` — uniquement via cron, jamais inline
+- `target_roles[]` — tableau text, pas d'enum, peut être vide (ne cible alors personne par rôle)
+- `escalated_from` — null pour les notifications originales, uuid pour les escalades
+
+---
+
+## S87 — Communication : Ciblage avancé + accusés lecture
+
+### Nouveaux objets SQL
+- `communication_announcements` : +`targeting_rules jsonb`, +`important boolean`
+- `announcement_read_receipts` : table (organization_id, announcement_id, user_id, read_at), UNIQUE(announcement_id, user_id)
+- `v_announcement_stats` : vue (read_count, read_pct, total_recipients, last_read_at)
+- `mark_announcement_read(p_announcement_id)` : RPC SECURITY DEFINER, upsert silencieux
+- `get_announcement_recipients(p_announcement_id)` : RPC SECURITY DEFINER → liste destinataires + statut lecture
+
+### Pattern targeting_rules
+```json
+{ "type": "all" }
+{ "type": "roles", "roles": ["collaborateur", "chef_service"] }
+{ "type": "manual", "user_ids": ["uuid1", "uuid2"] }
+```
+Backward compat : `target_roles[]` maintenu pour RLS S65.
+
+### Hooks S87 — `useCommunicationS87.js`
+```
+useAnnouncementStats(announcementId)     — vue v_announcement_stats
+useMarkAnnouncementRead()                — RPC mark_announcement_read
+useReadReceipts(announcementId)          — RPC get_announcement_recipients (adminOnly)
+useCreateTargetedAnnouncement()          — create + dispatch_notification si important
+useUpdateTargetedAnnouncement()          — update
+useUnreadImportantCount()                — badge annonces importantes non lues
+```
+
+### Composants S87
+- `MessageReadReceipts.jsx` — panel accusés de lecture, filtre lu/non-lu, export CSV
+- `MessageStats.jsx` — barre de progression + métriques (compact ou full)
+- `AnnouncementCard.jsx` — modifié : badge important, auto-mark read (2s), bouton stats admin
+- `AnnouncementForm.jsx` — modifié : ciblage avancé (all/roles/manual), toggle important
+
+### Règles d'or S87
+- ✅ `useCommunication.js` (S65) NON écrasé — nouveau fichier `useCommunicationS87.js`
+- ✅ `announcement_read_receipts` uses `users` table + `organization_id`
+- ✅ Auto-mark read : setTimeout 2s dans useEffect, silencieux (ON CONFLICT DO NOTHING)
+- ✅ `dispatch_notification` S86 appelé si `important = true` à la création
+- ✅ `targeting_rules.type = "manual"` → `user_ids` array of UUIDs
+- ✅ `targeting_rules.type = "roles"` → `roles` array, aussi dupliqué dans `target_roles[]` pour compat RLS S65
