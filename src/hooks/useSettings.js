@@ -162,3 +162,26 @@ export function useUsersList() {
     staleTime: 300000,
   })
 }
+
+// --- MODULES PAR ORGANISATION (org_module_settings) V2 ---
+// Remplace app_settings.modules — S90 V2
+
+export function useOrgModuleSettings() {
+  const { organization_id: orgId } = useAuth()
+  return useQuery({
+    queryKey: ['org-module-settings', orgId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('org_module_settings')
+        .select('module_key, is_enabled, permissions_version')
+        .eq('organization_id', orgId)
+      if (error) throw error
+      // Retourne un Map { module_key → is_enabled }
+      const map = {}
+      data?.forEach(r => { map[r.module_key] = r.is_enabled })
+      return map
+    },
+    enabled: !!orgId,
+    staleTime: 60000,
+  })
+}
