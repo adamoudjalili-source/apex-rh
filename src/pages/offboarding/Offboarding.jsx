@@ -1,13 +1,14 @@
 // ============================================================
 // APEX RH — src/pages/offboarding/Offboarding.jsx
-// Session 68 — Hub Offboarding : En cours · Historique · Administration
+// Session 68 — Hub Offboarding : Dashboard · En cours · Historique · Administration
+// Session 85 — +Dashboard auto · +FinalSettlementCard auto
 // ============================================================
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   DoorOpen, Plus, X, User, Calendar, ChevronLeft,
   ClipboardList, MessageSquare, BookOpen, DollarSign,
-  CheckCircle2, XCircle, AlertCircle,
+  CheckCircle2, XCircle, AlertCircle, LayoutDashboard,
 } from 'lucide-react'
 import { useAuth }                 from '../../contexts/AuthContext'
 import {
@@ -22,20 +23,24 @@ import {
   OFFBOARDING_STATUS_COLORS,
   EXIT_REASON_LABELS,
 } from '../../hooks/useOffboarding'
-import OffboardingProcessCard   from '../../components/offboarding/OffboardingProcessCard'
-import OffboardingChecklist     from '../../components/offboarding/OffboardingChecklist'
-import ExitInterviewForm        from '../../components/offboarding/ExitInterviewForm'
-import KnowledgeTransferPanel   from '../../components/offboarding/KnowledgeTransferPanel'
-import FinalSettlementPanel     from '../../components/offboarding/FinalSettlementPanel'
-import OffboardingTemplateAdmin from '../../components/offboarding/OffboardingTemplateAdmin'
-import OffboardingStats         from '../../components/offboarding/OffboardingStats'
+import { useOffboardingAlerts }    from '../../hooks/useOffboardingS85'
+import OffboardingProcessCard      from '../../components/offboarding/OffboardingProcessCard'
+import OffboardingChecklist        from '../../components/offboarding/OffboardingChecklist'
+import ExitInterviewForm           from '../../components/offboarding/ExitInterviewForm'
+import KnowledgeTransferPanel      from '../../components/offboarding/KnowledgeTransferPanel'
+import FinalSettlementPanel        from '../../components/offboarding/FinalSettlementPanel'
+import FinalSettlementCard         from '../../components/offboarding/FinalSettlementCard'
+import OffboardingTemplateAdmin    from '../../components/offboarding/OffboardingTemplateAdmin'
+import OffboardingStats            from '../../components/offboarding/OffboardingStats'
+import OffboardingDashboard        from '../../components/offboarding/OffboardingDashboard'
 
 // ─── Tabs ─────────────────────────────────────────────────────
 
 const TABS = [
-  { id: 'active',  label: 'En cours' },
-  { id: 'history', label: 'Historique' },
-  { id: 'admin',   label: 'Administration' },
+  { id: 'dashboard', label: 'Dashboard', adminOnly: true },
+  { id: 'active',    label: 'En cours' },
+  { id: 'history',   label: 'Historique' },
+  { id: 'admin',     label: 'Administration', adminOnly: true },
 ]
 
 // ─── Create Process Modal ─────────────────────────────────────
@@ -305,7 +310,12 @@ function ProcessDetail({ processId, onBack }) {
             </motion.div>
           )}
           {detailTab === 'settlement' && (
-            <motion.div key="settlement" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+            <motion.div key="settlement" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-4">
+              <FinalSettlementCard
+                userId={process.user_id}
+                processId={process.id}
+                currentAmount={process.final_amount}
+              />
               <FinalSettlementPanel process={process}
                 readOnly={process.status !== 'in_progress'}/>
             </motion.div>
@@ -321,8 +331,9 @@ function ProcessDetail({ processId, onBack }) {
 export default function Offboarding() {
   const { canAdmin } = useAuth()
   const { data: processes = [], isLoading } = useOffboardingProcesses()
+  const { data: alerts = [] } = useOffboardingAlerts()
 
-  const [tab, setTab]               = useState('active')
+  const [tab, setTab]               = useState(canAdmin ? 'dashboard' : 'active')
   const [showCreate, setShowCreate] = useState(false)
   const [selectedId, setSelectedId] = useState(null)
 
@@ -368,8 +379,8 @@ export default function Offboarding() {
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-1">
-        {TABS.filter(t => canAdmin || t.id !== 'admin').map(t => (
+      <div className="flex gap-1 flex-wrap">
+        {TABS.filter(t => !t.adminOnly || canAdmin).map(t => (
           <button key={t.id}
             onClick={() => setTab(t.id)}
             className="px-4 py-2 rounded-xl text-sm font-medium transition-all"
@@ -385,12 +396,24 @@ export default function Offboarding() {
                 {active.length}
               </span>
             )}
+            {t.id === 'dashboard' && alerts.length > 0 && (
+              <span className="ml-1.5 text-[10px] px-1.5 py-0.5 rounded-full font-bold"
+                style={{ background: 'rgba(239,68,68,0.2)', color: '#F87171' }}>
+                {alerts.length}
+              </span>
+            )}
           </button>
         ))}
       </div>
 
       {/* Content */}
       <AnimatePresence mode="wait">
+        {tab === 'dashboard' && canAdmin && (
+          <motion.div key="dashboard" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}>
+            <OffboardingDashboard onSelectProcess={p => setSelectedId(p.id)}/>
+          </motion.div>
+        )}
+
         {tab === 'active' && (
           <motion.div key="active" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}>
             {isLoading ? (
