@@ -1,5 +1,5 @@
 # MEMOIRE_PROJET.md — APEX RH
-> Mis à jour : Session 70 — Congés & Absences — Moteur de règles complet ✅ DÉPLOYÉ EN PRODUCTION (08/03/2026)
+> Mis à jour : Session 73 — Formation — Budget + Obligatoire + Évaluation ✅ (08/03/2026)
 
 ## 🔴 RÈGLE D'OR — LIVRAISON OBLIGATOIRE (chaque session)
 
@@ -8,9 +8,16 @@
 2. `ROADMAP_SXX.md` mis à jour  
 3. `SESSION_START_SXX+1.md` créé et pré-rempli pour la session suivante
 4. **ZIP `src_SXX.zip` du dossier `src/` COMPLET** (l'utilisateur remplace son dossier src/ local)
+5. **Commande Git prête à copier-coller** pour déployer sur Vercel
 
+**Commande ZIP (toujours la même) :**
 ```bash
 cd /home/claude && zip -r /mnt/user-data/outputs/src_SXX.zip src/
+```
+
+**Commande Git déploiement (toujours la même) :**
+```bash
+cd C:\Users\DELL\APEX_RH\apex-rh && git add -A && git commit -m "feat(SXX): [description session]" && git push
 ```
 
 ---
@@ -19,7 +26,7 @@ cd /home/claude && zip -r /mnt/user-data/outputs/src_SXX.zip src/
 - **URL production** : https://apex-rh-h372.vercel.app
 - **Supabase** : ptpxoczdycajphrshdnk
 - **Stack** : React 18 + Vite + TailwindCSS + Supabase + Vercel
-- **Sessions déployées** : 1 → 70
+- **Sessions déployées** : 1 → 73
 - **Nature** : Outil interne NITA (pas un SaaS commercialisé)
 
 ---
@@ -57,16 +64,34 @@ cd /home/claude && zip -r /mnt/user-data/outputs/src_SXX.zip src/
 29. **Congés & Absences DÉPLOYÉ (S67)**.
 30. **Offboarding DÉPLOYÉ (S68)**.
 31. **Restructuration UX Navigation 6 rôles DÉPLOYÉ (S69)**.
-32. **Congés — Moteur de règles DÉPLOYÉ (S70)** :
-    - `useConges.js` — 5 nouveaux hooks : `useRecalculateBalances`, `useApplyCarryOver`, `useLeaveAlerts`, `useExportPayroll`, `SENEGAL_PUBLIC_HOLIDAYS_DEFAULT`
-    - `countWorkDays()` mis à jour avec exclusion jours fériés
-    - `calculateAccruedDays()` — calcul pro-rata par date d'entrée et type de contrat
-    - `LeaveRulesEngine.jsx` — config acquisition/report par type de congé
-    - `PublicHolidaysManager.jsx` — 15 jours fériés sénégalais + gestion admin
-    - `LeaveAlerts.jsx` — alertes proactives (attente >48h, solde faible, expiration)
-    - `LeavePayrollExport.jsx` — export CSV/XLSX mensuel pour la paie
-    - `GestionConges.jsx` — 4 onglets : Mes Congés / Mon Équipe / Alertes / Administration
-    - `s70_conges_moteur_regles.sql` — migrations : 3 colonnes leave_types + 3 colonnes leave_balances + 5 colonnes leave_settings
+32. **Congés — Moteur de règles DÉPLOYÉ (S70)**.
+33. **Sécurité Supabase — Hotfix post-S70** : 0 erreurs / 1 warning résiduel pg_trgm.
+34. **Gestion des Temps — Règles HS + Export paie DÉPLOYÉ (S71)**.
+35. **Recrutement — Pipeline structuré + scoring DÉPLOYÉ (S72)**.
+36. **Formation — Budget + Obligatoire + Évaluation DÉPLOYÉ (S73)** :
+    - `s73_formation_budget_obligatoire.sql` — colonnes training_catalog (is_mandatory, mandatory_roles, renewal_months, budget_cost), colonnes training_enrollments (satisfaction_score/comment/at, effectiveness_score/comment/at), colonnes training_plans (budget_allocated, budget_consumed, approved_by/at), table training_budget, table training_mandatory_rules, MV mv_mandatory_compliance, MV mv_training_satisfaction, fonctions refresh_formation_mvs() + update_budget_consumed()
+    - `useFormations.js` — 14 nouveaux hooks S73 :
+      - Constantes : `MANDATORY_TARGET_LABELS`, `COMPLIANCE_STATUS_LABELS`, `COMPLIANCE_STATUS_COLORS`, `getComplianceInfo()`
+      - `useTrainingBudgets()` — budgets par année
+      - `useCreateOrUpdateBudget()` — CRUD budget
+      - `useDeleteBudget()` — suppression budget
+      - `useBudgetConsumed()` — consommation temps réel depuis inscriptions
+      - `useMandatoryRules()` — règles formations obligatoires
+      - `useCreateMandatoryRule()` — créer règle (target_type: all/role/service/division)
+      - `useDeleteMandatoryRule()` — soft delete règle
+      - `useMandatoryCompliance()` — conformité depuis MV
+      - `useMyMandatoryStatus()` — statut conformité user courant (calcul client-side)
+      - `useSubmitSatisfaction()` — soumettre évaluation satisfaction
+      - `useSubmitEffectiveness()` — soumettre évaluation efficacité J+30
+      - `useMyPendingEvaluations()` — formations terminées sans évaluation
+      - `useFormationSatisfactionStats()` — stats satisfaction par formation
+      - `useGlobalEvaluationStats()` — stats globales évaluation (admin)
+      - `useRefreshFormationMVs()` — refresh MVs formation
+    - `FormationBudget.jsx` — Gestion budget formation : KPIs (alloué/consommé/solde), barre de progression SVG, CRUD budget par org/division/année, sélecteur année
+    - `FormationObligatoire.jsx` — Ma conformité (par user) + Configuration règles (admin) : badges conformité, règles par périmètre (all/role/service/division), renouvellement configurable, stats conformité depuis MV
+    - `FormationEvaluation.jsx` — Évaluations en attente + Stats admin : StarRating interactive, jauge SVG, modal satisfaction/efficacité J+30, taux de participation, notes moyennes
+    - `FormationDashboardEnrichi.jsx` — Dashboard enrichi : KPIs taux complétion, donut inscriptions SVG, budget progress bar, widget conformité obligatoires, stats évaluation agrégées
+    - `Formation.jsx` — 10 onglets : Dashboard(S73)/Catalogue/Mes formations/Évaluations(S73)/Obligatoires(S73)/Certifications/Mon plan/Équipe/Budget(S73)/Administration, badges S73, QuickStats avec alertes évaluations en attente + non-conformités
 
 ---
 
@@ -98,14 +123,6 @@ const canManageOrg   = canAdmin || isDirecteur
 const canManageTeam  = canManageOrg || isChefDivision || isChefService
 const canValidate    = canAdmin || isChefDivision || isChefService
 const hasStrategic   = canManageOrg || isChefDivision
-```
-
-### ❌ Code legacy — NE PLUS JAMAIS UTILISER
-
-```js
-// SUPPRIMÉ en S69 — ne pas réintroduire
-const ADMINS   = ['administrateur', 'directeur', 'direction']
-const MANAGERS = ['chef_division', 'chef_service']
 ```
 
 ---
@@ -148,14 +165,14 @@ const MANAGERS = ['chef_division', 'chef_service']
 
 ---
 
-## Diagnostic modules — état post S70
+## Diagnostic modules — état post S73
 
 | Module | Niveau actuel | Session enrichissement |
 |--------|--------------|----------------------|
-| **Congés & Absences** | **85% — moteur de règles complet** | **S70 ✅** |
-| Gestion des Temps | 45% — pas de règles heures sup | S71 |
-| Recrutement | 50% — pipeline sans scoring structuré | S72 |
-| Formation | 45% — pas de budget ni obligatoire | S73 |
+| **Formation** | **75% — budget + obligatoire + évaluation complets** | **S73 ✅** |
+| **Recrutement** | 85% — pipeline Kanban + scoring + dashboard complet | S72 ✅ |
+| **Gestion des Temps** | 80% — moteur HS + export paie complet | S71 ✅ |
+| **Congés & Absences** | 85% — moteur de règles complet | S70 ✅ |
 | Compensation | 50% — pas de workflow révision | S74 |
 | Onboarding | 45% — checklist statique | S75 |
 | Performance PULSE | 65% — bon core, alertes manquantes | S76 |
@@ -186,14 +203,26 @@ const MANAGERS = ['chef_division', 'chef_service']
 ### Développement & OKR
 `objectives` (parent_id, weight), `pdi_actions`, `feedback_requests`, `feedback_responses`, `review_cycles`, `review_evaluations`, `engagement_surveys`, `survey_responses`
 
-### Formation (S57)
-`training_catalog`, `training_enrollments`, `certifications`, `training_plans`, `training_plan_items`
+### Formation (S57 + S73)
+`training_catalog` — + is_mandatory BOOLEAN, mandatory_roles TEXT[], mandatory_services UUID[], renewal_months INT, budget_cost NUMERIC  
+`training_enrollments` — + satisfaction_score SMALLINT, satisfaction_comment TEXT, satisfaction_at TIMESTAMPTZ, effectiveness_score SMALLINT, effectiveness_comment TEXT, effectiveness_at TIMESTAMPTZ  
+`certifications`, `training_plans` (+ budget_allocated, budget_consumed, approved_by, approved_at), `training_plan_items`  
+`training_budget` (NEW S73) — budget par org/division/année  
+`training_mandatory_rules` (NEW S73) — règles formations obligatoires par périmètre  
+MV : `mv_mandatory_compliance` (conformité par formation + statut)  
+MV : `mv_training_satisfaction` (agrégats satisfaction/efficacité)  
+MV : `mv_training_popularity` (déjà S57)  
+MV : `mv_user_training_stats` (déjà S57)  
+Fonctions : `refresh_formation_mvs()`, `update_budget_consumed()`
 
 ### Compensation (S58)
 `salary_grades`, `compensation_records`, `salary_benchmarks`, `compensation_reviews`, `bonus_records`
 
-### Recrutement (S59–S63)
-`job_postings`, `job_applications`, `interview_schedules`, `interview_feedback`, `recruitment_stages`
+### Recrutement (S59–S63 + S72)
+`job_postings`, `job_applications`, `interview_schedules`, `interview_feedback`  
+`recruitment_stages`, `pipeline_actions` (S72), `recruitment_metrics` (S72)  
+MV : `mv_pipeline_by_job`, `mv_recruitment_dashboard`  
+Fonction : `compute_application_score()`
 
 ### Entretiens annuels (S60)
 `annual_review_campaigns`, `annual_reviews`, `annual_review_signatures`
@@ -201,14 +230,12 @@ const MANAGERS = ['chef_division', 'chef_service']
 ### Communication (S65)
 `communication_channels`, `communication_messages`, `communication_announcements`, `communication_announcement_comments`, `communication_threads`, `communication_thread_messages`, `communication_ai_summaries`, `communication_user_status`
 
-### Gestion des Temps (S66)
-`time_sheets`, `time_entries`, `time_clock_events`, `time_settings`
+### Gestion des Temps (S66 + S71)
+`time_sheets`, `time_entries`, `time_clock_events`, `time_settings`  
+MV : `mv_overtime_monthly_summary`
 
 ### Congés & Absences (S67 + S70)
-`leave_types` — + accrual_rate, accrual_enabled, contract_types[], carry_over_policy, carry_over_max_days  
-`leave_balances` — + accrued_days, carried_over, expiry_date  
-`leave_requests`, `leave_request_comments`  
-`leave_settings` — + public_holidays jsonb[], carry_over_deadline, low_balance_threshold, pending_alert_hours, accrual_day
+`leave_types`, `leave_balances`, `leave_requests`, `leave_request_comments`, `leave_settings`
 
 ### Offboarding (S68)
 `offboarding_processes`, `offboarding_templates`, `offboarding_checklists`, `offboarding_interviews`, `offboarding_knowledge`
@@ -218,7 +245,7 @@ const MANAGERS = ['chef_division', 'chef_service']
 
 ---
 
-## ⚠️ Pièges colonnes connus
+## ⚠️ Pièges colonnes connus (mis à jour S73)
 
 | Table | ❌ FAUX | ✅ RÉEL |
 |-------|--------|--------|
@@ -233,14 +260,18 @@ const MANAGERS = ['chef_division', 'chef_service']
 | `compensation_reviews` | `increase_amount` / `increase_pct` | GENERATED — ne pas insérer |
 | `compensation_records` | `current` | `is_current` BOOLEAN |
 | `job_applications` | `internal` | `is_internal` GENERATED |
+| `job_applications` | `score` | `match_score` NUMERIC(4,1) (S72) |
 | `interview_feedback` | `score` | `overall_score` SMALLINT |
 | `annual_review_campaigns` | `sections` | `template_sections` JSONB |
 | `annual_reviews` | `rating` | `overall_rating` TEXT |
 | `annual_review_signatures` | `type` | `signer_type` TEXT |
+| `time_settings` | `overtime_threshold` | `weekly_threshold_hours` (S71) |
+| `training_enrollments` | `feedback_rating` | `satisfaction_score` SMALLINT (S73) |
+| `training_enrollments` | `feedback_comment` | `satisfaction_comment` TEXT (S73) |
 
 ---
 
-## Edge Functions Supabase (17 total)
+## Edge Functions Supabase (17 total — inchangé S73)
 
 | Fonction | S | Usage |
 |----------|----|-------|

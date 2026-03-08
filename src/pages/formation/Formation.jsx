@@ -1,27 +1,30 @@
 // S69 — guards via AuthContext helpers
+// S73 — Ajout onglets : Budget / Obligatoires / Évaluation / Dashboard enrichi
 // ============================================================
 // APEX RH — pages/formation/Formation.jsx
-// Session 57 — Module Formation & Certifications
-// Onglets : Catalogue · Mes formations · Mes certifications
-//           · Mon plan / Plan équipe (manager) / Admin (admin)
+// Session 73 — Formation enrichie : Budget + Obligatoires + Évaluation
 // ============================================================
 import { useState, useMemo } from 'react'
 import { motion } from 'framer-motion'
 import {
   BookOpen, GraduationCap, Award, Target, Users, Settings,
-  TrendingUp, Clock, CheckCircle2,
+  TrendingUp, Clock, CheckCircle2, DollarSign, ShieldCheck,
+  Star, LayoutDashboard,
 } from 'lucide-react'
 import { useAuth }           from '../../contexts/AuthContext'
-import { useMyTrainingStats } from '../../hooks/useFormations'
+import { useMyTrainingStats, useMyPendingEvaluations, useMyMandatoryStatus } from '../../hooks/useFormations'
 
-import FormationCatalog         from '../../components/formation/FormationCatalog'
-import MyEnrollments            from '../../components/formation/MyEnrollments'
-import MyCertifications         from '../../components/formation/MyCertifications'
-import TrainingPlanPanel        from '../../components/formation/TrainingPlanPanel'
-import TeamFormationDashboard   from '../../components/formation/TeamFormationDashboard'
-import FormationAdminPanel      from '../../components/formation/FormationAdminPanel'
+import FormationCatalog            from '../../components/formation/FormationCatalog'
+import MyEnrollments               from '../../components/formation/MyEnrollments'
+import MyCertifications            from '../../components/formation/MyCertifications'
+import TrainingPlanPanel           from '../../components/formation/TrainingPlanPanel'
+import TeamFormationDashboard      from '../../components/formation/TeamFormationDashboard'
+import FormationAdminPanel         from '../../components/formation/FormationAdminPanel'
+import FormationBudget             from '../../components/formation/FormationBudget'
+import FormationObligatoire        from '../../components/formation/FormationObligatoire'
+import FormationEvaluation         from '../../components/formation/FormationEvaluation'
+import FormationDashboardEnrichi   from '../../components/formation/FormationDashboardEnrichi'
 
-// ─── Animations ───────────────────────────────────────────────
 const stagger = {
   hidden:  {},
   visible: { transition: { staggerChildren: 0.06, delayChildren: 0.02 } },
@@ -31,24 +34,33 @@ const fadeUp = {
   visible: { opacity: 1, y: 0, transition: { duration: 0.35, ease: [0.4, 0, 0.2, 1] } },
 }
 
-// ─── Statistiques rapides ─────────────────────────────────────
 function QuickStats() {
-  const { data: stats } = useMyTrainingStats()
+  const { data: stats }          = useMyTrainingStats()
+  const { data: pending = [] }   = useMyPendingEvaluations()
+  const { data: mandatory = [] } = useMyMandatoryStatus()
+
   if (!stats) return null
 
+  const nonConformes = mandatory.filter(m => m.compliance_status !== 'conforme').length
+
   const items = [
-    { label: 'En cours',   value: stats.enrollments_in_progress, color: '#3B82F6', icon: Clock },
-    { label: 'Terminées',  value: stats.enrollments_completed,   color: '#10B981', icon: CheckCircle2 },
-    { label: 'Heures',     value: `${stats.hours_completed || 0}h`, color: '#8B5CF6', icon: TrendingUp },
-    { label: 'Certifs',    value: stats.certifications_count,    color: '#F59E0B', icon: Award },
+    { label: 'En cours',  value: stats.enrollments_in_progress, color: '#3B82F6', icon: Clock },
+    { label: 'Terminées', value: stats.enrollments_completed,   color: '#10B981', icon: CheckCircle2 },
+    { label: 'Heures',    value: `${stats.hours_completed || 0}h`, color: '#8B5CF6', icon: TrendingUp },
+    { label: 'Certifs',   value: stats.certifications_count,    color: '#F59E0B', icon: Award },
+    ...(pending.length > 0 ? [{ label: 'À évaluer', value: pending.length, color: '#F97316', icon: Star, alert: true }] : []),
+    ...(nonConformes > 0 ? [{ label: 'Obligatoires', value: nonConformes, color: '#EF4444', icon: ShieldCheck, alert: true }] : []),
   ]
 
   return (
-    <div className="grid grid-cols-4 gap-2">
-      {items.map(({ label, value, color, icon: Icon }) => (
+    <div className="grid grid-cols-4 md:grid-cols-6 gap-2">
+      {items.map(({ label, value, color, icon: Icon, alert }) => (
         <div key={label}
           className="rounded-xl p-3 text-center"
-          style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
+          style={{
+            background: alert ? 'rgba(239,68,68,0.08)' : 'rgba(255,255,255,0.03)',
+            border: alert ? '1px solid rgba(239,68,68,0.2)' : '1px solid rgba(255,255,255,0.06)',
+          }}>
           <Icon size={14} className="mx-auto mb-1" style={{ color }}/>
           <p className="text-base font-bold text-white">{value}</p>
           <p className="text-[10px] text-white/30">{label}</p>
@@ -58,29 +70,32 @@ function QuickStats() {
   )
 }
 
-// ─── Page principale ─────────────────────────────────────────
 export default function Formation() {
   const { profile, canAdmin, canManageTeam } = useAuth()
   const role = profile?.role
 
   const TABS = useMemo(() => {
     const base = [
-      { id: 'catalog', label: 'Catalogue',        icon: BookOpen },
-      { id: 'my',      label: 'Mes formations',    icon: GraduationCap },
-      { id: 'certs',   label: 'Mes certifications', icon: Award },
-      { id: 'plan',    label: 'Mon plan',           icon: Target },
+      { id: 'dashboard', label: 'Dashboard',         icon: LayoutDashboard, s73: true },
+      { id: 'catalog',   label: 'Catalogue',          icon: BookOpen },
+      { id: 'my',        label: 'Mes formations',     icon: GraduationCap },
+      { id: 'eval',      label: 'Évaluations',        icon: Star,           s73: true },
+      { id: 'mandatory', label: 'Obligatoires',       icon: ShieldCheck,    s73: true },
+      { id: 'certs',     label: 'Certifications',     icon: Award },
+      { id: 'plan',      label: 'Mon plan',           icon: Target },
     ]
     if (canManageTeam && !canAdmin) {
       base.push({ id: 'team', label: 'Mon équipe', icon: Users })
     }
     if (canAdmin) {
-      base.push({ id: 'team',  label: 'Équipe',      icon: Users })
-      base.push({ id: 'admin', label: 'Administration', icon: Settings })
+      base.push({ id: 'team',   label: 'Équipe',       icon: Users })
+      base.push({ id: 'budget', label: 'Budget',        icon: DollarSign, s73: true })
+      base.push({ id: 'admin',  label: 'Administration', icon: Settings })
     }
     return base
   }, [role, canManageTeam, canAdmin])
 
-  const [activeTab, setActiveTab] = useState('catalog')
+  const [activeTab, setActiveTab] = useState('dashboard')
 
   return (
     <motion.div
@@ -89,7 +104,6 @@ export default function Formation() {
       initial="hidden"
       animate="visible">
 
-      {/* ════ HERO ══════════════════════════════════════════ */}
       <motion.div variants={fadeUp} className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
         <div>
           <div className="flex items-center gap-2 mb-1">
@@ -105,12 +119,10 @@ export default function Formation() {
         </div>
       </motion.div>
 
-      {/* ════ STATS RAPIDES ══════════════════════════════════ */}
       <motion.div variants={fadeUp}>
         <QuickStats/>
       </motion.div>
 
-      {/* ════ ONGLETS ════════════════════════════════════════ */}
       <motion.div variants={fadeUp}>
         <div className="flex gap-1 flex-wrap border-b border-white/[0.06] pb-0">
           {TABS.map(tab => {
@@ -120,12 +132,16 @@ export default function Formation() {
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
                 className={`flex items-center gap-1.5 px-3 py-2.5 text-sm font-medium relative transition-colors ${
-                  activeTab === tab.id
-                    ? 'text-indigo-300'
-                    : 'text-white/35 hover:text-white/60'
+                  activeTab === tab.id ? 'text-indigo-300' : 'text-white/35 hover:text-white/60'
                 }`}>
                 <Icon size={14}/>
                 <span>{tab.label}</span>
+                {tab.s73 && (
+                  <span className="text-[9px] font-bold px-1 rounded"
+                    style={{ background: 'rgba(99,102,241,0.3)', color: '#A5B4FC' }}>
+                    S73
+                  </span>
+                )}
                 {activeTab === tab.id && (
                   <motion.div
                     layoutId="formation-tab-indicator"
@@ -138,14 +154,17 @@ export default function Formation() {
         </div>
       </motion.div>
 
-      {/* ════ CONTENU ONGLET ═════════════════════════════════ */}
       <motion.div variants={fadeUp} key={activeTab}>
-        {activeTab === 'catalog' && <FormationCatalog/>}
-        {activeTab === 'my'      && <MyEnrollments/>}
-        {activeTab === 'certs'   && <MyCertifications/>}
-        {activeTab === 'plan'    && <TrainingPlanPanel/>}
-        {activeTab === 'team'    && <TeamFormationDashboard/>}
-        {activeTab === 'admin'   && <FormationAdminPanel/>}
+        {activeTab === 'dashboard' && <FormationDashboardEnrichi/>}
+        {activeTab === 'catalog'   && <FormationCatalog/>}
+        {activeTab === 'my'        && <MyEnrollments/>}
+        {activeTab === 'eval'      && <FormationEvaluation/>}
+        {activeTab === 'mandatory' && <FormationObligatoire/>}
+        {activeTab === 'certs'     && <MyCertifications/>}
+        {activeTab === 'plan'      && <TrainingPlanPanel/>}
+        {activeTab === 'team'      && <TeamFormationDashboard/>}
+        {activeTab === 'budget'    && <FormationBudget/>}
+        {activeTab === 'admin'     && <FormationAdminPanel/>}
       </motion.div>
     </motion.div>
   )

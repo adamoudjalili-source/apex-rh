@@ -597,3 +597,388 @@ export function useValidatePlan() {
     onSuccess: () => qc.invalidateQueries({ queryKey: ['training-plan'] }),
   })
 }
+
+// ============================================================
+// S73 — Budget + Formations Obligatoires + Évaluation post-formation
+// ============================================================
+
+// ─── CONSTANTES S73 ──────────────────────────────────────────
+
+export const MANDATORY_TARGET_LABELS = {
+  all:      'Tous les collaborateurs',
+  role:     'Par rôle',
+  service:  'Par service',
+  division: 'Par division',
+}
+
+export const COMPLIANCE_STATUS_LABELS = {
+  conforme:     'Conforme',
+  non_realise:  'Non réalisé',
+  a_renouveler: 'À renouveler',
+}
+
+export const COMPLIANCE_STATUS_COLORS = {
+  conforme:     '#10B981',
+  non_realise:  '#EF4444',
+  a_renouveler: '#F59E0B',
+}
+
+export function getComplianceInfo(status) {
+  return {
+    label: COMPLIANCE_STATUS_LABELS[status] ?? status,
+    color: COMPLIANCE_STATUS_COLORS[status] ?? '#6B7280',
+  }
+}
+
+// ─── BUDGET FORMATION ─────────────────────────────────────────
+
+export function useTrainingBudgets(year = new Date().getFullYear()) {
+  return useQuery({
+    queryKey: ['training-budget', year],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('training_budget')
+        .select('*')
+        .eq('year', year)
+        .order('division_id', { ascending: true, nullsFirst: true })
+      if (error) throw error
+      return data || []
+    },
+    staleTime: 2 * 60 * 1000,
+  })
+}
+
+export function useCreateOrUpdateBudget() {
+  const qc = useQueryClient()
+  const { profile } = useAuth()
+  return useMutation({
+    mutationFn: async ({ id, year, label, total_amount, division_id, notes }) => {
+      if (id) {
+        const { data, error } = await supabase
+          .from('training_budget')
+          .update({ label, total_amount, notes, updated_at: new Date().toISOString() })
+          .eq('id', id)
+          .select().single()
+        if (error) throw error
+        return data
+      } else {
+        const { data, error } = await supabase
+          .from('training_budget')
+          .insert({ year, label, total_amount, division_id: division_id || null, notes, created_by: profile?.id })
+          .select().single()
+        if (error) throw error
+        return data
+      }
+    },
+    onSuccess: (_, vars) => qc.invalidateQueries({ queryKey: ['training-budget', vars.year] }),
+  })
+}
+
+export function useDeleteBudget() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: async ({ id, year }) => {
+      const { error } = await supabase.from('training_budget').delete().eq('id', id)
+      if (error) throw error
+      return year
+    },
+    onSuccess: (year) => qc.invalidateQueries({ queryKey: ['training-budget', year] }),
+  })
+}
+
+// Budget consommé depuis inscriptions (en temps réel)
+export function useBudgetConsumed(year = new Date().getFullYear()) {
+  return useQuery({
+    queryKey: ['training-budget-consumed', year],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('training_enrollments')
+        .select(`
+          status, enrolled_at,
+          training_catalog!training_id(budget_cost)
+        `)
+        .in('status', ['inscrit', 'en_cours', 'termine'])
+      if (error) throw error
+      const rows = (data || []).filter(e => {
+        if (!e.enrolled_at) return false
+        return new Date(e.enrolled_at).getFullYear() === year
+      })
+      return rows.reduce((sum, e) => sum + (e.training_catalog?.budget_cost || 0), 0)
+    },
+    staleTime: 60 * 1000,
+  })
+}
+
+// ─── FORMATIONS OBLIGATOIRES ──────────────────────────────────
+
+export function useMandatoryRules() {
+  return useQuery({
+    queryKey: ['mandatory-rules'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('training_mandatory_rules')
+        .select(`
+          *,
+          training_catalog!training_id(id, title, type, renewal_months)
+        `)
+        .eq('is_active', true)
+        .order('created_at', { ascending: false })
+      if (error) throw error
+      return data || []
+    },
+    staleTime: 5 * 60 * 1000,
+  })
+}
+
+export function useCreateMandatoryRule() {
+  const qc = useQueryClient()
+  const { profile } = useAuth()
+  return useMutation({
+    mutationFn: async ({ training_id, target_type, target_id, target_role, renewal_months, deadline_days }) => {
+      const { data, error } = await supabase
+        .from('training_mandatory_rules')
+        .insert({ training_id, target_type, target_id: target_id || null, target_role: target_role || null, renewal_months: renewal_months || null, deadline_days: deadline_days || 90, created_by: profile?.id })
+        .select().single()
+      if (error) throw error
+      return data
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['mandatory-rules'] })
+      qc.invalidateQueries({ queryKey: ['mandatory-compliance'] })
+    },
+  })
+}
+
+export function useDeleteMandatoryRule() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: async (id) => {
+      const { error } = await supabase.from('training_mandatory_rules').update({ is_active: false }).eq('id', id)
+      if (error) throw error
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['mandatory-rules'] })
+      qc.invalidateQueries({ queryKey: ['mandatory-compliance'] })
+    },
+  })
+}
+
+// Conformité : charge depuis la MV (admin) ou fallback simplifié
+export function useMandatoryCompliance() {
+  return useQuery({
+    queryKey: ['mandatory-compliance'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('mv_mandatory_compliance')
+        .select(`
+          *,
+          training_catalog!training_id(id, title)
+        `)
+      if (error) {
+        // fallback direct si MV non refresh
+        return []
+      }
+      return data || []
+    },
+    staleTime: 5 * 60 * 1000,
+  })
+}
+
+// Formations obligatoires non réalisées pour un utilisateur donné
+export function useMyMandatoryStatus() {
+  const { profile } = useAuth()
+  return useQuery({
+    queryKey: ['mandatory-status', 'me', profile?.id],
+    queryFn: async () => {
+      if (!profile) return []
+      // Règles applicables à cet user
+      const { data: rules, error: rErr } = await supabase
+        .from('training_mandatory_rules')
+        .select(`*, training_catalog!training_id(id, title, type, duration_hours, renewal_months)`)
+        .eq('is_active', true)
+
+      if (rErr) throw rErr
+
+      const applicable = (rules || []).filter(r => {
+        if (r.target_type === 'all') return true
+        if (r.target_type === 'role' && r.target_role === profile.role) return true
+        if (r.target_type === 'service' && r.target_id === profile.service_id) return true
+        if (r.target_type === 'division' && r.target_id === profile.division_id) return true
+        return false
+      })
+
+      if (!applicable.length) return []
+
+      const trainingIds = applicable.map(r => r.training_id)
+      const { data: completions, error: cErr } = await supabase
+        .from('training_enrollments')
+        .select('training_id, status, completed_at')
+        .eq('user_id', profile.id)
+        .in('training_id', trainingIds)
+        .eq('status', 'termine')
+
+      if (cErr) throw cErr
+
+      const completionMap = {}
+      ;(completions || []).forEach(c => {
+        if (!completionMap[c.training_id] || c.completed_at > completionMap[c.training_id]) {
+          completionMap[c.training_id] = c.completed_at
+        }
+      })
+
+      return applicable.map(rule => {
+        const lastDone = completionMap[rule.training_id]
+        const renewal = rule.renewal_months || rule.training_catalog?.renewal_months
+        let status = 'non_realise'
+        if (lastDone) {
+          if (renewal) {
+            const renewalDate = new Date(lastDone)
+            renewalDate.setMonth(renewalDate.getMonth() + renewal)
+            status = renewalDate > new Date() ? 'conforme' : 'a_renouveler'
+          } else {
+            status = 'conforme'
+          }
+        }
+        return { ...rule, last_completed_at: lastDone || null, compliance_status: status }
+      })
+    },
+    enabled: !!profile?.id,
+    staleTime: 5 * 60 * 1000,
+  })
+}
+
+// ─── ÉVALUATION POST-FORMATION ────────────────────────────────
+
+export function useSubmitSatisfaction() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: async ({ enrollmentId, satisfaction_score, satisfaction_comment }) => {
+      const { data, error } = await supabase
+        .from('training_enrollments')
+        .update({
+          satisfaction_score,
+          satisfaction_comment,
+          satisfaction_at: new Date().toISOString(),
+        })
+        .eq('id', enrollmentId)
+        .select().single()
+      if (error) throw error
+      return data
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['enrollments'] }),
+  })
+}
+
+export function useSubmitEffectiveness() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: async ({ enrollmentId, effectiveness_score, effectiveness_comment }) => {
+      const { data, error } = await supabase
+        .from('training_enrollments')
+        .update({
+          effectiveness_score,
+          effectiveness_comment,
+          effectiveness_at: new Date().toISOString(),
+        })
+        .eq('id', enrollmentId)
+        .select().single()
+      if (error) throw error
+      return data
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['enrollments'] }),
+  })
+}
+
+// Enrollments terminés en attente d'évaluation (satisfaction OU efficacité J+30)
+export function useMyPendingEvaluations() {
+  const { profile } = useAuth()
+  return useQuery({
+    queryKey: ['evaluations-pending', 'me', profile?.id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('training_enrollments')
+        .select(`
+          id, completed_at, satisfaction_score, satisfaction_at,
+          effectiveness_score, effectiveness_at, enrolled_at,
+          training_catalog!training_id(id, title, type, duration_hours)
+        `)
+        .eq('user_id', profile.id)
+        .eq('status', 'termine')
+        .order('completed_at', { ascending: false })
+      if (error) throw error
+
+      const now = new Date()
+      return (data || []).filter(e => {
+        const noSatisfaction = !e.satisfaction_score
+        const completedAt = e.completed_at ? new Date(e.completed_at) : null
+        const daysSinceCompletion = completedAt ? (now - completedAt) / (1000 * 60 * 60 * 24) : 0
+        const noEffectiveness = !e.effectiveness_score && daysSinceCompletion >= 30
+        return noSatisfaction || noEffectiveness
+      })
+    },
+    enabled: !!profile?.id,
+  })
+}
+
+// Agrégats satisfaction par formation (depuis MV)
+export function useFormationSatisfactionStats(trainingId) {
+  return useQuery({
+    queryKey: ['training-satisfaction', trainingId],
+    queryFn: async () => {
+      const q = supabase.from('mv_training_satisfaction').select('*')
+      if (trainingId) q.eq('training_id', trainingId).single()
+      const { data, error } = await q
+      if (error && error.code !== 'PGRST116') throw error
+      return data
+    },
+    enabled: trainingId !== undefined,
+    staleTime: 5 * 60 * 1000,
+  })
+}
+
+// Stats évaluation globales (pour dashboard admin)
+export function useGlobalEvaluationStats() {
+  return useQuery({
+    queryKey: ['training-eval-stats-global'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('training_enrollments')
+        .select('training_id, satisfaction_score, effectiveness_score, completed_at')
+        .eq('status', 'termine')
+      if (error) throw error
+      const rows = data || []
+      const withSat = rows.filter(r => r.satisfaction_score)
+      const withEff = rows.filter(r => r.effectiveness_score)
+      return {
+        total_completed: rows.length,
+        satisfaction_count: withSat.length,
+        avg_satisfaction: withSat.length
+          ? +(withSat.reduce((s, r) => s + r.satisfaction_score, 0) / withSat.length).toFixed(2)
+          : null,
+        effectiveness_count: withEff.length,
+        avg_effectiveness: withEff.length
+          ? +(withEff.reduce((s, r) => s + r.effectiveness_score, 0) / withEff.length).toFixed(2)
+          : null,
+        response_rate_sat: rows.length ? Math.round(withSat.length / rows.length * 100) : 0,
+        response_rate_eff: rows.length ? Math.round(withEff.length / rows.length * 100) : 0,
+      }
+    },
+    staleTime: 5 * 60 * 1000,
+  })
+}
+
+// ─── REFRESH MVs FORMATION (admin) ───────────────────────────
+
+export function useRefreshFormationMVs() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: async () => {
+      const { error } = await supabase.rpc('refresh_formation_mvs')
+      if (error) throw error
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['mandatory-compliance'] })
+      qc.invalidateQueries({ queryKey: ['training-satisfaction'] })
+    },
+  })
+}
