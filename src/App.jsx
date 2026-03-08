@@ -36,7 +36,8 @@ const ObjectivesPage = lazy(() => import('./pages/objectives/Objectives'))
 const ProjectsPage   = lazy(() => import('./pages/projects/Projects'))
 const IntelligenceRH = lazy(() => import('./pages/intelligence/IntelligenceRH'))
 const EngagementHub  = lazy(() => import('./pages/engagement/EngagementHub'))
-const Formation      = lazy(() => import('./pages/formation/Formation'))
+const Formation         = lazy(() => import('./pages/formation/Formation'))
+const DeveloppementHub  = lazy(() => import('./pages/developpement/DeveloppementHub'))
 const Compensation   = lazy(() => import('./pages/compensation/Compensation'))
 const Recrutement    = lazy(() => import('./pages/recrutement/Recrutement'))
 const EntretiensAnnuels = lazy(() => import('./pages/entretiens/EntretiensAnnuels'))
@@ -121,7 +122,8 @@ export default function App() {
 
           {/* ── Management (sous-pages depuis ManagementHub) ── */}
           <Route path="/mon-equipe" element={<S><MonEquipe /></S>} />
-          <Route path="/formation"  element={<S><Formation /></S>} />   {/* vue manager/admin */}
+          <Route path="/developpement" element={<S><DeveloppementHub /></S>} />  {/* Module 7 V2 */}
+          <Route path="/formation"     element={<Navigate to="/developpement" replace />} />  {/* S97 redirect */}
 
           {/* ── Analyse RH ── */}
           <Route path="/intelligence" element={<S><IntelligenceRH /></S>} />

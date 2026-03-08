@@ -33,7 +33,7 @@ import {
   ChevronLeft, ChevronRight, LogOut,
   BriefcaseIcon, ClipboardList, ClipboardCheck, Settings,
   Home, ShieldCheck, MessageCircle, Clock, CalendarOff, DoorOpen,
-  Globe, UserCheck, UserSquare2,
+  Globe, UserCheck, UserSquare2, GraduationCap,
 } from 'lucide-react'
 import { useAuth }        from '../../contexts/AuthContext'
 import { useAppSettings } from '../../hooks/useSettings'
@@ -173,6 +173,7 @@ export default function Sidebar() {
             <NavItem icon={UserSquare2}      label="Gestion des Employés" path="/employes"      color="#3B82F6" collapsed={collapsed}/>
             <NavItem icon={TrendingUp}      label="Performance"        path="/performance"    color="#818CF8" collapsed={collapsed}/>
             <NavItem icon={ClipboardCheck}  label="Évaluations"        path="/evaluations"    color="#A78BFA" collapsed={collapsed}/>
+            <NavItem icon={GraduationCap}   label="Formation & Dév"    path="/developpement"  color="#10B981" collapsed={collapsed}/>
             <Section label="Analyse" collapsed={collapsed}/>
             <NavItem icon={BarChart3}        label="Intelligence RH"    path="/intelligence"   color="#8B5CF6" collapsed={collapsed}/>
             <Section label="Acquisition & Éval" collapsed={collapsed}/>
@@ -200,6 +201,7 @@ export default function Sidebar() {
             <NavItem icon={Clock}            label="Temps & Absences"   path="/temps-absences" color="#34D399" collapsed={collapsed}/>
             <NavItem icon={TrendingUp}      label="Performance"        path="/performance"    color="#818CF8" collapsed={collapsed}/>
             <NavItem icon={ClipboardCheck}  label="Évaluations"        path="/evaluations"    color="#A78BFA" collapsed={collapsed}/>
+            <NavItem icon={GraduationCap}   label="Formation & Dév"    path="/developpement"  color="#10B981" collapsed={collapsed}/>
             <NavItem icon={BriefcaseIcon}    label="Recrutement"        path="/recrutement"    color="#818CF8" collapsed={collapsed}/>
             <NavItem icon={ClipboardList}    label="Entretiens annuels" path="/entretiens"     color="#A78BFA" collapsed={collapsed}/>
             <Section label="Communication" collapsed={collapsed}/>
@@ -219,6 +221,7 @@ export default function Sidebar() {
             <NavItem icon={Clock}            label="Temps & Absences"   path="/temps-absences" color="#34D399" collapsed={collapsed}/>
             <NavItem icon={TrendingUp}      label="Performance"        path="/performance"    color="#818CF8" collapsed={collapsed}/>
             <NavItem icon={ClipboardCheck}  label="Évaluations"        path="/evaluations"    color="#A78BFA" collapsed={collapsed}/>
+            <NavItem icon={GraduationCap}   label="Formation & Dév"    path="/developpement"  color="#10B981" collapsed={collapsed}/>
             <Section label="Analyse & Acquisition" collapsed={collapsed}/>
             <NavItem icon={BarChart3}        label="Intelligence RH"    path="/intelligence"   color="#8B5CF6" collapsed={collapsed}/>
             <NavItem icon={BriefcaseIcon}    label="Recrutement"        path="/recrutement"    color="#818CF8" collapsed={collapsed}/>
@@ -240,6 +243,7 @@ export default function Sidebar() {
             <NavItem icon={Clock}            label="Temps & Absences"   path="/temps-absences" color="#34D399" collapsed={collapsed}/>
             <NavItem icon={TrendingUp}      label="Performance"        path="/performance"    color="#818CF8" collapsed={collapsed}/>
             <NavItem icon={ClipboardCheck}  label="Évaluations"        path="/evaluations"    color="#A78BFA" collapsed={collapsed}/>
+            <NavItem icon={GraduationCap}   label="Formation & Dév"    path="/developpement"  color="#10B981" collapsed={collapsed}/>
             <NavItem icon={ClipboardList}    label="Entretiens annuels" path="/entretiens"     color="#A78BFA" collapsed={collapsed}/>
             <Section label="Communication" collapsed={collapsed}/>
             <NavItem icon={MessageCircle}    label="Communication"      path="/communication"  color="#06B6D4" badge={unreadCount || null} collapsed={collapsed}/>
@@ -257,6 +261,7 @@ export default function Sidebar() {
             <NavItem icon={Clock}           label="Temps & Absences"    path="/temps-absences"      color="#34D399" collapsed={collapsed}/>
             <NavItem icon={TrendingUp}     label="Performance"         path="/performance"          color="#818CF8" collapsed={collapsed}/>
             <NavItem icon={ClipboardCheck} label="Évaluations"         path="/evaluations"          color="#A78BFA" collapsed={collapsed}/>
+            <NavItem icon={GraduationCap}  label="Formation & Dév"     path="/developpement"        color="#10B981" collapsed={collapsed}/>
             <NavItem icon={ClipboardList}   label="Mon entretien"        path="/entretiens"          color="#A78BFA" collapsed={collapsed}/>
             <NavItem icon={BriefcaseIcon}   label="Candidature interne"  path="/recrutement"         color="#818CF8" collapsed={collapsed}/>
             <Section label="Communication" collapsed={collapsed}/>
