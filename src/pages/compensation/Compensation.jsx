@@ -2,12 +2,12 @@
 // APEX RH — pages/compensation/Compensation.jsx
 // S58 → S74 — Page principale Compensation & Benchmark
 // S74 : + Dashboard enrichi · Révisions workflow · Cycles · Simulation budget
-// Onglets adaptatifs rôle
+// S100 : Migration Phase C RBAC — usePermission() V2
 // ============================================================
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { DollarSign, BarChart3, Clock, Users, Settings, Lock, GitBranch, Calendar, TrendingUp, LayoutDashboard } from 'lucide-react'
-import { useAuth }               from '../../contexts/AuthContext'
+import { usePermission }          from '../../hooks/usePermission'
 import { useAppSettings }         from '../../hooks/useSettings'
 import { useOrgCompensationStats, useRevisionStats, usePendingReviews, formatSalaryShort } from '../../hooks/useCompensation'
 
@@ -57,7 +57,7 @@ function S74Badge() {
 }
 
 export default function Compensation() {
-  const { profile, canAdmin, canValidate, canManageTeam } = useAuth()
+  const { can } = usePermission()
   const { data: settings } = useAppSettings()
   const [tab, setTab]      = useState('dashboard')
 
@@ -77,7 +77,7 @@ export default function Compensation() {
     )
   }
 
-  const canSeeRevisions = canAdmin || canValidate || canManageTeam
+  const canSeeRevisions = can('compensation', 'revisions', 'read')
 
   // Définition des onglets selon rôle
   const TABS = [
@@ -85,11 +85,11 @@ export default function Compensation() {
     { id: 'my',          label: 'Ma rémunération', icon: DollarSign },
     { id: 'benchmark',   label: 'Benchmark',       icon: BarChart3 },
     { id: 'history',     label: 'Historique',      icon: Clock },
-    ...(canSeeRevisions  ? [{ id: 'revisions', label: 'Révisions',   icon: GitBranch, s74: true }] : []),
-    ...(canAdmin         ? [{ id: 'cycles',    label: 'Cycles',      icon: Calendar,  s74: true }] : []),
-    ...(canAdmin         ? [{ id: 'simulation',label: 'Simulation',  icon: TrendingUp, s74: true }] : []),
-    ...(canManageTeam    ? [{ id: 'team',      label: 'Mon équipe',  icon: Users }] : []),
-    ...(canAdmin         ? [{ id: 'admin',     label: 'Administration', icon: Settings }] : []),
+    ...(canSeeRevisions                                  ? [{ id: 'revisions',  label: 'Révisions',      icon: GitBranch,    s74: true }] : []),
+    ...(can('compensation', 'cycles',     'admin')       ? [{ id: 'cycles',     label: 'Cycles',         icon: Calendar,     s74: true }] : []),
+    ...(can('compensation', 'simulation', 'admin')       ? [{ id: 'simulation', label: 'Simulation',     icon: TrendingUp,   s74: true }] : []),
+    ...(can('compensation', 'team',       'read')        ? [{ id: 'team',       label: 'Mon équipe',     icon: Users }] : []),
+    ...(can('compensation', 'admin',      'read')        ? [{ id: 'admin',      label: 'Administration', icon: Settings }] : []),
   ]
 
   const validTab = TABS.find(t => t.id === tab) ? tab : 'dashboard'
@@ -98,7 +98,7 @@ export default function Compensation() {
     <div className="flex flex-col h-full min-h-0">
 
       {/* ── QuickStats S74 ── */}
-      {(canAdmin || canValidate) && <QuickStatsCompensation/>}
+      {can('compensation', 'stats', 'read') && <QuickStatsCompensation/>}
 
       {/* ── Header ── */}
       <div className="flex-shrink-0 px-4 sm:px-6 pt-5 pb-4"

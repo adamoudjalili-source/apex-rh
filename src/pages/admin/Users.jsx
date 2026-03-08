@@ -2,6 +2,7 @@
 // APEX RH — Users.jsx
 // Session 15 — formKey + toggle_user_status RPC + logAudit
 // Session 19 — Fix font-syne → style inline
+// S100 : Migration Phase C RBAC — usePermission() V2
 // ============================================================
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
@@ -15,6 +16,7 @@ import Modal from '../../components/ui/Modal'
 import UserForm from '../../components/users/UserForm'
 import ExportButton from '../../components/ui/ExportButton'
 import { exportUsers } from '../../lib/exportExcel'
+import { usePermission } from '../../hooks/usePermission'
 
 const ROLE_LABELS = {
   administrateur: 'Administrateur',
@@ -42,6 +44,7 @@ function RoleBadge({ role }) {
 }
 
 export default function UsersPage() {
+  const { can } = usePermission()
   const [users, setUsers] = useState([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
@@ -50,6 +53,16 @@ export default function UsersPage() {
   const [modalOpen, setModalOpen] = useState(false)
   const [editUser, setEditUser] = useState(null)
   const [formKey, setFormKey] = useState(0)
+
+  // Guard RBAC V2
+  if (!can('admin', 'users', 'read')) {
+    return (
+      <div className="flex flex-col items-center justify-center py-20 gap-3">
+        <Shield size={36} className="text-white/10" />
+        <p className="text-white/30 text-sm">Accès réservé aux administrateurs.</p>
+      </div>
+    )
+  }
 
   const fetchUsers = async () => {
     setLoading(true)
@@ -80,7 +93,7 @@ export default function UsersPage() {
     }
 
     const action = newStatus ? 'user_reactivated' : 'user_deactivated'
-    logAudit(action, 'user', user.id, { name: `${user.first_name} ${user.last_name}` })
+    logAudit(action, 'user', user.id, { name: `${user.first_name} ${user.last_name}`, category: 'admin' })
     setUsers((prev) =>
       prev.map((u) => u.id === user.id ? { ...u, is_active: newStatus } : u)
     )

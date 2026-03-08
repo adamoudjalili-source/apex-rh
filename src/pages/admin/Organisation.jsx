@@ -4,6 +4,7 @@ import Modal from '../../components/ui/Modal';
 import DirectionForm from '../../components/organisation/DirectionForm';
 import DivisionForm from '../../components/organisation/DivisionForm';
 import ServiceForm from '../../components/organisation/ServiceForm';
+import { usePermission } from '../../hooks/usePermission';
 
 
 const TABS = [
@@ -474,7 +475,16 @@ function ServicesTab() {
 
 // ─── PAGE PRINCIPALE ──────────────────────────────────────────────────────────
 export default function Organisation() {
+  const { can } = usePermission();
   const [activeTab, setActiveTab] = useState('directions');
+
+  if (!can('admin', 'organisation', 'read')) {
+    return (
+      <div className="flex flex-col items-center justify-center py-20 gap-3">
+        <p className="text-white/30 text-sm">Accès réservé aux administrateurs.</p>
+      </div>
+    );
+  }
 
   return (
     <div className="p-6 space-y-6">

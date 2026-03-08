@@ -6,7 +6,7 @@
 // ============================================================
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { useAuth } from '../../contexts/AuthContext'
+import { usePermission } from '../../hooks/usePermission'
 import {
   INTEGRATION_TYPES,
   TRIGGER_LABELS,
@@ -405,7 +405,7 @@ function GoogleCalendarSection() {
 
 // ─── COMPOSANT PRINCIPAL ─────────────────────────────────────
 export default function Integrations() {
-  const { profile } = useAuth()
+  const { can } = usePermission()
   const [showForm, setShowForm] = useState(false)
   const [editingWebhook, setEditingWebhook] = useState(null)
   const [activeTab, setActiveTab] = useState('webhooks')
@@ -417,7 +417,7 @@ export default function Integrations() {
   const testWebhook   = useTestWebhook()
 
   // Accès réservé aux admins
-  if (profile?.role !== 'administrateur') {
+  if (!can('admin', 'integrations', 'read')) {
     return (
       <div className="flex flex-col items-center justify-center py-20 text-gray-600">
         <svg className="w-10 h-10 mb-3 opacity-30" fill="none" stroke="currentColor" viewBox="0 0 24 24">

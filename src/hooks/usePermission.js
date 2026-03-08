@@ -317,6 +317,52 @@ const PERMISSION_MATRIX = {
     },
   },
 
+  // --- Compensation (module transverse) ---
+  compensation: {
+    own: {
+      read: () => true,
+    },
+    benchmark: {
+      read: () => true,
+    },
+    history: {
+      read: () => true,
+    },
+    team: {
+      read: ({ canManageTeam }) => canManageTeam,
+    },
+    revisions: {
+      read: ({ canAdmin, canValidate, canManageTeam }) => canAdmin || canValidate || canManageTeam,
+    },
+    cycles: {
+      admin: ({ canAdmin }) => canAdmin,
+    },
+    simulation: {
+      admin: ({ canAdmin }) => canAdmin,
+    },
+    admin: {
+      read: ({ canAdmin }) => canAdmin,
+    },
+    stats: {
+      read: ({ canAdmin, canValidate }) => canAdmin || canValidate,
+    },
+  },
+
+  // --- Reconnaissances (module transverse) ---
+  reconnaissances: {
+    own: {
+      read: () => true,
+      create: () => true,
+    },
+    team: {
+      read: ({ canManageTeam }) => canManageTeam,
+    },
+    admin: {
+      read: ({ canAdmin }) => canAdmin,
+      admin: ({ canAdmin }) => canAdmin,
+    },
+  },
+
   // --- Pulse (hors module 5, composants transverses) ---
   pulse: {
     own: {

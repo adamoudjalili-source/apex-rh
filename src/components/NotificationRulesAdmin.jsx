@@ -12,7 +12,7 @@ import {
   useUpsertRule,
   useDeleteRule,
 } from '../hooks/useNotificationsS86'
-import { useAuth } from '../contexts/AuthContext'
+import { usePermission } from '../hooks/usePermission'
 
 // ─── Options prédéfinies ──────────────────────────────────────
 const TRIGGER_EVENTS = [
@@ -188,7 +188,7 @@ function RuleForm({ initial, onSave, onCancel, saving }) {
 
 // ─── Composant principal ────────────────────────────────────────
 export default function NotificationRulesAdmin() {
-  const { canAdmin } = useAuth()
+  const { can } = usePermission()
   const [editing, setEditing]   = useState(null)   // null | 'new' | rule_id
   const [expanded, setExpanded] = useState(null)
 
@@ -196,7 +196,7 @@ export default function NotificationRulesAdmin() {
   const { mutate: upsert, isPending: saving } = useUpsertRule()
   const { mutate: del }                        = useDeleteRule()
 
-  if (!canAdmin) return null
+  if (!can('admin', 'notifications', 'admin')) return null
 
   function handleSave(form) {
     const payload = {
