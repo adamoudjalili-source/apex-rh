@@ -757,14 +757,14 @@ export function usePendingReviews() {
         .from('compensation_reviews')
         .select(`
           *,
-          employee:employee_id(id, full_name, avatar_url, job_title, department),
+          employee:user_id(id, full_name, avatar_url, job_title, department),
           cycle:review_cycle_id(id, name, year),
           grade:salary_grade_id(id, code, label)
         `)
       if (canAdmin) {
         query = query.in('status', ['soumis', 'valide_manager'])
       } else if (canValidate) {
-        query = query.eq('status', 'soumis')
+        query = query.in('status', ['soumis'])
       } else {
         return []
       }
@@ -786,7 +786,7 @@ export function useAllReviews(filters = {}) {
         .from('compensation_reviews')
         .select(`
           *,
-          employee:employee_id(id, full_name, avatar_url, job_title, department, service),
+          employee:user_id(id, full_name, avatar_url, job_title, department, service),
           cycle:review_cycle_id(id, name, year),
           grade:salary_grade_id(id, code, label),
           manager_approver:manager_approved_by(id, full_name),
@@ -805,7 +805,7 @@ export function useAllReviews(filters = {}) {
 }
 
 /** Révisions de mon équipe */
-export function useTeamReviews() {
+export function useTeamRevisionWorkflow() {
   const { profile } = useAuth()
   return useQuery({
     queryKey: ['team_reviews', profile?.id],
@@ -821,10 +821,10 @@ export function useTeamReviews() {
         .from('compensation_reviews')
         .select(`
           *,
-          employee:employee_id(id, full_name, avatar_url, job_title, department),
+          employee:user_id(id, full_name, avatar_url, job_title, department),
           cycle:review_cycle_id(id, name, year)
         `)
-        .in('employee_id', ids)
+        .in('user_id', ids)
         .order('updated_at', { ascending: false })
       if (error) throw error
       return data ?? []
@@ -987,7 +987,7 @@ export function useRevisionBudgetSimulation(cycleId) {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('compensation_reviews')
-        .select('new_salary, current_salary, status, employee:employee_id(department, service)')
+        .select('new_salary, current_salary, status, employee:user_id(department, service)')
         .eq('review_cycle_id', cycleId)
         .neq('status', 'refuse')
       if (error) throw error
