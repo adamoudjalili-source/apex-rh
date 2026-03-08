@@ -606,3 +606,431 @@ export function getMarketGapColor(gap) {
   if (gap <= 10)    return '#10B981'
   return '#8B5CF6'
 }
+
+// ============================================================
+// S74 — WORKFLOW RÉVISION SALARIALE
+// Hooks : cycles, workflow, simulation budget
+// ============================================================
+
+// ─── CONSTANTES S74 ──────────────────────────────────────────
+
+export const REVIEW_WORKFLOW_STATUS_LABELS = {
+  brouillon:      'Brouillon',
+  soumis:         'Soumis',
+  valide_manager: 'Validé manager',
+  valide_rh:      'Validé RH',
+  applique:       'Appliqué',
+  refuse:         'Refusé',
+}
+
+export const REVIEW_WORKFLOW_STATUS_COLORS = {
+  brouillon:      '#6B7280',
+  soumis:         '#F59E0B',
+  valide_manager: '#3B82F6',
+  valide_rh:      '#8B5CF6',
+  applique:       '#10B981',
+  refuse:         '#EF4444',
+}
+
+export const REVIEW_REASON_WORKFLOW_LABELS = {
+  annuelle:       'Augmentation annuelle',
+  promotion:      'Promotion',
+  ajustement:     'Ajustement marché',
+  prime:          'Prime exceptionnelle',
+  autre:          'Autre',
+}
+
+export const CYCLE_STATUS_LABELS = {
+  ouvert:    'Ouvert',
+  en_cours:  'En cours',
+  cloture:   'Clôturé',
+}
+
+export const CYCLE_STATUS_COLORS = {
+  ouvert:   '#10B981',
+  en_cours: '#F59E0B',
+  cloture:  '#6B7280',
+}
+
+export function getWorkflowStatusInfo(status) {
+  return {
+    label: REVIEW_WORKFLOW_STATUS_LABELS[status] ?? status,
+    color: REVIEW_WORKFLOW_STATUS_COLORS[status] ?? '#6B7280',
+  }
+}
+
+// ─── CYCLES DE RÉVISION ──────────────────────────────────────
+
+export function useCompensationCycles() {
+  const { profile } = useAuth()
+  return useQuery({
+    queryKey: ['compensation_cycles', profile?.organization_id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('compensation_cycles')
+        .select('*')
+        .eq('organization_id', profile.organization_id)
+        .order('year', { ascending: false })
+        .order('created_at', { ascending: false })
+      if (error) throw error
+      return data ?? []
+    },
+    enabled: !!profile?.organization_id,
+  })
+}
+
+export function useCreateCycle() {
+  const qc = useQueryClient()
+  const { profile } = useAuth()
+  return useMutation({
+    mutationFn: async (payload) => {
+      const { data, error } = await supabase
+        .from('compensation_cycles')
+        .insert({ ...payload, organization_id: profile.organization_id, created_by: profile.id })
+        .select()
+        .single()
+      if (error) throw error
+      return data
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['compensation_cycles'] }),
+  })
+}
+
+export function useUpdateCycle() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: async ({ id, ...payload }) => {
+      const { data, error } = await supabase
+        .from('compensation_cycles')
+        .update({ ...payload, updated_at: new Date().toISOString() })
+        .eq('id', id)
+        .select()
+        .single()
+      if (error) throw error
+      return data
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['compensation_cycles'] }),
+  })
+}
+
+export function useDeleteCycle() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: async (id) => {
+      const { error } = await supabase.from('compensation_cycles').delete().eq('id', id)
+      if (error) throw error
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['compensation_cycles'] }),
+  })
+}
+
+export function useCyclesProgress() {
+  const { profile } = useAuth()
+  return useQuery({
+    queryKey: ['mv_compensation_cycles_progress', profile?.organization_id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .rpc('get_cycles_progress_for_org', { p_org: profile.organization_id })
+        .catch(() => ({ data: null, error: null }))
+      // Fallback direct si RPC non dispo
+      const { data: fallback, error: err2 } = await supabase
+        .from('mv_compensation_cycles_progress')
+        .select('*')
+        .eq('organization_id', profile.organization_id)
+        .order('year', { ascending: false })
+      if (err2) return []
+      return fallback ?? []
+    },
+    enabled: !!profile?.organization_id,
+  })
+}
+
+// ─── WORKFLOW RÉVISIONS ───────────────────────────────────────
+
+/** Révisions en attente de ma validation (manager ou RH) */
+export function usePendingReviews() {
+  const { profile, canValidate, canAdmin } = useAuth()
+  return useQuery({
+    queryKey: ['pending_reviews', profile?.id],
+    queryFn: async () => {
+      let query = supabase
+        .from('compensation_reviews')
+        .select(`
+          *,
+          employee:employee_id(id, full_name, avatar_url, job_title, department),
+          cycle:review_cycle_id(id, name, year),
+          grade:salary_grade_id(id, code, label)
+        `)
+      if (canAdmin) {
+        query = query.in('status', ['soumis', 'valide_manager'])
+      } else if (canValidate) {
+        query = query.eq('status', 'soumis')
+      } else {
+        return []
+      }
+      const { data, error } = await query.order('submitted_at', { ascending: true })
+      if (error) throw error
+      return data ?? []
+    },
+    enabled: !!profile,
+  })
+}
+
+/** Toutes les révisions — vue admin/RH */
+export function useAllReviews(filters = {}) {
+  const { profile } = useAuth()
+  return useQuery({
+    queryKey: ['all_reviews', profile?.organization_id, filters],
+    queryFn: async () => {
+      let query = supabase
+        .from('compensation_reviews')
+        .select(`
+          *,
+          employee:employee_id(id, full_name, avatar_url, job_title, department, service),
+          cycle:review_cycle_id(id, name, year),
+          grade:salary_grade_id(id, code, label),
+          manager_approver:manager_approved_by(id, full_name),
+          hr_approver:hr_approved_by(id, full_name)
+        `)
+      if (filters.status)   query = query.eq('status', filters.status)
+      if (filters.cycle_id) query = query.eq('review_cycle_id', filters.cycle_id)
+      const { data, error } = await query
+        .order('updated_at', { ascending: false })
+        .limit(200)
+      if (error) throw error
+      return data ?? []
+    },
+    enabled: !!profile?.organization_id,
+  })
+}
+
+/** Révisions de mon équipe */
+export function useTeamReviews() {
+  const { profile } = useAuth()
+  return useQuery({
+    queryKey: ['team_reviews', profile?.id],
+    queryFn: async () => {
+      const { data: team, error: tErr } = await supabase
+        .from('users')
+        .select('id')
+        .eq('manager_id', profile.id)
+      if (tErr) throw tErr
+      const ids = (team ?? []).map(u => u.id)
+      if (!ids.length) return []
+      const { data, error } = await supabase
+        .from('compensation_reviews')
+        .select(`
+          *,
+          employee:employee_id(id, full_name, avatar_url, job_title, department),
+          cycle:review_cycle_id(id, name, year)
+        `)
+        .in('employee_id', ids)
+        .order('updated_at', { ascending: false })
+      if (error) throw error
+      return data ?? []
+    },
+    enabled: !!profile?.id,
+  })
+}
+
+/** Créer une demande de révision */
+export function useCreateRevision() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: async (payload) => {
+      // Ne PAS envoyer increase_amount / increase_pct (GENERATED)
+      const { increase_amount, increase_pct, ...safe } = payload
+      const { data, error } = await supabase
+        .from('compensation_reviews')
+        .insert({ ...safe, status: 'soumis', submitted_at: new Date().toISOString() })
+        .select()
+        .single()
+      if (error) throw error
+      return data
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['compensation_reviews'] })
+      qc.invalidateQueries({ queryKey: ['pending_reviews'] })
+      qc.invalidateQueries({ queryKey: ['team_reviews'] })
+    },
+  })
+}
+
+/** Valider (manager ou RH) */
+export function useApproveRevision() {
+  const qc = useQueryClient()
+  const { profile, canAdmin } = useAuth()
+  return useMutation({
+    mutationFn: async ({ id, comment }) => {
+      const now = new Date().toISOString()
+      // Lire le statut actuel
+      const { data: cur } = await supabase
+        .from('compensation_reviews')
+        .select('status')
+        .eq('id', id)
+        .single()
+      let updates = {}
+      if (cur?.status === 'soumis') {
+        updates = { status: 'valide_manager', manager_approved_by: profile.id, manager_approved_at: now }
+        if (canAdmin) updates.status = 'valide_rh' // admin valide d'un coup
+      } else if (cur?.status === 'valide_manager') {
+        updates = { status: 'valide_rh', hr_approved_by: profile.id, hr_approved_at: now }
+      }
+      if (comment) updates.review_notes = comment
+      updates.updated_at = now
+      const { data, error } = await supabase
+        .from('compensation_reviews')
+        .update(updates)
+        .eq('id', id)
+        .select()
+        .single()
+      if (error) throw error
+      return data
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['compensation_reviews'] })
+      qc.invalidateQueries({ queryKey: ['pending_reviews'] })
+      qc.invalidateQueries({ queryKey: ['all_reviews'] })
+      qc.invalidateQueries({ queryKey: ['team_reviews'] })
+    },
+  })
+}
+
+/** Refuser une révision */
+export function useRefuseRevision() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: async ({ id, reason }) => {
+      const { data, error } = await supabase
+        .from('compensation_reviews')
+        .update({ status: 'refuse', refused_reason: reason, updated_at: new Date().toISOString() })
+        .eq('id', id)
+        .select()
+        .single()
+      if (error) throw error
+      return data
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['compensation_reviews'] })
+      qc.invalidateQueries({ queryKey: ['pending_reviews'] })
+      qc.invalidateQueries({ queryKey: ['all_reviews'] })
+    },
+  })
+}
+
+/** Appliquer une révision validée RH */
+export function useApplyRevision() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: async ({ id, employee_id, new_salary, salary_grade_id, currency, review_reason, effective_date }) => {
+      const now = new Date().toISOString()
+      // 1. Marquer l'ancien record comme non-courant
+      await supabase
+        .from('compensation_records')
+        .update({ is_current: false })
+        .eq('employee_id', employee_id)
+        .eq('is_current', true)
+      // 2. Créer nouveau record
+      await supabase
+        .from('compensation_records')
+        .insert({
+          employee_id,
+          salary_amount: new_salary,
+          salary_grade_id,
+          currency: currency ?? 'XOF',
+          effective_date: effective_date ?? now.split('T')[0],
+          is_current: true,
+          change_reason: review_reason,
+        })
+      // 3. Marquer révision appliquée
+      const { data, error } = await supabase
+        .from('compensation_reviews')
+        .update({ status: 'applique', applied_at: now, updated_at: now })
+        .eq('id', id)
+        .select()
+        .single()
+      if (error) throw error
+      return data
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['compensation_reviews'] })
+      qc.invalidateQueries({ queryKey: ['compensation_records'] })
+      qc.invalidateQueries({ queryKey: ['all_reviews'] })
+      qc.invalidateQueries({ queryKey: ['pending_reviews'] })
+    },
+  })
+}
+
+/** Stats globales révisions depuis MV */
+export function useRevisionStats() {
+  const { profile } = useAuth()
+  return useQuery({
+    queryKey: ['mv_revision_stats', profile?.organization_id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('mv_revision_stats')
+        .select('*')
+        .eq('organization_id', profile.organization_id)
+        .single()
+      if (error) return null
+      return data
+    },
+    enabled: !!profile?.organization_id,
+  })
+}
+
+/** Simulation budget révision : donné un cycle, calcule impact total */
+export function useRevisionBudgetSimulation(cycleId) {
+  const { profile } = useAuth()
+  return useQuery({
+    queryKey: ['revision_simulation', cycleId, profile?.organization_id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('compensation_reviews')
+        .select('new_salary, current_salary, status, employee:employee_id(department, service)')
+        .eq('review_cycle_id', cycleId)
+        .neq('status', 'refuse')
+      if (error) throw error
+      const rows = data ?? []
+      const totalImpact = rows.reduce((s, r) => s + ((r.new_salary ?? 0) - (r.current_salary ?? 0)), 0)
+      const avgPct = rows.length > 0
+        ? rows.reduce((s, r) => s + (r.current_salary > 0 ? ((r.new_salary - r.current_salary) / r.current_salary) * 100 : 0), 0) / rows.length
+        : 0
+      // Regroupement par département
+      const byDept = {}
+      rows.forEach(r => {
+        const dept = r.employee?.department ?? 'Autre'
+        if (!byDept[dept]) byDept[dept] = { impact: 0, count: 0 }
+        byDept[dept].impact += (r.new_salary ?? 0) - (r.current_salary ?? 0)
+        byDept[dept].count++
+      })
+      // Distribution par tranche
+      const tranches = { '0-2%': 0, '2-5%': 0, '5-10%': 0, '>10%': 0 }
+      rows.forEach(r => {
+        if (!r.current_salary) return
+        const pct = ((r.new_salary - r.current_salary) / r.current_salary) * 100
+        if (pct <= 2) tranches['0-2%']++
+        else if (pct <= 5) tranches['2-5%']++
+        else if (pct <= 10) tranches['5-10%']++
+        else tranches['>10%']++
+      })
+      return { totalImpact, avgPct, byDept, tranches, count: rows.length }
+    },
+    enabled: !!cycleId,
+  })
+}
+
+/** Refresh MVs compensation (admin) */
+export function useRefreshCompensationMVs() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: async () => {
+      const { error } = await supabase.rpc('refresh_compensation_mvs')
+      if (error) throw error
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['mv_compensation_cycles_progress'] })
+      qc.invalidateQueries({ queryKey: ['mv_revision_stats'] })
+    },
+  })
+}

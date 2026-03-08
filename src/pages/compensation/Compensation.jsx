@@ -1,36 +1,38 @@
 // ============================================================
 // APEX RH — pages/compensation/Compensation.jsx
-// Session 58 — Page principale Compensation & Benchmark
-// Onglets adaptatifs rôle :
-//   Collaborateur  : Ma rémunération · Benchmark · Historique
-//   Manager        : + Mon équipe
-//   Admin/Directeur: + Mon équipe + Administration
+// S58 → S74 — Page principale Compensation & Benchmark
+// S74 : + Dashboard enrichi · Révisions workflow · Cycles · Simulation budget
+// Onglets adaptatifs rôle
 // ============================================================
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { DollarSign, BarChart3, Clock, Users, Settings, Lock } from 'lucide-react'
+import { DollarSign, BarChart3, Clock, Users, Settings, Lock, GitBranch, Calendar, TrendingUp, LayoutDashboard } from 'lucide-react'
 import { useAuth }               from '../../contexts/AuthContext'
 import { useAppSettings }         from '../../hooks/useSettings'
-import { useOrgCompensationStats, formatSalaryShort } from '../../hooks/useCompensation'  // Étape 21
+import { useOrgCompensationStats, useRevisionStats, usePendingReviews, formatSalaryShort } from '../../hooks/useCompensation'
 
-import MyCompensation           from '../../components/compensation/MyCompensation'
-import SalaryBenchmarkPanel     from '../../components/compensation/SalaryBenchmarkPanel'
-import CompensationHistory      from '../../components/compensation/CompensationHistory'
-import TeamCompensationDashboard from '../../components/compensation/TeamCompensationDashboard'
-import CompensationAdminPanel   from '../../components/compensation/CompensationAdminPanel'
+import MyCompensation                from '../../components/compensation/MyCompensation'
+import SalaryBenchmarkPanel          from '../../components/compensation/SalaryBenchmarkPanel'
+import CompensationHistory           from '../../components/compensation/CompensationHistory'
+import TeamCompensationDashboard     from '../../components/compensation/TeamCompensationDashboard'
+import CompensationAdminPanel        from '../../components/compensation/CompensationAdminPanel'
+// S74
+import CompensationDashboardEnrichi  from '../../components/compensation/CompensationDashboardEnrichi'
+import RevisionWorkflow              from '../../components/compensation/RevisionWorkflow'
+import CycleRevision                 from '../../components/compensation/CycleRevision'
+import SimulationBudget              from '../../components/compensation/SimulationBudget'
 
-// S69 — guards via AuthContext helpers (MANAGERS/ADMINS locaux supprimés)
-
-
-// ─── QuickStats compensation (Étape 21) ─────────────────────
+// ─── QuickStats compensation enrichie S74 ────────────────────
 function QuickStatsCompensation() {
-  const { data: stats } = useOrgCompensationStats()
-  if (!stats) return null
+  const { data: stats }   = useOrgCompensationStats()
+  const { data: revStats } = useRevisionStats()
+  const { data: pending = [] } = usePendingReviews()
+
   const items = [
-    { label: 'Collaborateurs',    value: stats.count,                                              color: '#4F46E5' },
-    { label: 'Masse salariale',   value: formatSalaryShort(stats.total_mass),                      color: '#10B981' },
-    { label: 'Salaire moyen',     value: formatSalaryShort(stats.avg_salary),                      color: '#F59E0B' },
-    { label: 'Comp. total moy.',  value: stats.avg_total_comp ? formatSalaryShort(stats.avg_total_comp) : '—', color: '#8B5CF6' },
+    { label: 'Collaborateurs',   value: stats?.count ?? '—',                                color: '#4F46E5' },
+    { label: 'Masse salariale',  value: stats ? formatSalaryShort(stats.total_mass) : '—',  color: '#10B981' },
+    { label: 'Révisions actives',value: (revStats?.nb_soumis ?? 0) + (revStats?.nb_valide_manager ?? 0), color: '#F59E0B' },
+    { label: 'À valider',        value: pending.length,                                      color: pending.length > 0 ? '#EF4444' : '#6B7280' },
   ]
   return (
     <div className="flex flex-wrap gap-3 px-4 sm:px-6 py-3" style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
@@ -44,12 +46,20 @@ function QuickStatsCompensation() {
   )
 }
 
-export default function Compensation() {
-  const { profile, canAdmin, canManageTeam } = useAuth()
-  const { data: settings }   = useAppSettings()
-  const [tab, setTab]        = useState('my')
+// ─── Badge S74 ────────────────────────────────────────────────
+function S74Badge() {
+  return (
+    <span className="ml-1 px-1 py-0.5 rounded text-[8px] font-bold"
+      style={{ background: 'rgba(99,102,241,0.3)', color: '#818CF8' }}>
+      S74
+    </span>
+  )
+}
 
-  const role = profile?.role
+export default function Compensation() {
+  const { profile, canAdmin, canValidate, canManageTeam } = useAuth()
+  const { data: settings } = useAppSettings()
+  const [tab, setTab]      = useState('dashboard')
 
   // Vérification module activé
   const moduleEnabled = settings?.modules?.compensation_enabled !== false
@@ -67,23 +77,28 @@ export default function Compensation() {
     )
   }
 
+  const canSeeRevisions = canAdmin || canValidate || canManageTeam
+
   // Définition des onglets selon rôle
   const TABS = [
-    { id: 'my',       label: 'Ma rémunération', icon: DollarSign, roles: null },
-    { id: 'benchmark',label: 'Benchmark marché', icon: BarChart3,  roles: null },
-    { id: 'history',  label: 'Historique',       icon: Clock,      roles: null },
-    ...(canManageTeam ? [{ id: 'team',  label: 'Mon équipe',    icon: Users    }] : []),
-    ...(canAdmin      ? [{ id: 'admin', label: 'Administration', icon: Settings }] : []),
+    { id: 'dashboard',   label: 'Dashboard',      icon: LayoutDashboard, s74: true },
+    { id: 'my',          label: 'Ma rémunération', icon: DollarSign },
+    { id: 'benchmark',   label: 'Benchmark',       icon: BarChart3 },
+    { id: 'history',     label: 'Historique',      icon: Clock },
+    ...(canSeeRevisions  ? [{ id: 'revisions', label: 'Révisions',   icon: GitBranch, s74: true }] : []),
+    ...(canAdmin         ? [{ id: 'cycles',    label: 'Cycles',      icon: Calendar,  s74: true }] : []),
+    ...(canAdmin         ? [{ id: 'simulation',label: 'Simulation',  icon: TrendingUp, s74: true }] : []),
+    ...(canManageTeam    ? [{ id: 'team',      label: 'Mon équipe',  icon: Users }] : []),
+    ...(canAdmin         ? [{ id: 'admin',     label: 'Administration', icon: Settings }] : []),
   ]
 
-  // Si l'onglet courant n'est plus accessible après changement de rôle, reset
-  const validTab = TABS.find(t => t.id === tab) ? tab : 'my'
+  const validTab = TABS.find(t => t.id === tab) ? tab : 'dashboard'
 
   return (
     <div className="flex flex-col h-full min-h-0">
 
-      {/* ── QuickStats (Étape 21) ── */}
-      {canAdmin && <QuickStatsCompensation/>}
+      {/* ── QuickStats S74 ── */}
+      {(canAdmin || canValidate) && <QuickStatsCompensation/>}
 
       {/* ── Header ── */}
       <div className="flex-shrink-0 px-4 sm:px-6 pt-5 pb-4"
@@ -95,15 +110,15 @@ export default function Compensation() {
           </div>
           <div>
             <h1 className="text-base font-bold text-white leading-tight">Compensation</h1>
-            <p className="text-xs text-white/35">Rémunération & Benchmark salarial</p>
+            <p className="text-xs text-white/35">Rémunération, révisions salariales & benchmark</p>
           </div>
         </div>
 
         {/* Onglets */}
         <div className="flex gap-0.5 overflow-x-auto pb-0.5 scrollbar-none">
           {TABS.map(t => {
-            const Icon    = t.icon
-            const active  = validTab === t.id
+            const Icon   = t.icon
+            const active = validTab === t.id
             return (
               <button key={t.id} onClick={() => setTab(t.id)}
                 className="flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-xs font-medium whitespace-nowrap transition-all flex-shrink-0"
@@ -112,6 +127,7 @@ export default function Compensation() {
                   : { color: 'rgba(255,255,255,0.35)' }}>
                 <Icon size={13}/>
                 {t.label}
+                {t.s74 && <S74Badge/>}
               </button>
             )
           })}
@@ -121,18 +137,20 @@ export default function Compensation() {
       {/* ── Contenu ── */}
       <div className="flex-1 overflow-y-auto px-4 sm:px-6 py-5">
         <AnimatePresence mode="wait">
-          <motion.div
-            key={validTab}
+          <motion.div key={validTab}
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -8 }}
-            transition={{ duration: 0.2 }}
-          >
-            {validTab === 'my'        && <MyCompensation/>}
-            {validTab === 'benchmark' && <SalaryBenchmarkPanel/>}
-            {validTab === 'history'   && <CompensationHistory/>}
-            {validTab === 'team'      && <TeamCompensationDashboard/>}
-            {validTab === 'admin'     && <CompensationAdminPanel/>}
+            transition={{ duration: 0.2 }}>
+            {validTab === 'dashboard'  && <CompensationDashboardEnrichi/>}
+            {validTab === 'my'         && <MyCompensation/>}
+            {validTab === 'benchmark'  && <SalaryBenchmarkPanel/>}
+            {validTab === 'history'    && <CompensationHistory/>}
+            {validTab === 'revisions'  && <RevisionWorkflow/>}
+            {validTab === 'cycles'     && <CycleRevision/>}
+            {validTab === 'simulation' && <SimulationBudget/>}
+            {validTab === 'team'       && <TeamCompensationDashboard/>}
+            {validTab === 'admin'      && <CompensationAdminPanel/>}
           </motion.div>
         </AnimatePresence>
       </div>
