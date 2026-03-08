@@ -48,6 +48,9 @@ const GestionTempsAbsences  = lazy(() => import('./pages/temps-absences/GestionT
 // ── Congés & Absences S67 ─────────────────────────────────────
 const GestionConges = lazy(() => import('./pages/conges/GestionConges'))
 
+// ── Module 5 Performance S93 ──────────────────────────────────
+const PerformanceHub = lazy(() => import('./pages/performance/PerformanceHub'))
+
 // ── Onboarding S75 ────────────────────────────────────────────
 const Onboarding  = lazy(() => import('./pages/onboarding/Onboarding'))
 // ── Offboarding S68 ───────────────────────────────────────────
@@ -123,6 +126,7 @@ export default function App() {
           <Route path="/temps-absences"  element={<S><GestionTempsAbsences /></S>} />
           <Route path="/temps"           element={<Navigate to="/temps-absences" replace />} />
           <Route path="/conges"          element={<Navigate to="/temps-absences" replace />} />
+          <Route path="/performance"     element={<S><PerformanceHub /></S>} />
           <Route path="/offboarding" element={<S><Offboarding /></S>} />
           <Route path="/onboarding"  element={<S><Onboarding  /></S>} />
 
