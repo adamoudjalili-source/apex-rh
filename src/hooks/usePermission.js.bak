@@ -369,26 +369,12 @@ const PERMISSION_MATRIX = {
       read: () => true,
       create: () => true,
     },
-    journal: {
-      read: () => true,
-      create: () => true,
-    },
-    board: {
-      read: () => true,
-    },
     team: {
       read: ({ canManageTeam }) => canManageTeam,
     },
     alerts: {
       read: ({ canManageTeam }) => canManageTeam,
       admin: ({ canAdmin }) => canAdmin,
-    },
-    calibration: {
-      admin: ({ canAdmin }) => canAdmin,
-    },
-    analytics: {
-      read: ({ canManageTeam }) => canManageTeam,
-      org:  ({ canManageOrg })  => canManageOrg,
     },
   },
 }
