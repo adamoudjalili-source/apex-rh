@@ -42,7 +42,8 @@ const Recrutement    = lazy(() => import('./pages/recrutement/Recrutement'))
 const EntretiensAnnuels = lazy(() => import('./pages/entretiens/EntretiensAnnuels'))
 
 // ── Gestion des Temps S66 ─────────────────────────────────────
-const GestionTemps = lazy(() => import('./pages/temps/GestionTemps'))
+const GestionTemps          = lazy(() => import('./pages/temps/GestionTemps'))
+const GestionTempsAbsences  = lazy(() => import('./pages/temps-absences/GestionTempsAbsences'))
 
 // ── Congés & Absences S67 ─────────────────────────────────────
 const GestionConges = lazy(() => import('./pages/conges/GestionConges'))
@@ -119,8 +120,9 @@ export default function App() {
           {/* ── RH Opérationnel (sidebar directe) ── */}
           <Route path="/recrutement" element={<S><Recrutement /></S>} />
           <Route path="/entretiens"  element={<S><EntretiensAnnuels /></S>} />
-          <Route path="/temps"       element={<S><GestionTemps /></S>} />
-          <Route path="/conges"      element={<S><GestionConges /></S>} />
+          <Route path="/temps-absences"  element={<S><GestionTempsAbsences /></S>} />
+          <Route path="/temps"           element={<Navigate to="/temps-absences" replace />} />
+          <Route path="/conges"          element={<Navigate to="/temps-absences" replace />} />
           <Route path="/offboarding" element={<S><Offboarding /></S>} />
           <Route path="/onboarding"  element={<S><Onboarding  /></S>} />
 
