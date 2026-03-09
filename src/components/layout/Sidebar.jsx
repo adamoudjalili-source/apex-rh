@@ -54,7 +54,7 @@ import {
   Globe, UserSquare2, GraduationCap, RefreshCw,
   Briefcase, CalendarDays, Wallet, Trophy,
   Activity, Building2, Bell, Zap,
-  CheckSquare,
+  CheckSquare, UserCircle2,
 } from 'lucide-react'
 import { useAuth }        from '../../contexts/AuthContext'
 import { useAppSettings } from '../../hooks/useSettings'
@@ -127,6 +127,7 @@ function MonEspace({ collapsed, pulseOn }) {
     <>
       <Section label="Mon Espace" collapsed={collapsed}/>
       <NavItem icon={Briefcase}     label="Mon Travail"        path="/mon-travail"       color="#4F46E5" collapsed={collapsed}/>
+      <NavItem icon={UserCircle2}   label="Mon Profil"         path="/mon-profil"        color="#8B5CF6" collapsed={collapsed}/>
       <NavItem icon={Clock}         label="Mon Timesheet"      path="/mon-timesheet"     color="#34D399" collapsed={collapsed}/>
       <NavItem icon={CalendarDays}  label="Mes Congés"         path="/mes-conges"        color="#10B981" collapsed={collapsed}/>
       <NavItem icon={GraduationCap} label="Mon Développement"  path="/mon-developpement" color="#8B5CF6" collapsed={collapsed}/>

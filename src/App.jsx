@@ -21,6 +21,7 @@ const MonTableauDeBord = lazy(() => import('./pages/dashboard/Dashboard'))  // a
 
 // ── Mon Espace ────────────────────────────────────────────────
 const MonTravail       = lazy(() => import('./pages/mon-travail/MonTravail'))
+const MonProfil        = lazy(() => import('./pages/mon-profil/MonProfil'))
 const MaPerformance    = lazy(() => import('./pages/ma-performance/MaPerformance'))
 const MonDeveloppement = lazy(() => import('./pages/mon-developpement/MonDeveloppement'))
 const EngagementHub    = lazy(() => import('./pages/engagement/EngagementHub'))
@@ -89,6 +90,7 @@ export default function App() {
 
           {/* ── Mon Espace ── */}
           <Route path="/mon-travail"       element={<S><MonTravail /></S>} />
+          <Route path="/mon-profil"        element={<S><MonProfil /></S>} />
           <Route path="/ma-performance"    element={<S><MaPerformance /></S>} />
           <Route path="/mon-developpement" element={<S><MonDeveloppement /></S>} />
           <Route path="/engagement"        element={<S><EngagementHub /></S>} />
