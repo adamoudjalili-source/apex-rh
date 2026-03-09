@@ -201,10 +201,10 @@ export default function ProjectGanttAdvanced() {
             className="px-2 py-1.5 rounded-lg bg-white/5 border border-white/10 text-xs text-white focus:outline-none"
           >
             <option value="">Tous les statuts</option>
-            <option value=TASK_STATUS.EN_COURS>En cours</option>
+            <option value={TASK_STATUS.EN_COURS}>En cours</option>
             <option value="planifie">Planifié</option>
             <option value="en_attente">En attente</option>
-            <option value=TASK_STATUS.TERMINE>Terminé</option>
+            <option value={TASK_STATUS.TERMINE}>Terminé</option>
           </select>
 
           <button

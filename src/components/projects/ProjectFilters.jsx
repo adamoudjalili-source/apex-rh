@@ -31,9 +31,9 @@ export default function ProjectFilters({ filters, onChange }) {
       >
         <option value="" className="bg-[#1a1a35]">Tous les statuts</option>
         <option value="planifie" className="bg-[#1a1a35]">Planifié</option>
-        <option value=TASK_STATUS.EN_COURS className="bg-[#1a1a35]">En cours</option>
+        <option value={TASK_STATUS.EN_COURS} className="bg-[#1a1a35]">En cours</option>
         <option value="en_pause" className="bg-[#1a1a35]">En pause</option>
-        <option value=TASK_STATUS.TERMINE className="bg-[#1a1a35]">Terminé</option>
+        <option value={TASK_STATUS.TERMINE} className="bg-[#1a1a35]">Terminé</option>
         <option value="annule" className="bg-[#1a1a35]">Annulé</option>
       </select>
 

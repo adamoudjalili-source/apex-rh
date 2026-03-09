@@ -140,7 +140,7 @@ export default function MilestoneList({ milestones = [], projectId, canEdit }) {
                   className="px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-xs text-white focus:outline-none focus:border-indigo-500/50 appearance-none cursor-pointer"
                 >
                   <option value="en_attente" className="bg-[#1a1a35]">En attente</option>
-                  <option value=TASK_STATUS.EN_COURS className="bg-[#1a1a35]">En cours</option>
+                  <option value={TASK_STATUS.EN_COURS} className="bg-[#1a1a35]">En cours</option>
                   <option value="atteint" className="bg-[#1a1a35]">Atteint</option>
                   <option value="en_retard" className="bg-[#1a1a35]">En retard</option>
                 </select>
