@@ -10,7 +10,7 @@ import { useSearchParams } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   Clock, Users, TrendingUp, CheckSquare, Settings2,
-  CalendarOff, CalendarDays, Plus, Download, ShieldCheck,
+  CalendarOff, Plus, Download, ShieldCheck,
 } from 'lucide-react'
 
 import { usePermission }         from '../../hooks/usePermission'
@@ -48,10 +48,26 @@ const fadeIn = {
   exit:    { opacity: 0, y: -6, transition: { duration: 0.18 } },
 }
 
-// ── Onglet Ma Feuille (timesheet uniquement) ───────────────
+// ── Onglet Ma Feuille ──────────────────────────────────────
 function OngletMaFeuille() {
+  const [showForm,     setShowForm]     = useState(false)
+  const [yearFilter,   setYearFilter]   = useState(new Date().getFullYear())
+  const [statusFilter, setStatusFilter] = useState('')
+  const { data: requests = [], isLoading, refetch } = useMyLeaveRequests(yearFilter)
+  const filtered = statusFilter
+    ? requests.filter(r => r.status === statusFilter)
+    : requests
+
   return (
     <div className="space-y-6">
+      {showForm && (
+        <LeaveRequestForm
+          onClose={() => setShowForm(false)}
+          onSuccess={() => { setShowForm(false); refetch() }}
+        />
+      )}
+
+      {/* Pointage + Stats + Feuille */}
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-5">
         <div className="space-y-4">
           <TimeClockWidget />
@@ -63,29 +79,8 @@ function OngletMaFeuille() {
           </SectionCard>
         </div>
       </div>
-      <SectionCard title="Mes heures supplémentaires">
-        <OvertimeSummary />
-      </SectionCard>
-    </div>
-  )
-}
 
-// ── Onglet Mes Congés ──────────────────────────────────────
-function OngletConges() {
-  const [showForm,     setShowForm]     = useState(false)
-  const [yearFilter,   setYearFilter]   = useState(new Date().getFullYear())
-  const [statusFilter, setStatusFilter] = useState('')
-  const { data: requests = [], isLoading, refetch } = useMyLeaveRequests(yearFilter)
-  const filtered = statusFilter ? requests.filter(r => r.status === statusFilter) : requests
-
-  return (
-    <div className="space-y-6">
-      {showForm && (
-        <LeaveRequestForm
-          onClose={() => setShowForm(false)}
-          onSuccess={() => { setShowForm(false); refetch() }}
-        />
-      )}
+      {/* Mes congés */}
       <SectionCard
         title={`Mes congés — ${yearFilter}`}
         action={
@@ -115,12 +110,16 @@ function OngletConges() {
             ))}
           </select>
         </div>
+
         <LeaveBalanceCard year={yearFilter} />
+
         <div className="mt-5">
           <p className="text-xs font-semibold text-white/30 uppercase tracking-wider mb-3">
             Mes demandes
             {requests.length > 0 && (
-              <span className="ml-2 text-white/40 normal-case font-normal">({filtered.length})</span>
+              <span className="ml-2 text-white/40 normal-case font-normal">
+                ({filtered.length})
+              </span>
             )}
           </p>
           {isLoading ? (
@@ -133,7 +132,9 @@ function OngletConges() {
               style={{ background: 'rgba(255,255,255,0.02)', border: '1px dashed rgba(255,255,255,0.07)' }}>
               <CalendarOff size={32} className="mx-auto text-white/15 mb-3" />
               <p className="text-white/30 text-sm">Aucune demande de congé</p>
-              <button onClick={() => setShowForm(true)} className="mt-4 text-xs text-indigo-400 hover:underline">
+              <button
+                onClick={() => setShowForm(true)}
+                className="mt-4 text-xs text-indigo-400 hover:underline">
                 + Créer une demande
               </button>
             </div>
@@ -142,6 +143,14 @@ function OngletConges() {
               {filtered.map(r => <LeaveRequestCard key={r.id} request={r} onRefetch={refetch} />)}
             </div>
           )}
+        </div>
+
+        {/* Heures sup résumé perso */}
+        <div className="mt-6">
+          <p className="text-xs font-semibold text-white/30 uppercase tracking-wider mb-3">
+            Mes heures supplémentaires
+          </p>
+          <OvertimeSummary />
         </div>
       </SectionCard>
     </div>
@@ -326,11 +335,8 @@ function SectionCard({ title, action, children }) {
 // ── Hub principal ──────────────────────────────────────────
 export default function GestionTempsAbsences() {
   const { can } = usePermission()
-  const [searchParams, setSearchParams] = useSearchParams()
-
-  // activeTab dérivé de l'URL — réactif aux navigations sidebar
-  const activeTab = searchParams.get('tab') || 'ma-feuille'
-  const setActiveTab = (tab) => setSearchParams({ tab }, { replace: true })
+  const [searchParams]            = useSearchParams()
+  const [activeTab, setActiveTab] = useState(() => searchParams.get('tab') || 'ma-feuille')
 
   // Permissions
   const canViewTeam       = can('temps', 'team', 'read')
@@ -341,15 +347,47 @@ export default function GestionTempsAbsences() {
   const showAdmin         = canExportPayroll || canAdminRules || canAdminHolidays
 
   const TABS = [
-    { id: 'ma-feuille',     label: 'Ma Feuille',   icon: Clock,         show: true,              color: '#818CF8' },
-    { id: 'conges',         label: 'Mes Congés',   icon: CalendarDays,  show: true,              color: '#10B981' },
-    { id: 'mon-equipe',     label: 'Mon Équipe',   icon: Users,         show: canViewTeam,       color: '#34D399' },
-    { id: 'heures-sup',     label: 'Heures Sup.',  icon: TrendingUp,    show: true,              color: '#FB923C' },
-    { id: 'validation',     label: 'Validation',   icon: CheckSquare,   show: canValidateTeam,   color: '#FACC15' },
-    { id: 'administration', label: 'Administration',icon: Settings2,     show: showAdmin,         color: '#F87171' },
+    {
+      id:    'ma-feuille',
+      label: 'Ma Feuille',
+      icon:  Clock,
+      show:  true,
+      color: '#818CF8',
+    },
+    {
+      id:    'mon-equipe',
+      label: 'Mon Équipe',
+      icon:  Users,
+      show:  canViewTeam,
+      color: '#34D399',
+    },
+    {
+      id:    'heures-sup',
+      label: 'Heures Sup.',
+      icon:  TrendingUp,
+      show:  true,
+      color: '#FB923C',
+    },
+    {
+      id:    'validation',
+      label: 'Validation',
+      icon:  CheckSquare,
+      show:  canValidateTeam,
+      color: '#FACC15',
+    },
+    {
+      id:    'administration',
+      label: 'Administration',
+      icon:  Settings2,
+      show:  showAdmin,
+      color: '#F87171',
+    },
   ].filter(t => t.show)
 
-  const validTab = TABS.find(t => t.id === activeTab) ? activeTab : TABS[0]?.id
+  // Normalise activeTab si un onglet disparaît
+  // 'conges' est un alias de 'ma-feuille' (venu de /mes-conges)
+  const normalizedTab = activeTab === 'conges' ? 'ma-feuille' : activeTab
+  const validTab = TABS.find(t => t.id === normalizedTab) ? normalizedTab : TABS[0]?.id
 
   return (
     <div
@@ -416,7 +454,6 @@ export default function GestionTempsAbsences() {
             animate="visible"
             exit="exit">
             {validTab === 'ma-feuille'     && <OngletMaFeuille />}
-            {validTab === 'conges'         && <OngletConges />}
             {validTab === 'mon-equipe'     && <OngletMonEquipe />}
             {validTab === 'heures-sup'     && <OngletHeuresSup canValidateTeam={canValidateTeam} />}
             {validTab === 'validation'     && <OngletValidation />}
