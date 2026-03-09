@@ -37,16 +37,6 @@ import ReviewManagerDashboard   from '../../components/entretiens/ReviewManagerD
 import MidYearCampaignPanel     from '../../components/entretiens/MidYearCampaignPanel'
 import { REVIEW_STATUS, STATUS, TASK_STATUS } from '../../utils/constants'
 
-// S81 — imports Feedback 360°
-import {
-  useActiveFeedback360Cycle,
-  useMyFeedback360ToComplete,
-} from '../../hooks/useFeedback360'
-import Feedback360Form       from '../../components/feedback360/Feedback360Form'
-import Feedback360Summary    from '../../components/feedback360/Feedback360Summary'
-import Feedback360Trends     from '../../components/feedback360/Feedback360Trends'
-import Feedback360CycleAdmin from '../../components/feedback360/Feedback360CycleAdmin'
-
 const CalibrationPage = lazy(() => import('../intelligence/CalibrationPage'))
 
 // S81 — Feedback 360° tab
