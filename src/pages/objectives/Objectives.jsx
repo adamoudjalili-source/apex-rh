@@ -31,7 +31,7 @@ import { exportObjectives } from '../../lib/exportExcel'
 import OKRCycleManager from '../../components/okr/OKRCycleManager'
 import OKRCascadeView from '../../components/okr/OKRCascadeView'
 import OKRDashboard from '../../components/okr/OKRDashboard'
-import StatCard from '../components/ui/StatCard'
+import StatCard from '../../components/ui/StatCard'
 
 export default function Objectives() {
   const { profile } = useAuth()

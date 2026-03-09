@@ -23,7 +23,7 @@ import ProjectGanttAdvanced from '../../components/projects/ProjectGanttAdvanced
 import ExportButton from '../../components/ui/ExportButton'
 import { exportProjects } from '../../lib/exportExcel'
 import { TASK_STATUS } from '../../utils/constants'
-import StatCard from '../components/ui/StatCard'
+import StatCard from '../../components/ui/StatCard'
 
 export default function Projects() {
   const { profile } = useAuth()
