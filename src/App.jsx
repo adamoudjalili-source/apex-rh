@@ -15,7 +15,8 @@ import ForgotPassword      from './pages/auth/ForgotPassword'
 import ResetPassword       from './pages/auth/ResetPassword'
 import ForceChangePassword from './pages/auth/ForceChangePassword'
 
-// ── Hub pages (lazy) ─────────────────────────────────────────
+// ── Hub Mon Travail S110 ──────────────────────────────────────
+const MonTravail        = lazy(() => import('./pages/mon-travail/MonTravail'))
 const MonEspaceHub      = lazy(() => import('./pages/espace/MonEspaceHub'))
 const ManagementHub     = lazy(() => import('./pages/management/ManagementHub'))
 const AdministrationHub = lazy(() => import('./pages/administration/AdministrationHub'))
@@ -168,7 +169,7 @@ export default function App() {
           <Route path="/mon-espace-legacy" element={<S><MonEspace /></S>} />  {/* ancien /mon-espace si besoin */}
 
           {/* ── S110 — Nouvelles routes Mon Espace ──────────────── */}
-          <Route path="/mon-travail"       element={<S><MonEspaceHub /></S>} />   {/* unifie tâches + projets + OKR */}
+          <Route path="/mon-travail"       element={<S><MonTravail /></S>} />    {/* Tâches + Projets + OKR */}
           <Route path="/mon-timesheet"     element={<Navigate to="/temps-absences" replace />} />
           <Route path="/mes-conges"        element={<Navigate to="/temps-absences" replace />} />
           <Route path="/mes-entretiens"    element={<Navigate to="/entretiens" replace />} />
