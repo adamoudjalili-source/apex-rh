@@ -12,7 +12,7 @@ const STATUS_COLORS = {
   en_revue: '#A78BFA',
   terminee: '#10B981',
   bloquee: '#EF4444',
-  annulee: '#374151',
+  annule: '#374151',
 }
 
 function Arrow({ x1, y1, x2, y2, color = '#4B5563', dashed = false }) {
@@ -126,11 +126,15 @@ export default function TaskDependencyGraph({ taskId, task }) {
 
   const handleAdd = async () => {
     if (!selectedTaskId) return
-    await createDep.mutateAsync({
-      taskId,
-      dependsOnId: depType === 'blocks' ? selectedTaskId : selectedTaskId,
-      dependencyType: depType,
-    })
+    // ✅ S133 Fix P2 : direction corrigée
+    // "Bloque une tâche" → la tâche sélectionnée DÉPEND de la tâche courante
+    //   → insert task_id=selectedTaskId, depends_on_id=taskId
+    // "Liée à" → la tâche courante DÉPEND de la tâche sélectionnée
+    //   → insert task_id=taskId, depends_on_id=selectedTaskId
+    const payload = depType === 'blocks'
+      ? { taskId: selectedTaskId, dependsOnId: taskId, dependencyType: depType }
+      : { taskId, dependsOnId: selectedTaskId, dependencyType: depType }
+    await createDep.mutateAsync(payload)
     setShowAdd(false)
     setSelectedTaskId('')
   }
