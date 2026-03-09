@@ -17,11 +17,6 @@ import { useAuth }  from '../contexts/AuthContext'
 import { READINESS_CONFIG } from './useSuccessionPlanning'
 
 // ─── READINESS config ─────────────────────────────────────────
-export const READINESS_CONFIG = {
-  ready_now: { label: 'Prêt maintenant', color: '#10B981', bg: 'rgba(16,185,129,0.12)',  order: 0 },
-  ready_1y:  { label: 'Prêt dans 1 an',  color: '#3B82F6', bg: 'rgba(59,130,246,0.12)',  order: 1 },
-  ready_2y:  { label: 'Prêt dans 2 ans', color: '#8B5CF6', bg: 'rgba(139,92,246,0.12)', order: 2 },
-}
 
 export const READINESS_ORDER = ['ready_now', 'ready_1y', 'ready_2y']
 

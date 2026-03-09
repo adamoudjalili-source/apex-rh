@@ -32,12 +32,6 @@ export const DIMENSION_LABELS = {
   review:           { label: 'Évaluation formelle',icon: '📋', color: '#6B7280' },
 }
 
-export const NOTE_TYPE_LABELS = {
-  general:     { label: 'Note générale',       icon: '📝', color: '#6B7280' },
-  positive:    { label: 'Point fort',          icon: '✅', color: '#10B981' },
-  concern:     { label: 'Point d\'attention',  icon: '⚠️', color: '#F59E0B' },
-  action_plan: { label: 'Plan d\'action',      icon: '🎯', color: '#4F46E5' },
-}
 
 // YYYY-MM du mois courant
 export const currentPeriodKey = () => {
