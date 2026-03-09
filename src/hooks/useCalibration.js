@@ -209,8 +209,8 @@ export function useCreateCalibrationSession() {
         .single()
       if (error) throw error
 
-      // Log historique
-      await supabase.from('calibration_history').insert({
+      // Log historique (fire-and-forget)
+      supabase.from('calibration_history').insert({
         organization_id:       orgData.organization_id,
         calibration_session_id: data.id,
         actor_id:              profile.id,
@@ -463,7 +463,7 @@ export function useDistributionStats(evals) {
   Object.keys(benchmark).forEach(key => {
     const actual = distribution[key] ? (distribution[key] / total * 100) : 0
     delta[key] = Math.round(actual - benchmark[key])
-  })
+  }).catch(() => {})
 
   return { distribution, benchmark, delta, total }
 }

@@ -138,7 +138,6 @@ export default function OffboardingDashboard({ onSelectProcess }) {
   const { can } = usePermission()
   const canAdmin = can('offboarding', 'team', 'read')
   const { data: processes = [], isLoading, refetch, isFetching } = useOffboardingDashboard()
-  const autoCreate = useAutoCreateOffboarding()
   const [filter, setFilter] = useState('all') // 'all' | 'alert' | 'on_track'
 
   const active    = processes.filter(p => p.status === 'in_progress')

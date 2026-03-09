@@ -51,7 +51,6 @@ function WeekCard({ sheet, settings, userId, onRecalc }) {
   const segOt100= (ot100H / maxBar) * W
   const threshX = (weekThresh / maxBar) * W
 
-  const dates = getWeekDates(sheet.week_start)
 
   return (
     <div className="rounded-2xl border border-white/[0.08] p-5 transition-all hover:border-white/15"

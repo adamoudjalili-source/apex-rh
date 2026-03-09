@@ -237,7 +237,6 @@ export default function UsersPage() {
               </thead>
               <tbody className="divide-y divide-white/[0.04]">
                 {filtered.map((user, index) => {
-                  const org = getOrgLabel(user)
                   return (
                     <motion.tr
                       key={user.id}

@@ -141,7 +141,6 @@ export function useHeatmapData(months = 6) {
       if (!profile?.id) return { users: [], months: [], scores: {} }
 
       const monthKeys = getLastNMonthKeys(months)
-      const startDate = `${monthKeys[0]}-01`
 
       // Récupérer les scores depuis la vue
       const { data: scoreRows, error: e1 } = await supabase

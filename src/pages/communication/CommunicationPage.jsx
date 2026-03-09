@@ -98,7 +98,6 @@ export default function CommunicationPage() {
 
   useChannelsRealtime()
 
-  const isAdmin = [ROLES.ADMINISTRATEUR, ROLES.DIRECTEUR].includes(profile?.role)
 
   return (
     <div className="flex flex-col h-full overflow-y-auto">

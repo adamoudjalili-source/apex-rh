@@ -58,10 +58,6 @@ export default function ManagementHub() {
   const { can } = usePermission()
   const canManageOrg = can('intelligence', 'overview', 'read')
   const hasStrategic = can('intelligence', 'succession', 'read')
-  const isAdmin = can('admin', 'users', 'read')
-  const isSuperAdmin = can('admin', ROLES.SUPER_ADMIN, 'admin')
-  const firstName   = profile?.first_name || ''
-  const role        = profile?.role
 
   // Label adapté au rôle
   const teamLabel = isChefDivision ? 'Ma Division'

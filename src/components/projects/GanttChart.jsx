@@ -75,12 +75,6 @@ export default function GanttChart({ project, milestones = [], canEdit }) {
     return Math.round((new Date(date) - ganttStart) / (1000 * 60 * 60 * 24))
   }, [ganttStart])
 
-  const offsetToDate = useCallback((px) => {
-    const days = Math.round(px / dayWidth)
-    const d = new Date(ganttStart)
-    d.setDate(d.getDate() + days)
-    return d.toISOString().split('T')[0]
-  }, [dayWidth, ganttStart])
 
   // ─── Aujourd'hui ───────────────────────────────────────────
   const todayOffset = dayOffset(new Date())

@@ -23,6 +23,7 @@ import ProjectGanttAdvanced from '../../components/projects/ProjectGanttAdvanced
 import ExportButton from '../../components/ui/ExportButton'
 import { exportProjects } from '../../lib/exportExcel'
 import { TASK_STATUS } from '../../utils/constants'
+import StatCard from '../components/ui/StatCard'
 
 export default function Projects() {
   const { profile } = useAuth()
@@ -233,17 +234,6 @@ export default function Projects() {
 
 // ─── Composants internes ─────────────────────────────────────
 
-function StatCard({ icon: Icon, label, value, color }) {
-  return (
-    <div className="p-4 rounded-xl bg-white/[0.03] border border-white/5">
-      <div className="flex items-center gap-2 mb-2">
-        <Icon size={14} style={{ color }} />
-        <span className="text-[11px] text-white/30">{label}</span>
-      </div>
-      <p className="text-xl font-black text-white" style={{ color }}>{value}</p>
-    </div>
-  )
-}
 
 function EmptyState() {
   return (

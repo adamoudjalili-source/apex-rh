@@ -72,7 +72,6 @@ function KanbanIcon({ size = 13 }) {
 export default function Recrutement() {
   const { profile } = useAuth()
   const { can } = usePermission()
-  const canAdmin = can('recrutement', 'templates', 'admin')
   const canManageOrg = can('recrutement', 'pipeline', 'update')
   const role = profile?.role
   const canPipeline     = canManageOrg || role === ROLES.CHEF_DIVISION

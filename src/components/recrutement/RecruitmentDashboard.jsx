@@ -255,7 +255,6 @@ function TopPostings({ dashboard }) {
       <p className="text-xs font-semibold text-white/40 uppercase tracking-wider mb-3">Top postes — candidatures</p>
       <div className="space-y-2">
         {top.map(job => {
-          const hireRate = job.total_applicants > 0
             ? Math.round((job.hired_count / job.total_applicants) * 100)
             : 0
           return (

@@ -232,7 +232,6 @@ export function useSubmitTimeSheet() {
 export function useApproveTimeSheet() {
   const { profile } = useAuth()
   const qc = useQueryClient()
-  const isAdmin = [ROLES.ADMINISTRATEUR,ROLES.DIRECTEUR,'direction'].includes(profile?.role)
   const isManager = [ROLES.CHEF_DIVISION,ROLES.CHEF_SERVICE].includes(profile?.role)
 
   return useMutation({

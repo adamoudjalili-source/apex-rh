@@ -118,7 +118,6 @@ function ReviewCard({ review, onClick }) {
 export default function AnnualReviewDashboard() {
   const { profile } = useAuth()
   const { can } = usePermission()
-  const isAdmin = can('admin', 'users', 'read')
   const [selectedCampaignId, setSelectedCampaignId] = useState(null)
   const [search, setSearch] = useState('')
   const [filterStatus, setFilterStatus] = useState('all')

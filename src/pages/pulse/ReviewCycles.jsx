@@ -1264,7 +1264,6 @@ const CalibrationPage = lazy(() => import('../intelligence/CalibrationPage'))
 export default function ReviewCycles() {
   const { profile } = useAuth()
   const { can } = usePermission()
-  const canManageTeam = can('pulse', 'team', 'read')
 
   return (
     <div className="space-y-6 pb-8">

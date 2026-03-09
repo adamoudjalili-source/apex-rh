@@ -485,7 +485,7 @@ function ParsedCVCard({ result, onDelete, onLink }) {
 }
 
 // ─── Modal : lier à une candidature ──────────────────────────
-function LinkModal({ result, onClose, onConfirm }) {
+function LinkModal({ result, onClose}) {
   const { data: postings } = useJobPostings({ status: 'published' })
   const [selectedApp, setSelectedApp] = useState('')
 
@@ -561,7 +561,6 @@ export default function CVParserPanel() {
   const { can } = usePermission()
   const isAdmin = can('admin', 'users', 'read')
   const isDirecteur = can('intelligence', 'overview', 'read')
-  const isManager = isAdmin || isDirecteur
 
   const [uploadError, setUploadError]     = useState(null)
   const [linkTarget, setLinkTarget]       = useState(null)

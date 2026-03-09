@@ -51,7 +51,7 @@ function ScoreBadge({ score, size = 'sm' }) {
 }
 
 // ─── Carte candidat ───────────────────────────────────────────
-function CandidateCard({ app, onSelect, onQuickMove, stages }) {
+function CandidateCard({ app, onSelect, stages }) {
   const [showActions, setShowActions] = useState(false)
   const moveApp = useMoveApplicationStage()
   const archiveApp = useArchiveApplication()
@@ -83,7 +83,6 @@ function CandidateCard({ app, onSelect, onQuickMove, stages }) {
 
   const lastInterview = app.interviews?.filter(i => i.status === 'realise')
     .sort((a, b) => new Date(b.scheduled_at) - new Date(a.scheduled_at))[0]
-  const hasScore = app.match_score != null
 
   const daysInStage = app.updated_at
     ? Math.floor((Date.now() - new Date(app.updated_at)) / 86400000)

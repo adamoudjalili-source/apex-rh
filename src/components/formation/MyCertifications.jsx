@@ -167,10 +167,6 @@ export default function MyCertifications() {
     return days !== null && days > 0 && days < 60
   })
 
-  const expired = certs.filter(c => {
-    const days = getDaysUntilExpiry(c.expires_at)
-    return days !== null && days < 0
-  })
 
   return (
     <div className="space-y-4">

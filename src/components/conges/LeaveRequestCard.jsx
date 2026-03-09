@@ -10,7 +10,7 @@ import {
   useSubmitLeaveRequest, formatDate,
 } from '../../hooks/useConges'
 
-export default function LeaveRequestCard({ request, onDeleted, showUser = false }) {
+export default function LeaveRequestCard({ request, showUser = false }) {
   const [expanded, setExpanded] = useState(false)
   const submitReq = useSubmitLeaveRequest()
 
@@ -121,7 +121,6 @@ export default function LeaveRequestCard({ request, onDeleted, showUser = false 
               const active  = status === s
               const passed  = ['draft',LEAVE_STATUS.SUBMITTED,LEAVE_STATUS.MANAGER_APPROVED,LEAVE_STATUS.HR_APPROVED].indexOf(status)
                             > ['draft',LEAVE_STATUS.SUBMITTED,LEAVE_STATUS.MANAGER_APPROVED,LEAVE_STATUS.HR_APPROVED].indexOf(s)
-              const isFinal = status === 'rejected'
               const dotColor = passed || active ? statusCol : 'rgba(255,255,255,0.12)'
               return (
                 <div key={s} className="flex items-center gap-1">

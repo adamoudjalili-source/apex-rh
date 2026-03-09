@@ -120,7 +120,7 @@ function MessageBubble({ msg, isOwn, onReply, onEdit, onDelete, onReact, myId })
               {msg.attachments?.length > 0 && (
                 <div className="mt-2 space-y-1">
                   {msg.attachments.map((att, i) => (
-                    <a key={i} href={att.url} target="_blank" rel="noreferrer"
+                    <a key={att.url || i} href={att.url} target="_blank" rel="noreferrer"
                       className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg bg-white/[0.08] hover:bg-white/[0.12] transition-colors text-xs text-white/70">
                       📎 {att.name}
                       <span className="text-white/30 ml-auto">

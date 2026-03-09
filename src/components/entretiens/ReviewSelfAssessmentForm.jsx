@@ -307,7 +307,7 @@ export default function ReviewSelfAssessmentForm({ review, onClose, readOnly = f
             <p className="text-xs text-white/40">Proposez vos objectifs pour la prochaine période.</p>
             {(answers.objectifs_proposes || []).map((obj, i) => (
               <ObjectifItem
-                key={i} obj={obj} idx={i}
+                key={obj.id || `obj-${i}`} obj={obj} idx={i}
                 onChange={v => updateObjectif(i, v)}
                 onRemove={() => removeObjectif(i)}
                 disabled={disabled}

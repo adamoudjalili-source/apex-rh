@@ -81,7 +81,7 @@ export const PLAN_ITEM_STATUS_LABELS = {
 
 export function useTrainingCatalog({ type, level, tags, search, activeOnly = true } = {}) {
   return useQuery({
-    queryKey: ['training-catalog', { type, level, tags, search, activeOnly }],
+    queryKey: ['training-catalog', type, level, tags?.join(','), search, activeOnly],
     queryFn: async () => {
       let q = supabase
         .from('training_catalog')
@@ -190,7 +190,7 @@ export function useDeleteTraining() {
 export function useMyEnrollments({ status } = {}) {
   const { profile } = useAuth()
   return useQuery({
-    queryKey: ['enrollments', 'me', profile?.id, { status }],
+    queryKey: ['enrollments', 'me', profile?.id, status],
     queryFn: async () => {
       let q = supabase
         .from('training_enrollments')

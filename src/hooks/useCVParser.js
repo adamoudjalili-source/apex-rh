@@ -371,7 +371,7 @@ export function useCVParseResultsByOrg(filters = {}) {
   const { status, jobPostingId, limit = 50 } = filters
 
   return useQuery({
-    queryKey: ['cv-parse-results', { status, jobPostingId, organizationId }],
+    queryKey: ['cv-parse-results', organizationId, status, jobPostingId],
     enabled : !!organizationId,
     queryFn : async () => {
       let q = supabase

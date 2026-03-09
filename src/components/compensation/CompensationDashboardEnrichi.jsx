@@ -141,7 +141,6 @@ function ActiveCycles({ cycles, progress }) {
 // ─── COMPOSANT PRINCIPAL ──────────────────────────────────────
 export default function CompensationDashboardEnrichi() {
   const { can } = usePermission()
-  const canAdmin = can('compensation', 'admin', 'read')
   const { data: stats }      = useRevisionStats()
   const { data: cycles = [] } = useCompensationCycles()
   const { data: progress = [] } = useCyclesProgress()

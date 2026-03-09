@@ -98,7 +98,7 @@ function RadarChart({ scores, size = 200 }) {
 
 // ─── Composant principal ─────────────────────────────────────
 
-export default function Feedback360Summary({ evaluateeId, cycleId, evaluateeName }) {
+export default function Feedback360Summary({ evaluateeId, cycleId}) {
   const { data: scores = [], isLoading } = useFeedback360Summary(evaluateeId, cycleId)
   const { data: verbatims = [] }         = useFeedback360Verbatims(evaluateeId, cycleId)
   const [showVerbatims, setShowVerbatims] = useState(false)

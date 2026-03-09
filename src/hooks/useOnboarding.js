@@ -143,7 +143,7 @@ export function useOnboarding() {
   const completeMutation = useMutation({
     mutationFn: async ({ stepKey, skipped = false }) => {
       if (!profile?.id) return
-      await supabase.from('onboarding_completions').upsert({
+      const { error: upsertError } = await supabase.from('onboarding_completions').upsert({
         user_id: profile.id,
         step_key: stepKey,
         role_group: roleGroup,
@@ -151,6 +151,7 @@ export function useOnboarding() {
         skipped,
         completed_at: new Date().toISOString(),
       }, { onConflict: 'user_id,step_key' })
+      if (upsertError) throw upsertError
     },
     onSuccess: () => {
       qc.invalidateQueries(['onboarding', profile?.id])
@@ -357,7 +358,8 @@ export function useAssignTemplate() {
           user_id: userId,
           status: 'pending',
         }))
-        await supabase.from('onboarding_step_completions').insert(completions)
+        const { error: stepsError } = await supabase.from('onboarding_step_completions').insert(completions)
+        if (stepsError) throw stepsError
       }
       return assignment
     },

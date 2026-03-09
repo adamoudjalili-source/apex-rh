@@ -352,8 +352,6 @@ export default function ProjectGanttAdvanced() {
               if (row.type === 'project') {
                 const { proj, color } = row
                 const isExpanded = expandedProjects[proj.id] !== false
-                const taskCount = proj.tasks?.length || 0
-                const msCount = proj.milestones?.length || 0
 
                 // Barre de projet (du start_date au end_date)
                 const x1 = proj.start_date ? dateToX(proj.start_date) : null

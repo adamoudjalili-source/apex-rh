@@ -34,7 +34,7 @@ function ProgressBar({ value, color = '#4F46E5' }) {
   )
 }
 
-function SectionBadge({ index, total, active, completed }) {
+function SectionBadge({ index, active, completed }) {
   let bg = 'rgba(255,255,255,0.06)'
   let color = '#ffffff40'
   if (completed) { bg = 'rgba(16,185,129,0.2)'; color = '#10B981' }

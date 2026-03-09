@@ -293,7 +293,7 @@ export default function ReviewDevelopmentPlan({ review, editable = false }) {
         <div className="space-y-2">
           {goals.map((g, i) => (
             <GoalCard
-              key={i} goal={g} idx={i}
+              key={g.id || `goal-${i}`} goal={g} idx={i}
               onChange={v => setGoals(arr => arr.map((x, j) => j === i ? v : x))}
               onRemove={() => setGoals(arr => arr.filter((_, j) => j !== i))}
               editable={editable}

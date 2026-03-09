@@ -71,7 +71,6 @@ export function useDirectionROI() {
     queryFn: async () => {
       const monthKeys = getLastNMonthKeys(6)
       const curMonth  = monthKeys[monthKeys.length - 1]
-      const prevMonth = monthKeys[monthKeys.length - 2]
 
       // Agents actifs total
       const { data: usersData } = await supabase

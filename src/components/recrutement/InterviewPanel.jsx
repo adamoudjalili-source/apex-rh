@@ -141,7 +141,7 @@ export function MyUpcomingInterviews() {
 }
 
 // ─── Panel entretiens pour une candidature ────────────────────
-export function ApplicationInterviews({ applicationId, candidateName }) {
+export function ApplicationInterviews({ applicationId}) {
   const { profile } = useAuth()
   const { data: interviews = [], isLoading } = useInterviews(applicationId)
   const createInterview = useCreateInterview()

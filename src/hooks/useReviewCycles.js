@@ -9,6 +9,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
 import { REVIEW_STATUS, ROLES, TASK_STATUS } from '../utils/constants'
+import { OVERALL_RATING_LABELS, OVERALL_RATING_COLORS } from './useAnnualReviews'
 
 // ─── CONSTANTES ──────────────────────────────────────────────
 
@@ -40,22 +41,6 @@ export const EVAL_STATUS_COLORS = {
   manager_submitted: '#3B82F6',
   validated:         '#10B981',
   archived:          '#9CA3AF',
-}
-
-export const OVERALL_RATING_LABELS = {
-  insuffisant:   'Insuffisant',
-  a_ameliorer:   'À améliorer',
-  satisfaisant:  'Satisfaisant',
-  bien:          'Bien',
-  excellent:     'Excellent',
-}
-
-export const OVERALL_RATING_COLORS = {
-  insuffisant:   '#EF4444',
-  a_ameliorer:   '#F97316',
-  satisfaisant:  '#F59E0B',
-  bien:          '#3B82F6',
-  excellent:     '#10B981',
 }
 
 export const CYCLE_STATUS_LABELS = {

@@ -42,7 +42,6 @@ function BudgetGauge({ impact, envelope }) {
   const over = envelope > 0 && impact > envelope
   const radius = 54
   const circ   = 2 * Math.PI * radius
-  const strokeFill = circ * (1 - pct / 100)
 
   const color = over ? '#EF4444' : pct > 80 ? '#F59E0B' : '#10B981'
 
@@ -125,7 +124,6 @@ function TrancheDonut({ tranches }) {
 // ─── COMPOSANT PRINCIPAL ──────────────────────────────────────
 export default function SimulationBudget() {
   const { can } = usePermission()
-  const canAdmin = can('compensation', 'simulation', 'admin')
   const { data: cycles = [] } = useCompensationCycles()
   const [selectedCycleId, setSelectedCycleId] = useState('')
 

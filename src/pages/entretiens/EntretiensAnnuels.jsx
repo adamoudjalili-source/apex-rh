@@ -521,7 +521,6 @@ export default function EntretiensAnnuels() {
   const { data: settings }   = useAppSettings()
   const [tab, setTab]        = useState('mine')
 
-  const role = profile?.role
 
   const moduleEnabled = settings?.modules?.entretiens_annuels_enabled !== false
 

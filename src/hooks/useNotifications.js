@@ -230,7 +230,7 @@ export function useNotificationInbox({ limit = 30, onlyUnread = false } = {}) {
   const { profile } = useAuth()
 
   return useQuery({
-    queryKey: [...INBOX_KEY(profile?.id), { limit, onlyUnread }],
+    queryKey: [...INBOX_KEY(profile?.id), limit, onlyUnread],
     queryFn: async () => {
       let q = supabase
         .from('notification_inbox')

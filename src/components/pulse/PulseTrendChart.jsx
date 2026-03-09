@@ -14,16 +14,6 @@ const INNER_H = H - PAD.top - PAD.bottom
 
 // ─── HELPERS ─────────────────────────────────────────────────
 
-function buildPath(points, close = false) {
-  if (!points || points.length === 0) return ''
-  const d = points.map((p, i) => `${i === 0 ? 'M' : 'L'}${p.x},${p.y}`).join(' ')
-  if (close) {
-    const last = points[points.length - 1]
-    const first = points[0]
-    return `${d} L${last.x},${INNER_H} L${first.x},${INNER_H} Z`
-  }
-  return d
-}
 
 function formatDateShort(dateStr) {
   if (!dateStr) return ''

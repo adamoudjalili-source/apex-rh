@@ -66,7 +66,6 @@ export default function EvaluationPanel({ objective }) {
           const stepNum = i + 1
           const isDone = currentStep > stepNum
           const isCurrent = currentStep === stepNum - 1 && canAct
-          const isFuture = currentStep < stepNum
 
           return (
             <div key={step.key} className="flex items-center flex-1">

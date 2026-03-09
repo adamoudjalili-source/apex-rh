@@ -24,7 +24,7 @@ const AVAILABILITY = [
   { value: 2,  label: '2h',   color: '#EF4444' },
 ]
 
-export default function MobileBriefForm({ onSuccess, onCancel }) {
+export default function MobileBriefForm({ onSuccess}) {
   const { profile } = useAuth()
   const { data: activeTasks = [] } = useMyActiveTasks()
   const savePlan   = useSaveMorningPlan()

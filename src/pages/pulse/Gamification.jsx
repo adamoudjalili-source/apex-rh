@@ -743,7 +743,6 @@ function ManagerView({ profile }) {
 export default function GamificationPage() {
   const { profile } = useAuth()
   const { can } = usePermission()
-  const canManageTeam = can('pulse', 'team', 'read')
 
   return (
     <div className="min-h-full">

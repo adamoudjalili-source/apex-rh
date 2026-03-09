@@ -79,7 +79,6 @@ export default function TaskDetailPanel({ taskId, onClose }) {
   const navigate = useNavigate()
   const { data: task, isLoading } = useTask(taskId)
   const { data: allUsers = [] } = useAllUsers()
-  const updateTask = useUpdateTask()
   const updateStatus = useUpdateTaskStatus()
   const deleteTask = useDeleteTask()
   const updateAssignees = useUpdateAssignees()

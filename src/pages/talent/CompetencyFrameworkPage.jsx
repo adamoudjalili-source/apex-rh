@@ -59,7 +59,6 @@ export default function CompetencyFrameworkPage() {
   const [selectedUser, setSelectedUser] = useState(null)
   const refresh = useRefreshCompetencyCoverage()
 
-  const current = TABS.find(t => t.id === activeTab) || TABS[0]
 
   return (
     <div className="space-y-5">

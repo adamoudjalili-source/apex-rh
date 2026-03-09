@@ -21,10 +21,6 @@ function addWeeks(weekStart, n) {
   return d.toISOString().split('T')[0]
 }
 
-function formatDayLabel(dateStr) {
-  const d = new Date(dateStr)
-  return d.toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short' })
-}
 
 export default function TimeSheetGrid({ weekStart: externalWeekStart, userId: externalUserId, readOnly = false }) {
   const [weekStart, setWeekStart] = useState(externalWeekStart || getCurrentWeekStart())
@@ -37,7 +33,6 @@ export default function TimeSheetGrid({ weekStart: externalWeekStart, userId: ex
   const { data: sheet, isLoading } = useMyCurrentTimeSheet()
   const createSheet  = useCreateTimeSheet()
   const submitSheet  = useSubmitTimeSheet()
-  const rejectSheet  = useRejectTimeSheet()
   const deleteEntry  = useDeleteTimeEntry()
 
   // Use sheet from current week hook or we need to find the sheet for the selected week

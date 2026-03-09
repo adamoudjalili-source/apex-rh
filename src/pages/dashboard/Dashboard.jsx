@@ -54,7 +54,6 @@ export default function Dashboard() {
   const { data: team = [] }  = useTeamIPR({ enabled: isManager })
 
   const alertMembers  = team.filter(m => m.alert)
-  const topPerformer  = team.find(m => (m.ipr ?? 0) >= 70)
   const avgTeamIPR    = team.filter(m => m.ipr !== null).length
     ? Math.round(team.filter(m=>m.ipr!==null).reduce((s,m)=>s+m.ipr,0)/team.filter(m=>m.ipr!==null).length)
     : null

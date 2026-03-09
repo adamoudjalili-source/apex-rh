@@ -50,7 +50,6 @@ export default function WorkloadChart() {
     )
   }
 
-  const maxScore = Math.max(...workload.map(w => Number(w.avg_workload_score) || 0), 1)
   const svgH = workload.length * ROW_H + 40
 
   return (

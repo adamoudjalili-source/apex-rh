@@ -764,8 +764,6 @@ export function useSignReview() {
   const { profile } = useAuth()
   return useMutation({
     mutationFn: async ({ review_id, employee_comment_on_review }) => {
-      const isEmployee = true // determined by who's calling
-      const signedAtField = 'employee_signed_at'
 
       // Insérer la signature
       const { error: sigErr } = await supabase

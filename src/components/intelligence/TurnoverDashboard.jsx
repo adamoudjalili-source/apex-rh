@@ -141,7 +141,6 @@ export default function TurnoverDashboard({ year }) {
   const { data, isLoading }   = useTurnoverStats(year)
   const { data: departures }  = useEmployeeDepartures()
   const { data: users }       = useUsersList()
-  const deleteDep             = useDeleteDeparture()
   const [showModal, setShowModal] = useState(false)
 
   if (isLoading) return (

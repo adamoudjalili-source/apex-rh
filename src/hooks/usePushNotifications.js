@@ -93,11 +93,17 @@ export function useNotificationPermission() {
   // Écoute les changements de permission (Chrome 126+)
   useEffect(() => {
     if (!navigator.permissions) return
-    navigator.permissions.query({ name: 'notifications' }).then((status) => {
-      const handler = () => setPermission(status.state === 'granted' ? 'granted' : status.state)
+    let status = null
+    const handler = () => setPermission(status?.state === 'granted' ? 'granted' : status?.state)
+
+    navigator.permissions.query({ name: 'notifications' }).then((s) => {
+      status = s
       status.addEventListener('change', handler)
-      return () => status.removeEventListener('change', handler)
     }).catch(() => {})
+
+    return () => {
+      if (status) status.removeEventListener('change', handler)
+    }
   }, [])
 
   return { permission, requestPermission }

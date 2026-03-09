@@ -58,7 +58,6 @@ export default function OnboardingWizardV2() {
   const step = steps[currentStep]
   if (!step) return null
 
-  const isPushStep  = step.key === 'push_setup'
   const showPushCTA = !isSubscribed && permission !== 'denied' && !pushDone
 
   return (

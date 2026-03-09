@@ -25,7 +25,6 @@ export default function MobileHome() {
   const { data: tasks = [] } = useTasks({ status: TASK_STATUS.EN_COURS })
 
   const pulseOn = isPulseEnabled(settings)
-  const dayStatus = getDayStatus(morningPlan, dailyLog)
   const briefDone = morningPlan?.status === 'submitted' || morningPlan?.status === 'acknowledged'
   const journalDone = dailyLog?.status === 'submitted' || dailyLog?.status === 'validated'
 

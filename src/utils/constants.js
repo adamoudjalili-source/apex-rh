@@ -184,3 +184,20 @@ export const FREQUENCY = {
   MONTHLY: 'monthly',
   YEARLY:  'yearly',
 }
+
+// ─── Styles partagés ─────────────────────────────────────────
+// Utiliser ces constantes au lieu d'inline style={{ background... }}
+export const GLASS_STYLE = {
+  background: 'rgba(255,255,255,0.03)',
+  border:     '1px solid rgba(255,255,255,0.06)',
+}
+
+export const GLASS_STYLE_STRONG = {
+  background: 'rgba(255,255,255,0.05)',
+  border:     '1px solid rgba(255,255,255,0.08)',
+}
+
+export const GLASS_STYLE_SUBTLE = {
+  background: 'rgba(255,255,255,0.02)',
+  border:     '1px solid rgba(255,255,255,0.04)',
+}

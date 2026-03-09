@@ -25,7 +25,7 @@ const waitForUserRow = async (userId, maxRetries = 10, delay = 300) => {
   throw new Error('Le compte a été créé mais le profil met du temps à se synchroniser. Rafraîchissez la page.')
 }
 
-export default function UserForm({ user, onSuccess, onCancel }) {
+export default function UserForm({ user, onSuccess}) {
   const isEdit = !!user
 
   const [form, setForm] = useState({

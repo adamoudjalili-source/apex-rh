@@ -136,7 +136,7 @@ function TemplateForm({ template, onClose }) {
         </div>
         <div className="space-y-2 max-h-64 overflow-y-auto pr-1">
           {form.steps.map((step, i) => (
-            <StepRow key={i} step={step} index={i} onChange={changeStep} onRemove={removeStep}/>
+            <StepRow key={step.id || `step-${i}`} step={step} index={i} onChange={changeStep} onRemove={removeStep}/>
           ))}
         </div>
       </div>

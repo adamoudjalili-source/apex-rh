@@ -77,11 +77,6 @@ export default function DeliverableList({ deliverables = [], milestones = [], me
   }
 
   // Grouper par jalon
-  const grouped = milestones.reduce((acc, ms) => {
-    acc[ms.id] = { milestone: ms, items: deliverables.filter((d) => d.milestone_id === ms.id) }
-    return acc
-  }, {})
-  const unlinked = deliverables.filter((d) => !d.milestone_id)
 
   // Aplatir la liste pour affichage simple
   const allItems = [...deliverables].sort((a, b) => new Date(a.created_at) - new Date(b.created_at))

@@ -101,7 +101,6 @@ export default function MorningPlanForm({ settings }) {
   }
 
   const displayedTasks = showAllTasks ? activeTasks : activeTasks.slice(0, 8)
-  const availOpts      = getAvailabilityOptions()
 
   return (
     <motion.div

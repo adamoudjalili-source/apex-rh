@@ -123,7 +123,7 @@ function CompleteModal({ step, completionId, onClose, onComplete }) {
 }
 
 // ─── Étape timeline ───────────────────────────────────────────
-function TimelineStep({ completion, startDate, index, isLast }) {
+function TimelineStep({ completion, startDate, isLast }) {
   const [open, setOpen] = useState(false)
   const [completeModal, setCompleteModal] = useState(false)
 

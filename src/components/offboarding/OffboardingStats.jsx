@@ -36,7 +36,6 @@ function DonutChart({ data, total }) {
         <circle cx={50} cy={50} r={r} fill="none" stroke="rgba(255,255,255,0.04)" strokeWidth={12}/>
         {data.map(({ pct }, i) => {
           const dashArr  = (pct / 100) * circ
-          const dashOff  = circ - dashArr
           const el = (
             <circle key={i} cx={50} cy={50} r={r} fill="none"
               stroke={colors[i % colors.length]}

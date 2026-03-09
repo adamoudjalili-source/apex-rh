@@ -33,8 +33,6 @@ function ScoreGauge({ score, size = 64 }) {
   const CIRC = 2 * Math.PI * R
   // Arc : 0° → 270° (3/4 du cercle)
   const ARC = 0.75
-  const dashArray = CIRC
-  const dashOffset = CIRC * (1 - ARC * (score / 100))
 
   return (
     <div className="relative flex items-center justify-center" style={{ width: size, height: size }}>

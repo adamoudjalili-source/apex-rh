@@ -231,9 +231,6 @@ export function useSalaryMassStats(year = currentYear) {
         .select('created_at, new_base_salary, old_base_salary')
         .order('created_at', { ascending: true })
       // filter by org users
-      const orgReviews = (reviews || []).filter(rv => {
-        // can't filter org directly, use proxy via headcount
-        return true
       })
 
       return {

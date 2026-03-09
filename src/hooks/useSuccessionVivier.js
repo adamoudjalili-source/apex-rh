@@ -14,6 +14,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '../lib/supabase'
 import { useAuth }  from '../contexts/AuthContext'
+import { READINESS_CONFIG } from './useSuccessionPlanning'
 
 // ─── READINESS config ─────────────────────────────────────────
 export const READINESS_CONFIG = {

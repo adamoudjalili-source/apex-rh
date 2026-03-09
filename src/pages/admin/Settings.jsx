@@ -1993,7 +1993,6 @@ export default function SettingsPage() {
   const isAdmin = canSettings('admin', 'users', 'read')
   const [activeTab, setActiveTab] = useState('profile')
 
-  const allTabs = isAdmin ? [...TABS_USER, ...TABS_ADMIN] : TABS_USER
 
   const renderContent = () => {
     switch (activeTab) {

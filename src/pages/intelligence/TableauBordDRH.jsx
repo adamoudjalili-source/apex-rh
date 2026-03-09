@@ -78,7 +78,7 @@ function Delta({ cur, prev, compact=false }) {
 }
 
 // ─── KPI Card ────────────────────────────────────────────────
-function KpiCard({ icon: Icon, label, value, sub, delta, prevVal, color, isLoading }) {
+function KpiCard({ icon: Icon, label, value, sub, prevVal, color, isLoading }) {
   return (
     <motion.div variants={fadeUp}
       className="rounded-2xl p-5 flex flex-col gap-3 relative overflow-hidden"
@@ -421,7 +421,7 @@ function AlertCard({ alert }) {
 }
 
 // ─── Top/Flop mini-list ───────────────────────────────────────
-function TopFlopList({ items, title, ascending=false, color }) {
+function TopFlopList({ items, title, color }) {
   return (
     <div>
       <div className="text-xs text-white/40 uppercase tracking-wider mb-2">{title}</div>

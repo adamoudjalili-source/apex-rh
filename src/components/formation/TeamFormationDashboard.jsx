@@ -40,7 +40,6 @@ function EnrollmentRow({ enrollment }) {
   const { training_catalog: training, users: user, status, enrolled_at, completed_at, progress_pct } = enrollment
   if (!training || !user) return null
   const statusColor = ENROLLMENT_STATUS_COLORS[status] || '#6B7280'
-  const typeColor   = TRAINING_TYPE_COLORS[training.type] || '#6366F1'
 
   return (
     <div className="flex items-center gap-3 p-3 rounded-lg hover:bg-white/[0.02] transition-colors">

@@ -26,8 +26,6 @@ function ENPSGauge({ score }) {
   const cx = 90
   const cy = 90
   // Arc gris (fond)
-  const arcStart = { x: cx - r, y: cy }
-  const arcEnd   = { x: cx + r, y: cy }
   // Aiguille
   const radians = (deg - 90) * Math.PI / 180
   const needleX = cx + r * 0.75 * Math.cos(radians)

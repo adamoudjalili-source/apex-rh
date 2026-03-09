@@ -167,7 +167,6 @@ export default function LeaveApprovalPanel() {
   const { profile } = useAuth()
   const { can } = usePermission()
   const canAdmin = can('conges', 'team', 'validate')
-  const role = profile?.role
   const isHR = canAdmin
 
   // Managers voient les LEAVE_STATUS.SUBMITTED, RH/admin voient aussi les LEAVE_STATUS.MANAGER_APPROVED

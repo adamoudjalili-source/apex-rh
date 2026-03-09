@@ -67,7 +67,6 @@ export default function PublicHolidaysManager() {
   }
 
   const active   = holidays.filter(h => h.is_active !== false)
-  const inactive = holidays.filter(h => h.is_active === false)
 
   return (
     <div className="space-y-5">
@@ -168,7 +167,7 @@ export default function PublicHolidaysManager() {
           {holidays.map((h, idx) => {
             const isActive = h.is_active !== false
             return (
-              <div key={idx}
+              <div key={h.id || h.date || idx}
                 className={`flex items-center justify-between gap-3 px-4 py-3 rounded-xl border transition-all ${isActive ? '' : 'opacity-40'}`}
                 style={{ background: isActive ? 'rgba(245,158,11,0.05)' : 'rgba(255,255,255,0.02)', borderColor: isActive ? 'rgba(245,158,11,0.15)' : 'rgba(255,255,255,0.06)' }}>
                 <div className="flex items-center gap-3 min-w-0">

@@ -145,7 +145,6 @@ export default function PerformanceChart({
   const totalPath = buildPath('total')
   const areaPath  = buildAreaPath('total')
   const xLabels   = getXLabels()
-  const totalColor = hovered?.total !== null
     ? getScoreColor(hovered.total)
     : PULSE_COLORS.primary
 

@@ -151,7 +151,6 @@ export default function AnnualReviewAdmin() {
   const createCampaign = useCreateCampaign()
   const updateCampaign = useUpdateCampaign()
   const publishCampaign = usePublishCampaign()
-  const archiveCampaign = useArchiveCampaign()
 
   const getCampaignStats = (id) => stats.find(s => s.campaign_id === id)
 

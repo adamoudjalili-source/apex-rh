@@ -277,7 +277,7 @@ function CurrentAwards({ year, month, onPrev, onNext, isManager, currentUserId }
 }
 
 // ─── SLOT D'UN AWARD ─────────────────────────────────────────
-function AwardSlot({ config, existing, candidate, isManager, isGranting, isSuccess, isPastMonth, onGrant, onRevoke }) {
+function AwardSlot({ config, existing, candidate, isManager, isGranting, isSuccess, onGrant, onRevoke }) {
   const hasExisting = !!existing
   const hasCandidate = !!candidate
 
