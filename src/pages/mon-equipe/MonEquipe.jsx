@@ -1,404 +1,309 @@
-// S69 — guards via AuthContext helpers
 // ============================================================
-// APEX RH — MonEquipe.jsx  ·  Session 36 v3
-// Vue manager complète :
-//   - Tableau dense IPR + sparkline + alertes
-//   - Fiche personne : PULSE + OKR + Feedback + Review + Recommandation
-//   - Actions : voir profil complet + rediriger vers Intelligence RH
-//   - Tri par colonne + filtres
+// APEX RH — MonEquipe.jsx · S116
+// Hub Mon Espace — Vue équipe pour managers
+// Onglets via useSearchParams(?tab=membres|taches|okr|performance)
+// StatCard KPIs · GLASS_STYLE · Max 400 lignes
 // ============================================================
-import { useState } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
-import { useNavigate } from 'react-router-dom'
+import { useSearchParams }                  from 'react-router-dom'
+import { motion }                           from 'framer-motion'
 import {
-  Users, AlertTriangle, X, Activity, BarChart3,
-  ArrowRight, ChevronRight, Trophy, Target, MessageSquare,
-  ClipboardList, TrendingUp, TrendingDown, Minus,
+  Users, CheckSquare, Target, Activity,
+  Calendar, Lock, Star,
 } from 'lucide-react'
-import { OVERALL_RATING_LABELS } from '../../hooks/useAnnualReviews'
-import { useAuth }     from '../../contexts/AuthContext'
-import { usePermission } from '../../hooks/usePermission'
-import { useTeamIPR }  from '../../hooks/useIPR'
+
 import {
-  GaugeRing, Sparkline, TrendBadge, iprColor, iprLabel,
-} from '../../components/ui/premium'
-import { getQualitativeLabel } from '../../components/ui/ProfilPerformance'
+  GLASS_STYLE, GLASS_STYLE_STRONG, GLASS_STYLE_SUBTLE, ROLE_LABELS, TASK_STATUS,
+} from '../../utils/constants'
+import StatCard   from '../../components/ui/StatCard'
+import EmptyState from '../../components/ui/EmptyState'
 
-// ─── Helpers ─────────────────────────────────────────────────
-const roleLabel = r => ({
-  collaborateur:'Collaborateur', chef_service:'Chef de Service',
-  chef_division:'Chef de Division', directeur:'Directeur', administrateur:'Admin',
-}[r]||r)
+import { useAuth }             from '../../contexts/AuthContext'
+import { usePermission }       from '../../hooks/usePermission'
+import { useEmployeeList }     from '../../hooks/useEmployeeManagement'
+import { useTasks }            from '../../hooks/useTasks'
+import { useActiveOKRPeriods } from '../../hooks/useOkrPeriods'
+import { useObjectives }       from '../../hooks/useObjectives'
+import { useAppSettings }      from '../../hooks/useSettings'
+import { isPulseEnabled }      from '../../lib/pulseHelpers'
+import {
+  getPeriodDates,
+  useTeamScoreHistory,
+  buildLeaderboard,
+} from '../../hooks/usePerformanceScores'
+import { MANAGER_ROLES }       from '../../lib/roles'
 
-const ROLE_COLORS = {
-  administrateur:'#EF4444', directeur:'#C9A227', chef_division:'#8B5CF6',
-  chef_service:'#3B82F6', collaborateur:'#10B981',
+// ─── ONGLETS ─────────────────────────────────────────────────
+const TABS = [
+  { id: 'membres',     label: 'Membres',     icon: Users,       color: '#6366F1' },
+  { id: 'taches',      label: 'Tâches',      icon: CheckSquare, color: '#3B82F6' },
+  { id: 'okr',         label: 'OKR',         icon: Target,      color: '#10B981' },
+  { id: 'performance', label: 'Performance', icon: Activity,    color: '#F59E0B' },
+]
+const DEFAULT_TAB = 'membres'
+
+// ─── PANEL MEMBRES ────────────────────────────────────────────
+function MembresPanel({ serviceId }) {
+  const { data: employees = [], isLoading } = useEmployeeList()
+
+  const members = serviceId
+    ? employees.filter(e => e.service_id === serviceId)
+    : employees
+
+  if (isLoading) return <div className="h-32 animate-pulse rounded-2xl" style={GLASS_STYLE} />
+  if (members.length === 0) return <EmptyState icon={Users} title="Aucun membre" description="Aucun collaborateur dans votre équipe." />
+
+  return (
+    <div className="space-y-2">
+      {members.map(emp => (
+        <div key={emp.id} className="rounded-2xl p-4 flex items-center gap-3" style={GLASS_STYLE}>
+          <div
+            className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 text-sm font-black text-white"
+            style={{ background: 'linear-gradient(135deg,#6366F1,#8B5CF6)' }}
+          >
+            {emp.first_name?.charAt(0)}{emp.last_name?.charAt(0)}
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-semibold text-white/80 truncate">{emp.first_name} {emp.last_name}</p>
+            <p className="text-[10px] text-white/35">{emp.poste || ROLE_LABELS[emp.role] || emp.role}</p>
+          </div>
+          <span
+            className="text-[10px] font-semibold px-2 py-0.5 rounded-full"
+            style={{ background: "rgba(99,102,241,0.1)", color: "#A5B4FC" }}
+          >
+            {ROLE_LABELS[emp.role] || emp.role}
+          </span>
+        </div>
+      ))}
+    </div>
+  )
 }
 
-// OVERALL_RATING_LABELS importé depuis useAnnualReviews (Étape 17)
+// ─── PANEL TÂCHES ─────────────────────────────────────────────
+function TachesPanel({ serviceId }) {
+  const { data: tasks = [], isLoading } = useTasks(serviceId ? { service_id: serviceId } : {})
 
-// ─── Composant principal ─────────────────────────────────────
+  if (isLoading) return <div className="h-32 animate-pulse rounded-2xl" style={GLASS_STYLE} />
+
+  const active = tasks.filter(t => !['terminee', 'archivee'].includes(t.status))
+  if (active.length === 0) return <EmptyState icon={CheckSquare} title="Aucune tâche" description="Aucune tâche active dans votre équipe." />
+
+  return (
+    <div className="space-y-2">
+      {active.slice(0, 20).map(task => {
+        const s = TASK_STATUS[task.status] || {}
+        return (
+          <div key={task.id} className="rounded-2xl p-4" style={GLASS_STYLE}>
+            <div className="flex items-start gap-3">
+              <div className="flex-1 min-w-0">
+                <p className="text-sm text-white/80 font-medium leading-snug truncate">{task.title}</p>
+                <div className="flex items-center gap-2 mt-1">
+                  {task.due_date && (
+                    <span className="flex items-center gap-1 text-[10px] text-white/30">
+                      <Calendar size={9} />
+                      {new Date(task.due_date).toLocaleDateString('fr-FR')}
+                    </span>
+                  )}
+                  {task.task_assignees?.length > 0 && (
+                    <span className="text-[10px] text-white/30">
+                      {task.task_assignees.length} assigné{task.task_assignees.length > 1 ? 's' : ''}
+                    </span>
+                  )}
+                </div>
+              </div>
+              <span
+                className="text-[10px] font-semibold px-2 py-0.5 rounded-full flex-shrink-0"
+                style={{ background: s.bg || 'rgba(255,255,255,0.06)', color: s.text || '#9CA3AF' }}
+              >
+                {s.label || task.status}
+              </span>
+            </div>
+          </div>
+        )
+      })}
+    </div>
+  )
+}
+
+// ─── PANEL OKR ───────────────────────────────────────────────
+function OKRPanel({ serviceId }) {
+  const { data: periods = [], isLoading: loadingP } = useActiveOKRPeriods()
+  const activePeriodId = periods[0]?.id ?? null
+  const { data: objectives = [], isLoading: loadingO } = useObjectives(activePeriodId, {})
+
+  if (loadingP || loadingO) return <div className="h-32 animate-pulse rounded-2xl" style={GLASS_STYLE} />
+  if (!activePeriodId) return <EmptyState icon={Target} title="Aucune période active" description="Aucune période OKR active." />
+
+  const teamObjs = serviceId
+    ? objectives.filter(o => o.services?.id === serviceId || !o.services)
+    : objectives
+
+  if (teamObjs.length === 0) return <EmptyState icon={Target} title="Aucun objectif" description="Aucun objectif d'équipe sur cette période." />
+
+  return (
+    <div className="space-y-3">
+      <div className="rounded-2xl px-4 py-2.5 flex items-center gap-2" style={GLASS_STYLE_SUBTLE}>
+        <Calendar size={12} className="text-emerald-400" />
+        <span className="text-[11px] text-white/40">{periods[0]?.name}</span>
+        <span className="ml-auto text-[10px] text-emerald-400">{teamObjs.length} objectif{teamObjs.length > 1 ? 's' : ''}</span>
+      </div>
+      {teamObjs.map(obj => {
+        const krs = obj.key_results ?? []
+        const progress = krs.length
+          ? Math.round(krs.reduce((s, kr) => s + (kr.score ?? 0), 0) / krs.length)
+          : 0
+        const c = progress >= 80 ? '#10B981' : progress >= 50 ? '#F59E0B' : '#EF4444'
+        return (
+          <div key={obj.id} className="rounded-2xl p-4" style={GLASS_STYLE}>
+            <div className="flex items-start justify-between gap-2 mb-2">
+              <p className="text-sm font-semibold text-white/80 leading-snug">{obj.title}</p>
+              <span className="text-xs font-black flex-shrink-0" style={{ color: c }}>{progress}%</span>
+            </div>
+            <div className="h-1.5 rounded-full overflow-hidden mb-1.5" style={{ background: 'rgba(255,255,255,0.05)' }}>
+              <div className="h-full rounded-full transition-all" style={{ width: `${progress}%`, background: c }} />
+            </div>
+            {obj.owner && (
+              <p className="text-[10px] text-white/25">{obj.owner.first_name} {obj.owner.last_name}</p>
+            )}
+          </div>
+        )
+      })}
+    </div>
+  )
+}
+
+// ─── PANEL PERFORMANCE ────────────────────────────────────────
+function PerformancePanel({ pulseOn }) {
+  const { startDate, endDate } = getPeriodDates('month')
+  const { data: scores = [], isLoading } = useTeamScoreHistory(startDate, endDate)
+
+  if (!pulseOn) return <EmptyState icon={Activity} title="PULSE désactivé" description="Activez PULSE dans les Paramètres." />
+  if (isLoading) return <div className="h-32 animate-pulse rounded-2xl" style={GLASS_STYLE} />
+
+  const leaderboard = buildLeaderboard(scores)
+
+  if (leaderboard.length === 0) return <EmptyState icon={Activity} title="Aucune donnée" description="Aucun score Pulse ce mois-ci." />
+
+  return (
+    <div className="space-y-3">
+      <div className="rounded-2xl p-4" style={GLASS_STYLE_STRONG}>
+        <p className="text-xs font-semibold text-white/30 uppercase tracking-wider mb-3">
+          Classement du mois — {leaderboard.length} agent{leaderboard.length > 1 ? 's' : ''}
+        </p>
+        <div className="space-y-2">
+          {leaderboard.slice(0, 10).map((agent, idx) => {
+            const c = agent.avgTotal >= 75 ? '#10B981' : agent.avgTotal >= 50 ? '#F59E0B' : '#EF4444'
+            return (
+              <div key={agent.userId} className="flex items-center gap-3">
+                <span className="text-[10px] font-bold text-white/25 w-5 text-right">{idx + 1}</span>
+                <div
+                  className="w-6 h-6 rounded-lg flex items-center justify-center text-[10px] font-black text-white flex-shrink-0"
+                  style={{ background: 'rgba(99,102,241,0.2)' }}
+                >
+                  {agent.firstName?.charAt(0)}{agent.lastName?.charAt(0)}
+                </div>
+                <span className="text-[11px] text-white/70 flex-1 truncate">{agent.firstName} {agent.lastName}</span>
+                <div className="w-20 h-1.5 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.05)' }}>
+                  <div className="h-full rounded-full" style={{ width: `${agent.avgTotal}%`, background: c }} />
+                </div>
+                <span className="text-xs font-bold w-10 text-right" style={{ color: c }}>{agent.avgTotal}%</span>
+              </div>
+            )
+          })}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// ─── HOOK KPIs ────────────────────────────────────────────────
+function useMonEquipeStats(serviceId) {
+  const { data: employees = [] } = useEmployeeList()
+  const { data: tasks = [] }     = useTasks(serviceId ? { service_id: serviceId } : {})
+  const { data: periods = [] }   = useActiveOKRPeriods()
+  const activePeriodId           = periods[0]?.id ?? null
+  const { data: objectives = [] } = useObjectives(activePeriodId, {})
+
+  const members = serviceId ? employees.filter(e => e.service_id === serviceId) : employees
+  const activeTasks = tasks.filter(t => !['terminee', 'archivee'].includes(t.status))
+  const teamObjs = serviceId ? objectives.filter(o => o.services?.id === serviceId || !o.services) : objectives
+  const okrAtteints = teamObjs.filter(obj => {
+    const krs = obj.key_results ?? []
+    return krs.length > 0 && (krs.reduce((s, kr) => s + (kr.score ?? 0), 0) / krs.length) >= 80
+  }).length
+
+  return { membersCount: members.length, activeTasksCount: activeTasks.length, okrAtteints, okrTotal: teamObjs.length }
+}
+
+// ─── PAGE PRINCIPALE ──────────────────────────────────────────
 export default function MonEquipe() {
-  const { profile } = useAuth()
-  const { can } = usePermission()
-  const canManageTeam = can('employes', 'orgchart', 'read')
-  const navigate    = useNavigate()
-  const isManager   = canManageTeam
+  const [searchParams, setSearchParams] = useSearchParams()
+  const activeTab = TABS.find(t => t.id === searchParams.get('tab'))?.id ?? DEFAULT_TAB
 
-  const [selected, setSelected] = useState(null)
-  const [sortKey,  setSortKey]  = useState('ipr')
-  const [sortDir,  setSortDir]  = useState('desc')
-  const [filter,   setFilter]   = useState('all') // all | alerts | excellent
+  const { profile }        = useAuth()
+  const { can }            = usePermission()
+  const { data: settings } = useAppSettings()
+  const pulseOn            = isPulseEnabled(settings)
 
-  const { data: team = [], isLoading } = useTeamIPR()
+  const isManager = MANAGER_ROLES.includes(profile?.role)
+  const serviceId = profile?.service_id ?? null
 
-  if (!isManager) {
+  const { membersCount, activeTasksCount, okrAtteints, okrTotal } = useMonEquipeStats(serviceId)
+
+  if (!isManager && !can('employes', 'orgchart', 'read')) {
     return (
-      <div className="flex flex-col items-center justify-center h-full gap-3 text-white/20 p-12">
-        <Users size={32}/>
-        <p className="text-sm">Accès réservé aux managers</p>
+      <div className="min-h-screen p-4 md:p-6 flex items-center justify-center">
+        <div className="text-center space-y-3">
+          <div className="w-12 h-12 rounded-2xl flex items-center justify-center mx-auto" style={GLASS_STYLE}>
+            <Lock size={20} className="text-white/30" />
+          </div>
+          <p className="text-sm text-white/40">Accès réservé aux managers</p>
+        </div>
       </div>
     )
   }
 
-  const filtered = team.filter(m => {
-    if (filter === 'alerts')    return !!m.alert
-    if (filter === 'excellent') return (m.ipr ?? 0) >= 70
-    return true
-  })
-
-  const sorted = [...filtered].sort((a,b) => {
-    const av = a[sortKey]??-1, bv = b[sortKey]??-1
-    return sortDir==='desc' ? bv-av : av-bv
-  })
-
-  const toggleSort = k => {
-    if (sortKey===k) setSortDir(d=>d==='desc'?'asc':'desc')
-    else { setSortKey(k); setSortDir('desc') }
-  }
-
-  const withIPR       = team.filter(m=>m.ipr!==null)
-  const avgIPR        = withIPR.length ? Math.round(withIPR.reduce((s,m)=>s+m.ipr,0)/withIPR.length) : null
-  const alertCount    = team.filter(m=>m.alert).length
-  const excellentCount = team.filter(m=>(m.ipr??0)>=70).length
-
   return (
-    <div className="flex flex-col h-full p-6 md:p-8 max-w-7xl mx-auto gap-5">
-
-      {/* Header */}
-      <div className="flex items-start justify-between gap-4 flex-wrap">
-        <div>
-          <h1 className="text-2xl font-extrabold text-white" style={{ fontFamily:"'Syne',sans-serif" }}>
-            Mon Équipe
-          </h1>
-          <p className="text-sm text-white/30 mt-0.5">
-            Performance — {new Date().toLocaleDateString('fr-FR',{month:'long',year:'numeric'})}
-          </p>
-        </div>
-        <button onClick={()=>navigate('/intelligence')}
-          className="flex items-center gap-2 px-4 py-2 text-sm text-white/45 hover:text-white border border-white/10 hover:border-white/20 rounded-xl transition-all">
-          <BarChart3 size={13}/> Analytics complets <ArrowRight size={12}/>
-        </button>
-      </div>
-
-      {/* KPIs */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        {[
-          { label:'Membres',        value:team.length,    color:'#4F46E5', icon:<Users size={13}/> },
-          { label:'IPR moyen',      value:avgIPR??'—',    color:iprColor(avgIPR), suffix:avgIPR?'/100':'', icon:<Activity size={13}/> },
-          { label:'Alertes actives',value:alertCount,     color:alertCount>0?'#EF4444':'#10B981', icon:<AlertTriangle size={13}/> },
-          { label:'Excellents ≥70', value:excellentCount, color:'#C9A227', icon:<Trophy size={13}/> },
-        ].map(k => (
-          <div key={k.label} className="rounded-2xl p-4"
-            style={{ background:'rgba(255,255,255,0.025)', border:`1px solid rgba(255,255,255,0.07)` }}>
-            <div className="flex items-center gap-2 mb-2">
-              <div className="w-6 h-6 rounded-lg flex items-center justify-center"
-                style={{ background:`${k.color}15`, color:k.color }}>{k.icon}</div>
-              <span className="text-[10px] text-white/25 uppercase tracking-wide">{k.label}</span>
-            </div>
-            <p className="text-2xl font-black" style={{ color:k.color, fontFamily:"'Syne',sans-serif" }}>
-              {k.value}{k.suffix&&<span className="text-sm font-normal text-white/20">{k.suffix}</span>}
-            </p>
-          </div>
-        ))}
-      </div>
-
-      {/* Filtres */}
-      <div className="flex items-center gap-2">
-        {[
-          { k:'all',      label:`Tous (${team.length})` },
-          { k:'alerts',   label:`⚠ Alertes (${alertCount})` },
-          { k:'excellent',label:`★ Excellents (${excellentCount})` },
-        ].map(f => (
-          <button key={f.k} onClick={() => setFilter(f.k)}
-            className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
-              filter===f.k
-                ? 'bg-indigo-600 text-white'
-                : 'text-white/35 hover:text-white/70 bg-white/[0.03] border border-white/[0.06]'
-            }`}>{f.label}</button>
-        ))}
-      </div>
-
-      {/* Table + Panel */}
-      <div className="flex gap-5 flex-1 min-h-0">
-
-        {/* Table */}
-        <div className="flex-1 rounded-2xl overflow-hidden flex flex-col min-w-0"
-          style={{ background:'rgba(255,255,255,0.025)', border:'1px solid rgba(255,255,255,0.07)' }}>
-
-          {/* En-têtes */}
-          <div className="grid px-4 py-3 text-[10px] font-semibold text-white/25 uppercase tracking-wider border-b border-white/[0.06] flex-shrink-0"
-            style={{ gridTemplateColumns:'1fr 72px 72px 72px 100px 110px 28px' }}>
-            <span>Collaborateur</span>
-            <SortTh k="ipr"       label="IPR"   cur={sortKey} dir={sortDir} onSort={toggleSort}/>
-            <SortTh k="pulseAvg"  label="PULSE" cur={sortKey} dir={sortDir} onSort={toggleSort}/>
-            <SortTh k="briefRate" label="Briefs" cur={sortKey} dir={sortDir} onSort={toggleSort}/>
-            <span>Tendance 14j</span>
-            <span>Signal</span>
-            <span/>
-          </div>
-
-          <div className="flex-1 overflow-y-auto">
-            {isLoading ? (
-              <div className="flex items-center justify-center py-16">
-                <div className="w-6 h-6 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin"/>
-              </div>
-            ) : sorted.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-16 gap-2 text-white/15">
-                <Users size={24}/><p className="text-sm">Aucun résultat</p>
-              </div>
-            ) : sorted.map((m,idx) => (
-              <TeamRow key={m.userId} member={m} rank={idx+1}
-                isSelected={selected?.userId===m.userId}
-                onClick={() => setSelected(selected?.userId===m.userId?null:m)}/>
-            ))}
-          </div>
-        </div>
-
-        {/* Fiche personne */}
-        <AnimatePresence>
-          {selected && (
-            <motion.div
-              initial={{ opacity:0, x:24, width:0 }}
-              animate={{ opacity:1, x:0, width:320 }}
-              exit={{ opacity:0, x:24, width:0 }}
-              transition={{ duration:0.28, ease:[0.4,0,0.2,1] }}
-              className="flex-shrink-0">
-              <PersonPanel member={selected} onClose={()=>setSelected(null)}
-                onNavigate={()=>navigate('/intelligence')}/>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
-    </div>
-  )
-}
-
-// ─── Ligne tableau ────────────────────────────────────────────
-function TeamRow({ member: m, isSelected, onClick }) {
-  const name = `${m.firstName||''} ${m.lastName||''}`.trim()||'Inconnu'
-  const init = `${m.firstName?.charAt(0)||''}${m.lastName?.charAt(0)||''}`.toUpperCase()||'?'
-  const c    = iprColor(m.ipr)
-  return (
-    <motion.button
-      className="w-full grid px-4 py-3.5 items-center text-left border-b border-white/[0.04] last:border-0 transition-colors"
-      style={{
-        gridTemplateColumns:'1fr 72px 72px 72px 100px 110px 28px',
-        background:isSelected?'rgba(79,70,229,0.07)':undefined,
-      }}
-      onClick={onClick}
-      whileHover={{ background:isSelected?'rgba(79,70,229,0.09)':'rgba(255,255,255,0.025)' }}>
-      <div className="flex items-center gap-2.5 min-w-0">
-        <div className="w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold text-white flex-shrink-0"
-          style={{ background:ROLE_COLORS[m.role]||'#4F46E5' }}>{init}</div>
-        <div className="min-w-0">
-          <p className="text-sm font-medium text-white/80 truncate">{name}</p>
-          <p className="text-[10px] text-white/25">{roleLabel(m.role)}</p>
-        </div>
-      </div>
-      <div className="flex items-center gap-1">
-        <span className="text-base font-black" style={{ color:c, fontFamily:"'Syne',sans-serif" }}>{m.ipr??'—'}</span>
-        {m.ipr !== null && m.ipr !== undefined && (() => {
-          const ql = getQualitativeLabel(m.ipr)
-          return <span className="hidden lg:inline text-[9px] font-bold px-1.5 py-0.5 rounded-full ml-1" style={{ background:ql.bg, color:ql.color }}>{ql.label}</span>
-        })()}
-      </div>
-      <span className="text-sm font-semibold" style={{ color:iprColor(m.pulseAvg) }}>{m.pulseAvg??'—'}</span>
-      <span className="text-sm text-white/55">{m.briefRate!==null&&m.briefRate!==undefined?`${m.briefRate}%`:'—'}</span>
+    <div className="min-h-screen p-4 md:p-6 space-y-5">
       <div>
-        {m.sparkline?.length>1
-          ? <Sparkline data={m.sparkline} width={88} height={22} color={c} filled={false}/>
-          : <span className="text-[10px] text-white/15">—</span>}
-      </div>
-      <div>
-        {m.alert ? (
-          <span className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full"
-            style={{
-              background:m.alert==='no_brief'?'rgba(239,68,68,0.1)':'rgba(245,158,11,0.1)',
-              color:m.alert==='no_brief'?'#EF4444':'#F59E0B',
-              border:`1px solid ${m.alert==='no_brief'?'rgba(239,68,68,0.2)':'rgba(245,158,11,0.2)'}`,
-            }}>
-            <AlertTriangle size={9}/>
-            {m.alert==='no_brief'?`${m.daysSinceLastBrief}j`:'bas'}
-          </span>
-        ) : <span className="text-[10px] text-emerald-400/50">✓</span>}
-      </div>
-      <ChevronRight size={13} className={`transition-all ${isSelected?'text-indigo-400 rotate-90':'text-white/10'}`}/>
-    </motion.button>
-  )
-}
-
-// ─── Fiche Personne complète ──────────────────────────────────
-function PersonPanel({ member: m, onClose, onNavigate }) {
-  const name  = `${m.firstName||''} ${m.lastName||''}`.trim()||'Inconnu'
-  const init  = `${m.firstName?.charAt(0)||''}${m.lastName?.charAt(0)||''}`.toUpperCase()||'?'
-  const color = iprColor(m.ipr)
-
-  return (
-    <div className="h-full rounded-2xl flex flex-col overflow-hidden"
-      style={{ background:'rgba(255,255,255,0.03)', border:'1px solid rgba(255,255,255,0.08)', width:320 }}>
-
-      {/* Header */}
-      <div className="p-5 border-b border-white/[0.06]"
-        style={{ background:'linear-gradient(180deg,rgba(255,255,255,0.02) 0%,transparent 100%)' }}>
-        <div className="flex items-start justify-between mb-4">
-          <div className="flex items-center gap-3">
-            <div className="w-11 h-11 rounded-xl flex items-center justify-center text-sm font-bold text-white"
-              style={{ background:ROLE_COLORS[m.role]||'#4F46E5' }}>{init}</div>
-            <div>
-              <p className="text-sm font-semibold text-white">{name}</p>
-              <p className="text-[11px]" style={{ color:ROLE_COLORS[m.role] }}>{roleLabel(m.role)}</p>
-              <p className="text-[10px] text-white/25 mt-0.5">{m.daysWithData} jours actifs ce mois</p>
-            </div>
-          </div>
-          <button onClick={onClose} className="text-white/20 hover:text-white/60 transition-colors mt-0.5">
-            <X size={15}/>
-          </button>
-        </div>
-
-        {/* IPR gauge */}
-        <div className="flex items-center gap-4">
-          <GaugeRing score={m.ipr??0} size={76} stroke={6} color={color}>
-            <div className="text-center">
-              <p className="text-base font-black leading-none" style={{ color, fontFamily:"'Syne',sans-serif" }}>
-                {m.ipr??'—'}
-              </p>
-              <p className="text-[8px] text-white/20">IPR</p>
-            </div>
-          </GaugeRing>
-          <div>
-            <p className="text-base font-bold mb-0.5" style={{ color }}>{iprLabel(m.ipr)}</p>
-            {m.alert && (
-              <div className="flex items-center gap-1">
-                <AlertTriangle size={10} className="text-red-400"/>
-                <span className="text-[10px] text-red-400">
-                  {m.alert==='no_brief'?`Pas de brief depuis ${m.daysSinceLastBrief}j`:`IPR insuffisant`}
-                </span>
-              </div>
-            )}
-          </div>
-        </div>
+        <h1 className="text-2xl font-black text-white" style={{ fontFamily: "'Syne', sans-serif" }}>Mon Équipe</h1>
+        <p className="text-sm text-white/40">
+          {profile?.services?.name || 'Votre service'} · {new Date().toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })}
+        </p>
       </div>
 
-      {/* Détails */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
-
-        {/* Dimensions */}
-        <div>
-          <p className="text-[10px] text-white/20 uppercase tracking-wider mb-2">Dimensions Profil</p>
-          <div className="space-y-0.5">
-            <DimDetail icon={<Activity size={10}/>}       label="PULSE moyen"     value={m.pulseAvg}     color={iprColor(m.pulseAvg)}    suffix="/100"/>
-            <DimDetail icon={<Target size={10}/>}         label="OKR progression" value={m.okrScore}      color={iprColor(m.okrScore)}    suffix="%"/>
-            <DimDetail icon={<MessageSquare size={10}/>}  label="Feedback 360°"   value={m.f360Score}     color={iprColor(m.f360Score)}   suffix="/100"/>
-            <DimDetail icon={<ClipboardList size={10}/>}  label="Dernier Review"  value={m.reviewScore}   color={iprColor(m.reviewScore)} suffix="/100"/>
-            <DimDetail icon={<TrendingUp size={10}/>}     label={m.hasNitaData ? "Activité NITA" : "Régularité briefs"}
-              value={m.activiteScore ?? m.briefRate}
-              color={iprColor(m.activiteScore ?? m.briefRate)}
-              suffix={m.hasNitaData ? "/100" : "%"}
-              badge={m.hasNitaData ? "NITA" : null} />
-          </div>
-        </div>
-
-        {/* Sparkline */}
-        {m.sparkline?.length > 1 && (
-          <div>
-            <p className="text-[10px] text-white/20 uppercase tracking-wider mb-2">Tendance PULSE 14 jours</p>
-            <div className="rounded-xl p-3"
-              style={{ background:'rgba(255,255,255,0.02)', border:'1px solid rgba(255,255,255,0.05)' }}>
-              <Sparkline data={m.sparkline} width={264} height={44} color={color} filled/>
-            </div>
-          </div>
-        )}
-
-        {/* Recommandation IA */}
-        <div className="rounded-xl p-4"
-          style={{ background:'rgba(79,70,229,0.07)', border:'1px solid rgba(79,70,229,0.13)' }}>
-          <p className="text-[10px] font-semibold text-indigo-400 uppercase tracking-wider mb-2 flex items-center gap-1">
-            ⚡ Recommandation IA Coach
-          </p>
-          <p className="text-[11px] text-white/55 leading-relaxed">
-            {generateRecommendation(m)}
-          </p>
-        </div>
+      <div className="grid grid-cols-3 gap-3">
+        <StatCard icon={Users}       label="Membres"       value={membersCount}    color="#6366F1" />
+        <StatCard icon={CheckSquare} label="Tâches actives" value={activeTasksCount} color="#3B82F6" />
+        <StatCard icon={Star}        label="OKR atteints"  value={okrTotal > 0 ? `${okrAtteints}/${okrTotal}` : '—'} color="#10B981" />
       </div>
 
-      {/* Actions */}
-      <div className="p-4 border-t border-white/[0.06] space-y-2">
-        <button onClick={onNavigate}
-          className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold text-white transition-all"
-          style={{ background:'linear-gradient(135deg,#4F46E5,#7C3AED)', boxShadow:'0 4px 12px rgba(79,70,229,0.25)' }}>
-          <BarChart3 size={13}/> Voir dans Intelligence RH
-        </button>
-        <button
-          onClick={() => {
-            const subject = encodeURIComponent(`1:1 avec ${m.firstName} ${m.lastName}`)
-            const body    = encodeURIComponent(`Bonjour ${m.firstName},\n\nJe souhaite planifier un entretien individuel avec vous.\n\nCordialement`)
-            window.open(`mailto:?subject=${subject}&body=${body}`)
-          }}
-          className="w-full flex items-center justify-center gap-2 px-4 py-2 rounded-xl text-sm font-medium text-white/60 hover:text-white hover:bg-white/[0.05] border border-white/[0.08] transition-all">
-          <Users size={13}/> Planifier un 1:1
-        </button>
-        <button onClick={onClose}
-          className="w-full px-4 py-2 rounded-xl text-sm text-white/25 hover:text-white/50 hover:bg-white/[0.03] transition-all">
-          Fermer
-        </button>
+      <div className="flex gap-1 p-1 rounded-2xl" style={GLASS_STYLE_SUBTLE}>
+        {TABS.map(tab => {
+          const active = tab.id === activeTab
+          const Icon   = tab.icon
+          return (
+            <button
+              key={tab.id}
+              onClick={() => setSearchParams({ tab: tab.id })}
+              className="flex-1 flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl text-xs font-semibold transition-all duration-200"
+              style={active
+                ? { background: `${tab.color}20`, color: tab.color, border: `1px solid ${tab.color}30` }
+                : { color: 'rgba(255,255,255,0.35)', border: '1px solid transparent' }
+              }
+            >
+              <Icon size={13} />
+              <span className="hidden sm:inline">{tab.label}</span>
+            </button>
+          )
+        })}
       </div>
+
+      <motion.div key={activeTab} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.25 }}>
+        {activeTab === 'membres'     && <MembresPanel     serviceId={serviceId} />}
+        {activeTab === 'taches'      && <TachesPanel      serviceId={serviceId} />}
+        {activeTab === 'okr'         && <OKRPanel          serviceId={serviceId} />}
+        {activeTab === 'performance' && <PerformancePanel  pulseOn={pulseOn} />}
+      </motion.div>
     </div>
-  )
-}
-
-function generateRecommendation(m) {
-  if (m.alert === 'no_brief')
-    return `${m.firstName} n'a pas soumis de brief depuis ${m.daysSinceLastBrief} jours consécutifs. Planifier un entretien individuel pour comprendre les obstacles. Vérifier la charge de travail.`
-  if (m.alert === 'low_ipr')
-    return `L'IPR de ${m.firstName} est en dessous du seuil (${m.ipr}/100). Examiner ensemble les objectifs OKR en retard et identifier les points de blocage. Renforcer le suivi hebdomadaire.`
-  if ((m.ipr ?? 0) >= 80)
-    return `${m.firstName} est en excellente performance ce mois. Envisager une reconnaissance publique ou une montée en responsabilité pour maintenir la motivation.`
-  return `${m.firstName} est sur une trajectoire correcte (${m.ipr??'—'}/100). Maintenir le rythme et s'assurer que les OKR restent alignés avec les priorités du service.`
-}
-
-function DimDetail({ icon, label, value, color, suffix, badge }) {
-  return (
-    <div className="flex items-center gap-2 py-1.5 border-b border-white/[0.04] last:border-0">
-      <span className="text-white/20 flex-shrink-0">{icon}</span>
-      <span className="text-[11px] text-white/40 flex-1">{label}</span>
-      {badge && (
-        <span className="text-[8px] font-bold px-1.5 py-0.5 rounded-full mr-1"
-          style={{ background:'rgba(245,158,11,0.15)', color:'#F59E0B' }}>{badge}</span>
-      )}
-      <span className="text-xs font-bold" style={{ color:value!==null&&value!==undefined?color:'#6B7280', fontFamily:"'Syne',sans-serif" }}>
-        {value!==null&&value!==undefined?`${value}${suffix}`:'—'}
-      </span>
-    </div>
-  )
-}
-
-function SortTh({ k, label, cur, dir, onSort }) {
-  const active = cur===k
-  return (
-    <button onClick={()=>onSort(k)}
-      className={`flex items-center gap-0.5 transition-colors ${active?'text-indigo-400':'hover:text-white/50'}`}>
-      {label}{active&&<span className="text-[8px]">{dir==='desc'?'▼':'▲'}</span>}
-    </button>
   )
 }
