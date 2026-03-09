@@ -1,63 +1,77 @@
 // ============================================================
-// APEX RH — Tasks.jsx  ·  Session 36 v3
-// Exécution pure : Kanban / Liste / Calendrier / Ma Journée
-// Tous les modules PULSE → /intelligence et /engagement
+// APEX RH — Tasks.jsx  ·  S125
+// 7 vues : Kanban · Liste · Calendrier · Ma Journée · Gantt · Charge · Dashboard
+// Dashboard réservé aux rôles Manager/RH/Directeur/Admin
 // ============================================================
 import { useState } from 'react'
-import { useTasks }         from '../../hooks/useTasks'
-import { useTaskFilters }   from '../../hooks/useTaskFilters'
-import { useTaskRealtime }  from '../../hooks/useTaskRealtime'
-import { useAppSettings }   from '../../hooks/useSettings'
-import { isPulseEnabled }   from '../../lib/pulseHelpers'
-import TaskFilters          from '../../components/tasks/TaskFilters'
-import KanbanView           from '../../components/tasks/KanbanView'
-import ListView             from '../../components/tasks/ListView'
-import CalendarView         from '../../components/tasks/CalendarView'
-import MyDayView            from '../../components/tasks/MyDayView'
-import TaskDetailPanel      from '../../components/tasks/TaskDetailPanel'
-import Modal                from '../../components/ui/Modal'
-import TaskForm             from '../../components/tasks/TaskForm'
-import ExportButton         from '../../components/ui/ExportButton'
-import { exportTasks }      from '../../lib/exportExcel'
-import JournalPage          from '../pulse/Journal'
-// ✅ S77
-import WorkloadChart        from '../../components/tasks/WorkloadChart'
-import GanttMini            from '../../components/tasks/GanttMini'
-import { TASK_STATUS } from '../../utils/constants'
+import { useTasks }            from '../../hooks/useTasks'
+import { useTaskFilters }      from '../../hooks/useTaskFilters'
+import { useTaskRealtime }     from '../../hooks/useTaskRealtime'
+import { useAppSettings }      from '../../hooks/useSettings'
+import { useAuth }             from '../../contexts/AuthContext'
+import { usePermission }       from '../../hooks/usePermission'
+import { isPulseEnabled }      from '../../lib/pulseHelpers'
+import TaskFilters             from '../../components/tasks/TaskFilters'
+import KanbanView              from '../../components/tasks/KanbanView'
+import ListView                from '../../components/tasks/ListView'
+import CalendarView            from '../../components/tasks/CalendarView'
+import MyDayView               from '../../components/tasks/MyDayView'
+import TaskDetailPanel         from '../../components/tasks/TaskDetailPanel'
+import Modal                   from '../../components/ui/Modal'
+import TaskForm                from '../../components/tasks/TaskForm'
+import ExportButton            from '../../components/ui/ExportButton'
+import { exportTasks }         from '../../lib/exportExcel'
+import JournalPage             from '../pulse/Journal'
+import WorkloadChart           from '../../components/tasks/WorkloadChart'
+import GanttMini               from '../../components/tasks/GanttMini'
+import TaskDashboardView       from '../../components/tasks/TaskDashboardView'
+import { TASK_STATUS }         from '../../utils/constants'
+import { ROLES }               from '../../utils/constants'
+
+const MANAGER_ROLES = [ROLES.MANAGER, ROLES.CHEF_SERVICE, ROLES.CHEF_DIVISION, ROLES.DIRECTEUR, ROLES.RH, ROLES.ADMINISTRATEUR]
 
 const VIEWS = [
-  { id:'kanban',   label:'Kanban',      icon:'▦' },
-  { id:'list',     label:'Liste',       icon:'☰' },
-  { id:'calendar', label:'Calendrier',  icon:'📅' },
-  { id:'myday',    label:'Ma Journée',  icon:'☀' },
-  { id:'gantt',    label:'Gantt',       icon:'📊' },
-  { id:'charge',   label:'Charge',      icon:'⚖' },
+  { id:'kanban',    label:'Kanban',     icon:'▦' },
+  { id:'list',      label:'Liste',      icon:'☰' },
+  { id:'calendar',  label:'Calendrier', icon:'📅' },
+  { id:'myday',     label:'Ma Journée', icon:'☀' },
+  { id:'gantt',     label:'Gantt',      icon:'📊' },
+  { id:'charge',    label:'Charge',     icon:'⚖' },
+  { id:'dashboard', label:'Dashboard',  icon:'📈', managerOnly: true },
 ]
 
 export default function Tasks() {
+  const { profile }  = useAuth()
+  const { can }      = usePermission()
   const { filters, activeFilters, activeView, setActiveView,
           updateFilter, resetFilters, hasActiveFilters } = useTaskFilters()
   const { data: settings }  = useAppSettings()
   const pulseOn              = isPulseEnabled(settings)
-  const isJournal            = activeView === 'myday' && pulseOn
-  const isTaskView           = !isJournal && activeView !== 'myday' && activeView !== 'gantt' && activeView !== 'charge'
+
+  const isManager    = MANAGER_ROLES.includes(profile?.role)
+  const isDashboard  = activeView === 'dashboard'
+  const isJournal    = activeView === 'myday' && pulseOn
+  const isTaskView   = !isJournal && !['myday','gantt','charge','dashboard'].includes(activeView)
 
   const { data: tasks = [], isLoading, error } = useTasks(isTaskView ? activeFilters : {})
-  const [selectedTaskId,  setSelectedTaskId]  = useState(null)
-  const [showCreateModal, setShowCreateModal] = useState(false)
-  const [showFilters,     setShowFilters]     = useState(false)
+  const [selectedTaskId,  setSelectedTaskId]   = useState(null)
+  const [showCreateModal, setShowCreateModal]  = useState(false)
+  const [showFilters,     setShowFilters]      = useState(false)
 
   useTaskRealtime()
 
   const stats = {
     total:    tasks.length,
-    en_cours: tasks.filter(t=>t.status===TASK_STATUS.EN_COURS).length,
-    en_revue: tasks.filter(t=>t.status==='en_revue').length,
-    urgentes: tasks.filter(t=>t.priority==='urgente'&&t.status!=='terminee').length,
+    en_cours: tasks.filter(t => t.status === TASK_STATUS.EN_COURS).length,
+    en_revue: tasks.filter(t => t.status === 'en_revue').length,
+    urgentes: tasks.filter(t => t.priority === 'urgente' && t.status !== 'terminee').length,
   }
+
+  const visibleViews = VIEWS.filter(v => !v.managerOnly || isManager)
 
   return (
     <div className="flex flex-col h-full gap-4">
+      {/* Header */}
       <div className="flex items-start justify-between">
         <div>
           <h1 className="text-2xl font-bold text-white" style={{ fontFamily:"'Syne',sans-serif" }}>Tâches</h1>
@@ -65,7 +79,7 @@ export default function Tasks() {
         </div>
         {isTaskView && (
           <div className="flex items-center gap-2">
-            <ExportButton onExport={() => exportTasks(tasks)} label="Excel" disabled={tasks.length===0}/>
+            <ExportButton onExport={() => exportTasks(tasks)} label="Excel" disabled={tasks.length === 0} />
             <button onClick={() => setShowCreateModal(true)}
               className="flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-medium rounded-xl transition-all">
               + Nouvelle tâche
@@ -74,6 +88,7 @@ export default function Tasks() {
         )}
       </div>
 
+      {/* KPI row */}
       {isTaskView && (
         <div className="grid grid-cols-4 gap-3">
           {[
@@ -90,12 +105,13 @@ export default function Tasks() {
         </div>
       )}
 
+      {/* Vue selector + filtres */}
       <div className="flex items-center justify-between gap-3 flex-wrap">
         <div className="flex items-center gap-1 bg-white/5 border border-white/10 rounded-xl p-1">
-          {VIEWS.map(v => (
+          {visibleViews.map(v => (
             <button key={v.id} onClick={() => setActiveView(v.id)}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
-                activeView===v.id ? 'bg-indigo-600 text-white' : 'text-gray-400 hover:text-white hover:bg-white/5'
+                activeView === v.id ? 'bg-indigo-600 text-white' : 'text-gray-400 hover:text-white hover:bg-white/5'
               }`}>
               <span>{v.icon}</span>
               <span className="hidden sm:inline">{v.label}</span>
@@ -103,36 +119,51 @@ export default function Tasks() {
           ))}
         </div>
         {isTaskView && (
-          <button onClick={() => setShowFilters(v=>!v)}
+          <button onClick={() => setShowFilters(v => !v)}
             className={`flex items-center gap-1.5 px-3 py-2 text-sm border rounded-xl transition-colors ${
-              showFilters||hasActiveFilters ? 'border-indigo-500/50 text-indigo-400 bg-indigo-500/10' : 'border-white/10 text-gray-400 hover:text-white'
+              showFilters || hasActiveFilters ? 'border-indigo-500/50 text-indigo-400 bg-indigo-500/10' : 'border-white/10 text-gray-400 hover:text-white'
             }`}>
             ⚙ Filtres
-            {hasActiveFilters && <span className="w-1.5 h-1.5 bg-indigo-400 rounded-full"/>}
+            {hasActiveFilters && <span className="w-1.5 h-1.5 bg-indigo-400 rounded-full" />}
           </button>
         )}
       </div>
 
       {isTaskView && showFilters && (
         <div className="bg-white/3 border border-white/8 rounded-xl px-4 py-3">
-          <TaskFilters filters={filters} updateFilter={updateFilter} resetFilters={resetFilters} hasActiveFilters={hasActiveFilters}/>
+          <TaskFilters filters={filters} updateFilter={updateFilter} resetFilters={resetFilters} hasActiveFilters={hasActiveFilters} />
+        </div>
+      )}
+
+      {/* Contenu vue active */}
+      {isDashboard && (
+        <div className="flex-1 min-h-0 overflow-y-auto">
+          <TaskDashboardView onTaskClick={setSelectedTaskId} />
         </div>
       )}
 
       {isJournal && (
-        <div className="flex-1 min-h-0 overflow-y-auto"><JournalPage/></div>
+        <div className="flex-1 min-h-0 overflow-y-auto"><JournalPage /></div>
       )}
 
-      {!isJournal && activeView === 'myday' && !pulseOn && (
+      {activeView === 'myday' && !pulseOn && !isDashboard && (
         <div className="flex-1 min-h-0 overflow-y-auto">
-          <MyDayView tasks={tasks} onTaskClick={setSelectedTaskId}/>
+          <MyDayView tasks={tasks} onTaskClick={setSelectedTaskId} />
         </div>
+      )}
+
+      {activeView === 'gantt' && (
+        <div className="flex-1 min-h-0 overflow-y-auto"><GanttMini /></div>
+      )}
+
+      {activeView === 'charge' && (
+        <div className="flex-1 min-h-0 overflow-y-auto"><WorkloadChart /></div>
       )}
 
       {isTaskView && (
         isLoading ? (
           <div className="flex-1 flex items-center justify-center">
-            <div className="w-8 h-8 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin"/>
+            <div className="w-8 h-8 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin" />
           </div>
         ) : error ? (
           <div className="flex-1 flex items-center justify-center">
@@ -140,17 +171,15 @@ export default function Tasks() {
           </div>
         ) : (
           <div className="flex-1 min-h-0 overflow-hidden">
-            {activeView==='kanban'   && <div className="h-full overflow-x-auto"><KanbanView tasks={tasks} onTaskClick={setSelectedTaskId}/></div>}
-            {activeView==='list'     && <ListView tasks={tasks} onTaskClick={setSelectedTaskId}/>}
-            {activeView==='calendar' && <div className="h-full overflow-y-auto"><CalendarView tasks={tasks} onTaskClick={setSelectedTaskId}/></div>}
-            {activeView==='gantt'    && <div className="h-full overflow-y-auto"><GanttMini /></div>}
-            {activeView==='charge'   && <div className="h-full overflow-y-auto"><WorkloadChart /></div>}
+            {activeView === 'kanban'   && <div className="h-full overflow-x-auto"><KanbanView tasks={tasks} onTaskClick={setSelectedTaskId} /></div>}
+            {activeView === 'list'     && <ListView tasks={tasks} onTaskClick={setSelectedTaskId} />}
+            {activeView === 'calendar' && <div className="h-full overflow-y-auto"><CalendarView tasks={tasks} onTaskClick={setSelectedTaskId} /></div>}
           </div>
         )
       )}
 
-      {selectedTaskId  && <TaskDetailPanel taskId={selectedTaskId} onClose={() => setSelectedTaskId(null)}/>}
-      {showCreateModal && <Modal title="Nouvelle tâche" onClose={() => setShowCreateModal(false)}><TaskForm onClose={() => setShowCreateModal(false)}/></Modal>}
+      {selectedTaskId  && <TaskDetailPanel taskId={selectedTaskId} onClose={() => setSelectedTaskId(null)} />}
+      {showCreateModal && <Modal title="Nouvelle tâche" onClose={() => setShowCreateModal(false)}><TaskForm onClose={() => setShowCreateModal(false)} /></Modal>}
     </div>
   )
 }

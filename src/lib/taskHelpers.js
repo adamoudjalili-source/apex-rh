@@ -5,12 +5,14 @@ import { ROLES } from '../utils/constants'
 // ============================================================
 
 export const TASK_STATUS = {
-  backlog:   { label: 'Backlog',    color: '#6B7280', bg: 'bg-gray-500/10',   text: 'text-gray-400',   border: 'border-gray-500/30',  dot: '#6B7280' },
-  a_faire:   { label: 'À faire',    color: '#3B82F6', bg: 'bg-blue-500/10',   text: 'text-blue-400',   border: 'border-blue-500/30',  dot: '#3B82F6' },
-  en_cours:  { label: 'En cours',   color: '#F59E0B', bg: 'bg-amber-500/10',  text: 'text-amber-400',  border: 'border-amber-500/30', dot: '#F59E0B' },
-  en_revue:  { label: 'En revue',   color: '#8B5CF6', bg: 'bg-violet-500/10', text: 'text-violet-400', border: 'border-violet-500/30',dot: '#8B5CF6' },
-  terminee:  { label: 'Terminée',   color: '#10B981', bg: 'bg-emerald-500/10',text: 'text-emerald-400',border: 'border-emerald-500/30',dot: '#10B981' },
-  bloquee:   { label: 'Bloquée',    color: '#EF4444', bg: 'bg-red-500/10',    text: 'text-red-400',    border: 'border-red-500/30',   dot: '#EF4444' },
+  backlog:    { label: 'Backlog',     color: '#6B7280', bg: 'bg-gray-500/10',    text: 'text-gray-400',   border: 'border-gray-500/30',   dot: '#6B7280' },
+  a_faire:    { label: 'À faire',     color: '#3B82F6', bg: 'bg-blue-500/10',    text: 'text-blue-400',   border: 'border-blue-500/30',   dot: '#3B82F6' },
+  en_cours:   { label: 'En cours',    color: '#F59E0B', bg: 'bg-amber-500/10',   text: 'text-amber-400',  border: 'border-amber-500/30',  dot: '#F59E0B' },
+  en_attente: { label: 'En attente',  color: '#F97316', bg: 'bg-orange-500/10',  text: 'text-orange-400', border: 'border-orange-500/30', dot: '#F97316' }, // ✅ S125
+  en_revue:   { label: 'En revue',    color: '#8B5CF6', bg: 'bg-violet-500/10',  text: 'text-violet-400', border: 'border-violet-500/30', dot: '#8B5CF6' },
+  terminee:   { label: 'Terminée',    color: '#10B981', bg: 'bg-emerald-500/10', text: 'text-emerald-400',border: 'border-emerald-500/30',dot: '#10B981' },
+  bloquee:    { label: 'Bloquée',     color: '#EF4444', bg: 'bg-red-500/10',     text: 'text-red-400',    border: 'border-red-500/30',    dot: '#EF4444' },
+  annule:     { label: 'Annulé',      color: '#6B7280', bg: 'bg-gray-500/10',    text: 'text-gray-500',   border: 'border-gray-500/20',   dot: '#6B7280' }, // ✅ S125
 }
 
 export const TASK_PRIORITY = {
@@ -20,15 +22,18 @@ export const TASK_PRIORITY = {
   urgente:  { label: 'Urgente',  color: '#EF4444', icon: '⚡', textClass: 'text-red-400' },
 }
 
-export const STATUS_ORDER = ['backlog', TASK_STATUS.A_FAIRE, TASK_STATUS.EN_COURS, 'en_revue', 'terminee', 'bloquee']
+// ✅ S125 — Inclut en_attente et annule
+export const STATUS_ORDER = ['backlog', 'a_faire', 'en_cours', 'en_attente', 'en_revue', 'terminee', 'bloquee', 'annule']
 
 export const KANBAN_COLUMNS = [
-  { id: 'backlog',  label: 'Backlog',   icon: '○' },
-  { id: TASK_STATUS.A_FAIRE,  label: 'À faire',   icon: '◎' },
-  { id: TASK_STATUS.EN_COURS, label: 'En cours',  icon: '◉' },
-  { id: 'en_revue', label: 'En revue',  icon: '◈' },
-  { id: 'terminee', label: 'Terminée',  icon: '✓' },
-  { id: 'bloquee',  label: 'Bloquée',   icon: '✕' },
+  { id: 'backlog',    label: 'Backlog',     icon: '○', accent: 'border-gray-500/30'   },
+  { id: 'a_faire',   label: 'À faire',     icon: '◎', accent: 'border-blue-500/40'   },
+  { id: 'en_cours',  label: 'En cours',    icon: '◉', accent: 'border-amber-500/40'  },
+  { id: 'en_attente',label: 'En attente',  icon: '⏸', accent: 'border-orange-500/40' }, // ✅ S125
+  { id: 'en_revue',  label: 'En revue',    icon: '◈', accent: 'border-violet-500/40' },
+  { id: 'terminee',  label: 'Terminée',    icon: '✓', accent: 'border-emerald-500/40'},
+  { id: 'bloquee',   label: 'Bloquée',     icon: '✕', accent: 'border-red-500/40'    },
+  // Annulé n'apparaît pas en Kanban — visible dans Vue Liste + filtres uniquement
 ]
 
 export function getStatusInfo(status) {
