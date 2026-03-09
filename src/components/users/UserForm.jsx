@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { supabase } from '../../lib/supabase'
 import { ROLES } from '../../utils/constants'
 
-const ROLES = [
+const ROLES_OPTIONS = [
   { value: ROLES.ADMINISTRATEUR, label: 'Administrateur' },
   { value: ROLES.DIRECTEUR, label: 'Directeur' },
   // { value: 'direction', label: 'Direction Générale' },  // supprimé — décision B-1
@@ -282,7 +282,7 @@ export default function UserForm({ user, onSuccess}) {
           required
           className={inputClass + ' cursor-pointer'}
         >
-          {ROLES.map((r) => (
+          {ROLES_OPTIONS.map((r) => (
             <option key={r.value} value={r.value} className="bg-[#1A1A2E]">
               {r.label}
             </option>

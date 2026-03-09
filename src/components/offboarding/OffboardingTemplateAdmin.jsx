@@ -14,7 +14,7 @@ import {
 } from '../../hooks/useOffboarding'
 
 const EMPTY_STEP = { title: '', category: 'admin', assignee_role: ROLES.ADMINISTRATEUR, days_before_exit: 7 }
-const ROLES = [ROLES.ADMINISTRATEUR, ROLES.DIRECTEUR, ROLES.CHEF_SERVICE, ROLES.CHEF_DIVISION, ROLES.COLLABORATEUR]
+const ROLES_OPTIONS = [ROLES.ADMINISTRATEUR, ROLES.DIRECTEUR, ROLES.CHEF_SERVICE, ROLES.CHEF_DIVISION, ROLES.COLLABORATEUR]
 
 function StepRow({ step, index, onChange, onRemove }) {
   return (
@@ -39,7 +39,7 @@ function StepRow({ step, index, onChange, onRemove }) {
             onChange={e => onChange(index, 'assignee_role', e.target.value)}
             className="text-xs px-2 py-1 rounded-lg border border-white/[0.08] outline-none"
             style={{ background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.7)' }}>
-            {ROLES.map(r => <option key={r} value={r}>{r}</option>)}
+            {ROLES_OPTIONS.map(r => <option key={r} value={r}>{r}</option>)}
           </select>
           <div className="flex items-center gap-1">
             <input type="number" value={step.days_before_exit}

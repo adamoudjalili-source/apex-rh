@@ -10,7 +10,7 @@ import { useUsersList } from '../../hooks/useSettings'
 import { useAuth } from '../../contexts/AuthContext'
 import { ROLES } from '../../utils/constants'
 
-const ROLES = [
+const ROLES_OPTIONS = [
   { value: ROLES.COLLABORATEUR,  label: 'Collaborateurs' },
   { value: ROLES.CHEF_SERVICE,   label: 'Chefs de service' },
   { value: ROLES.CHEF_DIVISION,  label: 'Chefs de division' },
@@ -238,7 +238,7 @@ export default function AnnouncementForm({ annonce, onClose }) {
           {/* Sélection par rôle */}
           {form.targeting_type === 'roles' && (
             <div className="flex flex-wrap gap-2">
-              {ROLES.map(r => {
+              {ROLES_OPTIONS.map(r => {
                 const active = form.target_roles.includes(r.value)
                 return (
                   <button key={r.value} onClick={() => toggleRole(r.value)}

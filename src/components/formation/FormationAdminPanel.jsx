@@ -23,6 +23,7 @@ function OrgStats() {
   if (isLoading) return <div className="flex justify-center py-6"><Loader2 size={18} className="animate-spin text-indigo-400"/></div>
   if (!stats) return null
 
+  const completionRate = stats.total_enrollments > 0
     ? Math.round((stats.completed / stats.total_enrollments) * 100)
     : 0
 

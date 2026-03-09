@@ -10,7 +10,7 @@ import { ChevronDown, ChevronRight, Info, EyeOff, RefreshCw } from 'lucide-react
 import { useOrgModuleSettings } from '../../hooks/useSettings'
 import { ROLES } from '../../utils/constants'
 
-const ROLES = [
+const ROLES_OPTIONS = [
   { key: ROLES.COLLABORATEUR,  label: 'Collaborateur',    color: '#22C55E', short: 'Collab'    },
   { key: ROLES.CHEF_SERVICE,   label: 'Chef de Service',  color: '#06B6D4', short: 'Chef svc'  },
   { key: ROLES.CHEF_DIVISION,  label: 'Chef de Division', color: '#3B82F6', short: 'Chef div'  },
@@ -251,7 +251,7 @@ export default function AccessControlMatrix() {
         <div className="grid border-b border-white/8 sticky top-0 z-10"
           style={{ gridTemplateColumns: '240px repeat(5, 1fr)', background: 'rgba(15,15,25,0.95)', backdropFilter: 'blur(8px)' }}>
           <div className="px-4 py-3 text-xs text-white/30 font-medium">Module / Action</div>
-          {ROLES.map((r, i) => (
+          {ROLES_OPTIONS.map((r, i) => (
             <div key={r.key} className="px-2 py-3 text-center cursor-default transition-colors"
               style={{ background: hoveredRole === i ? `${r.color}08` : 'transparent' }}
               onMouseEnter={() => setHoveredRole(i)} onMouseLeave={() => setHoveredRole(null)}>
@@ -295,8 +295,8 @@ export default function AccessControlMatrix() {
                     </span>
                   )}
                 </div>
-                {ROLES.map((_, i) => (
-                  <div key={i} style={{ background: hoveredRole === i ? `${ROLES[i].color}06` : 'transparent' }} className="h-full" />
+                {ROLES_OPTIONS.map((_, i) => (
+                  <div key={i} style={{ background: hoveredRole === i ? `${ROLES_OPTIONS[i].color}06` : 'transparent' }} className="h-full" />
                 ))}
               </button>
 
@@ -307,7 +307,7 @@ export default function AccessControlMatrix() {
                   <div className="px-4 pl-10">
                     <span className={`text-[11px] ${active ? 'text-white/50' : 'text-white/25'}`}>{row.label}</span>
                   </div>
-                  {ROLES.map((r, i) => (
+                  {ROLES_OPTIONS.map((r, i) => (
                     <div key={i} className="px-2 transition-colors"
                       style={{ background: hoveredRole === i ? `${r.color}06` : 'transparent' }}>
                       <PermCell value={row.perms[i]} disabled={!active} />

@@ -80,11 +80,13 @@ export default function Board() {
   }, [leaderboard])
 
   // ─── Scores pour le graphe (agent sélectionné ou moi) ────
+  const displayScores = isManager
     ? (selectedUser
         ? selectedUser.scores
         : [])
     : myScores
 
+  const displayName = isManager
     ? (selectedUser ? `${selectedUser.firstName} ${selectedUser.lastName}` : null)
     : `${profile?.first_name} ${profile?.last_name}`
 
