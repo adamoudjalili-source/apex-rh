@@ -1,241 +1,170 @@
 // ============================================================
-// APEX RH — MaPerformance.jsx  ·  Session 44
-// Route /ma-performance — 4 onglets :
-//   • "Ma Performance"    : profil multi-dim + historique + PULSE + NITA (S40)
-//   • "Vue Manager"       : transparency mode — ce que le manager voit (S42)
-//   • "Mes Commentaires"  : droit de commentaire par dimension (S42)
-//   • "Mes Rapports"      : reporting automatisé IA (S44)
-// ✅ Session 101 — Phase C RBAC : migration usePermission V2
-// ⚠️ PAS de score IPR composite affiché à l'employé
-// ⚠️ NE PAS modifier Sidebar.jsx, App.jsx, useTasks.js, usePulse.js
+// APEX RH — MaPerformance.jsx · S115
+// Hub Mon Espace — Tableau de bord performance personnelle
+// Onglets via useSearchParams(?tab=pulse|okr|entretiens|feedback)
+// StatCard KPIs · GLASS_STYLE · Max 400 lignes
 // ============================================================
-import { useState, useEffect, useRef } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
-import { useAuth }           from '../../contexts/AuthContext'
-import { usePermission }     from '../../hooks/usePermission'
-import { useAppSettings }    from '../../hooks/useSettings'
-import { isPulseEnabled }    from '../../lib/pulseHelpers'
-import { useTodayScore }     from '../../hooks/usePulse'
-import { useMyIPR }          from '../../hooks/useIPR'
-import { useMonthlyHistory, useMonthComparison, logPageVisit } from '../../hooks/usePerformanceHistory'
-import { GaugeRing, Sparkline, iprColor } from '../../components/ui/premium'
-import ProfilPerformance, { getQualitativeLabel } from '../../components/ui/ProfilPerformance'
+import { useSearchParams }                  from 'react-router-dom'
+import { motion }                           from 'framer-motion'
 import {
-  useAllMyComments, useUpsertComment, useDeleteComment,
-  useSharedManagerNotes, DIMENSION_LABELS, NOTE_TYPE_LABELS,
-  currentPeriodKey, isTransparencyEnabled,
-} from '../../hooks/useTransparency'
-import ReportingIA from '../intelligence/ReportingIA'
-import {
-  Activity, TrendingUp, TrendingDown, Minus,
-  BarChart2, Zap, Calendar, MessageSquare, Eye,
-  Plus, Trash2, Check, X, Lock, Unlock, ChevronDown, Users, FileText,
+  Activity, Target, CheckCircle2, MessageSquare,
+  Calendar, Star, Users,
 } from 'lucide-react'
 
-const stagger = { hidden:{}, visible:{ transition:{ staggerChildren:0.07 } } }
-const fadeUp  = { hidden:{ opacity:0, y:12 }, visible:{ opacity:1, y:0, transition:{ duration:0.35, ease:[0.4,0,0.2,1] } } }
+import {
+  GLASS_STYLE, GLASS_STYLE_STRONG, GLASS_STYLE_SUBTLE,
+} from '../../utils/constants'
+import StatCard   from '../../components/ui/StatCard'
+import EmptyState from '../../components/ui/EmptyState'
 
-const DIMS = [
-  { key:'avg',        label:'Global',     color:'#4F46E5' },
-  { key:'delivery',   label:'Exécution',  color:'#4F46E5' },
-  { key:'quality',    label:'Qualité',    color:'#10B981' },
-  { key:'regularity', label:'Régularité', color:'#F59E0B' },
-  { key:'bonus',      label:'Bonus',      color:'#EC4899' },
+import { useAuth }             from '../../contexts/AuthContext'
+import { useAppSettings }      from '../../hooks/useSettings'
+import { isPulseEnabled }      from '../../lib/pulseHelpers'
+import { useTodayScore }       from '../../hooks/usePulse'
+import { getPeriodDates, useUserScoreHistory } from '../../hooks/usePerformanceScores'
+import { useActiveOKRPeriods } from '../../hooks/useOkrPeriods'
+import { useObjectives }       from '../../hooks/useObjectives'
+import {
+  useMyReviews,
+  ANNUAL_REVIEW_STATUS_LABELS,
+  ANNUAL_REVIEW_STATUS_COLORS,
+  OVERALL_RATING_LABELS,
+  OVERALL_RATING_COLORS,
+} from '../../hooks/useAnnualReviews'
+import {
+  useFeedbackReceived,
+  computeAverageScores,
+  FEEDBACK_QUESTIONS,
+} from '../../hooks/useFeedback360'
+
+// ─── ONGLETS ─────────────────────────────────────────────────
+const TABS = [
+  { id: 'pulse',      label: 'Pulse',       icon: Activity,      color: '#4F46E5' },
+  { id: 'okr',        label: 'OKR',         icon: Target,        color: '#10B981' },
+  { id: 'entretiens', label: 'Entretiens',  icon: Users,        color: '#F59E0B' },
+  { id: 'feedback',   label: 'Feedback',    icon: MessageSquare, color: '#EC4899' },
 ]
-const PERIOD_OPTIONS = [{ label:'3m', count:3 }, { label:'6m', count:6 }, { label:'12m', count:12 }]
-const COMMENTABLE_DIMS = ['delivery','quality','regularity','bonus','nita_resilience','nita_reliability','nita_endurance','okr','f360','review']
+const DEFAULT_TAB = 'pulse'
 
-// ─── HistoryChart ─────────────────────────────────────────────
-function HistoryChart({ months, activeDimKey, activeDimColor, onHover }) {
-  const [hoverIdx, setHoverIdx] = useState(null)
-  const svgRef = useRef(null)
-  const W=560, H=130, PX=8, PY=14, w=W-PX*2, h=H-PY*2
-  const vals=months.map(m=>m[activeDimKey]), nonNull=vals.filter(v=>v!==null)
-  const maxV=nonNull.length?Math.max(...nonNull,10):100
-  const minV=Math.max(0,Math.min(...(nonNull.length?nonNull:[0]))-8)
-  const toY=v=>v===null?null:PY+h-((v-minV)/(maxV-minV+1))*h
-  const toX=i=>PX+(i/(months.length-1))*w
-  const pts=months.map((m,i)=>({x:toX(i),y:toY(m[activeDimKey])}))
-  const linePath=pts.reduce((acc,p,i)=>{
-    if(p.y===null)return acc
-    if(i===0||pts[i-1].y===null)return`${acc}M ${p.x} ${p.y}`
-    const cx=(p.x+pts[i-1].x)/2
-    return`${acc} C${cx} ${pts[i-1].y} ${cx} ${p.y} ${p.x} ${p.y}`
-  },'')
-  const validPts=pts.filter(p=>p.y!==null)
-  const fillPath=linePath&&validPts.length>=2?`${linePath} L${validPts.at(-1).x} ${PY+h} L${validPts[0].x} ${PY+h}Z`:''
-  const handleMove=e=>{
-    const rect=svgRef.current?.getBoundingClientRect();if(!rect)return
-    const i=Math.round(((e.clientX-rect.left-PX)/w)*(months.length-1))
-    const c=Math.max(0,Math.min(i,months.length-1));setHoverIdx(c);onHover?.(c)
-  }
-  return (
-    <div>
-      <svg ref={svgRef} viewBox={`0 0 ${W} ${H}`} className="w-full" style={{overflow:'visible'}}
-        onMouseMove={handleMove} onMouseLeave={()=>{setHoverIdx(null);onHover?.(null)}}>
-        {[25,50,75].map(v=>{const y=toY(v);if(!y)return null;return<line key={v} x1={PX} y1={y} x2={W-PX} y2={y} stroke="rgba(255,255,255,0.04)" strokeWidth="1" strokeDasharray="4 3"/>})}
-        {fillPath&&<path d={fillPath} fill={`${activeDimColor}10`}/>}
-        {linePath&&<path d={linePath} fill="none" stroke={activeDimColor} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>}
-        {pts.map((p,i)=>p.y!==null&&(<g key={i}>
-          {hoverIdx===i&&<><line x1={p.x} y1={PY} x2={p.x} y2={PY+h} stroke="rgba(255,255,255,0.07)" strokeWidth="1" strokeDasharray="3 3"/><circle cx={p.x} cy={p.y} r="8" fill={activeDimColor} opacity="0.1"/></>}
-          <circle cx={p.x} cy={p.y} r={hoverIdx===i?4:2.5} fill={hoverIdx===i?activeDimColor:`${activeDimColor}70`} stroke={hoverIdx===i?'rgba(255,255,255,0.8)':'none'} strokeWidth="1.5" style={{transition:'r .15s'}}/>
-          {hoverIdx===i&&months[i]?.[activeDimKey]!==null&&(()=>{const m=months[i],tx=Math.min(Math.max(p.x-30,2),W-68),ty=Math.max(p.y-44,2);return<g><rect x={tx} y={ty} width="64" height="32" rx="6" fill="#161630" stroke={`${activeDimColor}50`} strokeWidth="1"/><text x={tx+32} y={ty+13} textAnchor="middle" fill={activeDimColor} fontSize="11" fontWeight="700">{m[activeDimKey]}%</text><text x={tx+32} y={ty+26} textAnchor="middle" fill="rgba(255,255,255,0.35)" fontSize="9">{m.month} {String(m.year).slice(-2)}</text></g>})()}
-        </g>))}
-      </svg>
-      <div className="flex justify-between px-2 mt-1">
-        {months.map((m,i)=><span key={i} className="text-[9px] transition-colors" style={{color:hoverIdx===i?activeDimColor:'rgba(255,255,255,0.18)'}}>{m.month}</span>)}
-      </div>
-    </div>
+// ─── PANEL PULSE ─────────────────────────────────────────────
+function PulsePanel({ pulseOn }) {
+  const { startDate, endDate } = getPeriodDates('month')
+  const { data: scores = [], isLoading } = useUserScoreHistory(null, startDate, endDate)
+  const { data: today } = useTodayScore()
+
+  if (!pulseOn) return (
+    <EmptyState icon={Activity} title="PULSE désactivé"
+      description="Activez PULSE dans les Paramètres pour accéder à votre tableau de bord." />
   )
-}
+  if (isLoading) return <div className="h-32 animate-pulse rounded-2xl" style={GLASS_STYLE} />
 
-// ─── DeltaCard ────────────────────────────────────────────────
-function DeltaCard({ label, current, delta, color }) {
-  const s=delta===null?null:delta>0?1:delta<0?-1:0
-  const Icon=s===1?TrendingUp:s===-1?TrendingDown:Minus
-  return (
-    <div className="rounded-xl p-3" style={{background:`${color}08`,border:`1px solid ${color}18`}}>
-      <p className="text-[10px] text-white/35 mb-1">{label}</p>
-      <div className="flex items-end gap-2">
-        <span className="text-xl font-black" style={{color}}>{current!==null?`${current}%`:'—'}</span>
-        {delta!==null&&<span className={`flex items-center gap-0.5 text-[11px] font-semibold mb-0.5 ${s===1?'text-emerald-400':s===-1?'text-red-400':'text-white/30'}`}><Icon size={11}/>{s!==0?`${Math.abs(delta)}pts`:'='}</span>}
-      </div>
-    </div>
-  )
-}
+  const nonNull = scores.filter(s => s.total_score != null)
+  const avg = nonNull.length
+    ? Math.round(nonNull.reduce((a, s) => a + s.total_score, 0) / nonNull.length)
+    : null
 
-// ─── Onglet Mes Commentaires ──────────────────────────────────
-function MesCommentaires() {
-  const { data: allComments = [] } = useAllMyComments()
-  const upsertComment = useUpsertComment()
-  const deleteComment = useDeleteComment()
-  const [editingDim, setEditingDim] = useState(null)
-  const [draft, setDraft] = useState('')
-  const [draftPeriod, setDraftPeriod] = useState(currentPeriodKey())
-  const [visibility, setVisibility] = useState('manager_only')
-  const [expandedPeriod, setExpandedPeriod] = useState(currentPeriodKey())
-  const [deleting, setDeleting] = useState(null)
-
-  const grouped = {}
-  for (const c of allComments) {
-    if (!grouped[c.period_key]) grouped[c.period_key] = []
-    grouped[c.period_key].push(c)
-  }
-  const periods = Object.keys(grouped).sort().reverse()
-
-  async function handleSave() {
-    if (!draft.trim() || !editingDim) return
-    await upsertComment.mutateAsync({ dimension_key:editingDim, period_key:draftPeriod, comment:draft.trim(), visibility })
-    setEditingDim(null); setDraft('')
-  }
-
-  async function handleDelete(id) {
-    setDeleting(id); await deleteComment.mutateAsync(id); setDeleting(null)
-  }
+  const todayDims = today ? [
+    { label: 'Exécution',  v: today.score_delivery   ?? 0, c: '#4F46E5' },
+    { label: 'Qualité',    v: today.score_quality    ?? 0, c: '#10B981' },
+    { label: 'Régularité', v: today.score_regularity ?? 0, c: '#F59E0B' },
+    { label: 'Bonus',      v: today.score_bonus      ?? 0, c: '#EC4899' },
+  ] : []
 
   return (
-    <div className="space-y-5">
-      <div className="rounded-2xl p-5 border border-white/[0.06]" style={{background:'rgba(255,255,255,0.02)'}}>
-        <div className="flex items-center gap-2 mb-4">
-          <MessageSquare size={14} className="text-indigo-400"/>
-          <span className="text-sm font-semibold text-white">Ajouter un commentaire</span>
-          <span className="ml-auto text-[10px] text-white/30">Droit de réponse sur votre performance</span>
-        </div>
-        {editingDim ? (
-          <div className="space-y-3">
-            <div className="flex items-center gap-2">
-              <span className="text-lg">{DIMENSION_LABELS[editingDim]?.icon}</span>
-              <span className="text-sm font-medium text-white">{DIMENSION_LABELS[editingDim]?.label}</span>
-              <button onClick={()=>{setEditingDim(null);setDraft('')}} className="ml-auto p-1 rounded text-white/30 hover:text-white/60 transition-colors"><X size={14}/></button>
+    <div className="space-y-4">
+      <div className="rounded-2xl p-5" style={GLASS_STYLE_STRONG}>
+        <p className="text-xs font-semibold text-white/30 uppercase tracking-wider mb-3">Score du jour</p>
+        {today ? (
+          <div className="space-y-2.5">
+            <div className="flex items-center gap-3 mb-3">
+              <span className="text-3xl font-black" style={{ color: '#4F46E5' }}>{today.score_total ?? 0}%</span>
+              <span className="text-sm text-white/40">Score global</span>
             </div>
-            <div className="flex gap-2 flex-wrap">
-              <input type="month" value={draftPeriod} onChange={e=>setDraftPeriod(e.target.value)}
-                className="px-2 py-1.5 rounded-lg text-xs bg-white/5 border border-white/10 text-white/60 focus:outline-none focus:border-indigo-500/40"/>
-              <select value={visibility} onChange={e=>setVisibility(e.target.value)}
-                className="px-2 py-1.5 rounded-lg text-xs bg-white/5 border border-white/10 text-white/60 focus:outline-none">
-                <option value="manager_only">Manager uniquement</option>
-                <option value="public">Visible de tous</option>
-              </select>
-            </div>
-            <textarea value={draft} onChange={e=>setDraft(e.target.value)}
-              placeholder="Exprimez votre point de vue sur cette dimension..." rows={3}
-              className="w-full px-3 py-2.5 rounded-xl text-sm bg-white/[0.04] border border-white/[0.08] text-white placeholder:text-white/20 focus:outline-none focus:border-indigo-500/40 resize-none"/>
-            <div className="flex justify-end gap-2">
-              <button onClick={()=>{setEditingDim(null);setDraft('')}} className="px-3 py-1.5 text-xs text-white/40 hover:text-white/60 transition-colors">Annuler</button>
-              <button onClick={handleSave} disabled={!draft.trim()||upsertComment.isPending}
-                className="flex items-center gap-1.5 px-4 py-1.5 text-xs font-semibold rounded-lg bg-indigo-500 text-white hover:bg-indigo-400 transition-colors disabled:opacity-40">
-                <Check size={12}/> Enregistrer
-              </button>
-            </div>
+            {todayDims.map(d => (
+              <div key={d.label} className="flex items-center gap-3">
+                <span className="text-[11px] text-white/40 w-20">{d.label}</span>
+                <div className="flex-1 h-1.5 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.05)' }}>
+                  <div className="h-full rounded-full transition-all" style={{ width: `${d.v}%`, background: d.c }} />
+                </div>
+                <span className="text-xs font-bold w-10 text-right" style={{ color: d.c }}>{d.v}%</span>
+              </div>
+            ))}
           </div>
         ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-            {COMMENTABLE_DIMS.map(dk => {
-              const dim = DIMENSION_LABELS[dk]; if(!dim) return null
-              return (
-                <button key={dk} onClick={()=>{setEditingDim(dk);setDraft('');setDraftPeriod(currentPeriodKey())}}
-                  className="flex items-center gap-2 px-3 py-2 rounded-xl text-left transition-all hover:scale-[1.02]"
-                  style={{background:`${dim.color}08`,border:`1px solid ${dim.color}18`}}>
-                  <span className="text-base">{dim.icon}</span>
-                  <span className="text-xs font-medium" style={{color:dim.color}}>{dim.label}</span>
-                </button>
-              )
-            })}
-          </div>
+          <p className="text-sm text-white/30">Aucun score enregistré aujourd'hui.</p>
         )}
       </div>
 
-      {periods.length === 0 ? (
-        <div className="text-center py-10 text-white/20">
-          <MessageSquare size={28} className="mx-auto mb-2 opacity-30"/>
-          <p className="text-sm">Aucun commentaire enregistré.</p>
-          <p className="text-xs mt-1">Utilisez la section ci-dessus pour exprimer votre point de vue.</p>
-        </div>
-      ) : periods.map(period => {
-        const comments = grouped[period], isExp = expandedPeriod===period
-        const [y,m]=period.split('-')
-        const monthName=new Date(parseInt(y),parseInt(m)-1).toLocaleDateString('fr-FR',{month:'long',year:'numeric'})
-        return (
-          <div key={period} className="rounded-2xl border border-white/[0.06]" style={{background:'rgba(255,255,255,0.02)'}}>
-            <button className="w-full flex items-center justify-between px-5 py-3.5"
-              onClick={()=>setExpandedPeriod(isExp?null:period)}>
-              <span className="text-sm font-semibold text-white capitalize">{monthName}</span>
-              <div className="flex items-center gap-2">
-                <span className="text-xs text-white/30">{comments.length} commentaire{comments.length>1?'s':''}</span>
-                <ChevronDown size={14} className={`text-white/30 transition-transform ${isExp?'rotate-180':''}`}/>
-              </div>
-            </button>
-            <AnimatePresence>
-              {isExp && (
-                <motion.div initial={{height:0,opacity:0}} animate={{height:'auto',opacity:1}} exit={{height:0,opacity:0}} className="overflow-hidden">
-                  <div className="px-5 pb-4 space-y-2.5 border-t border-white/[0.04] pt-3">
-                    {comments.map(c => {
-                      const dim=DIMENSION_LABELS[c.dimension_key]
-                      return (
-                        <div key={c.id} className="flex items-start gap-3 p-3 rounded-xl"
-                          style={{background:`${dim?.color||'#6B7280'}06`,border:`1px solid ${dim?.color||'#6B7280'}15`}}>
-                          <span className="text-lg mt-0.5 flex-shrink-0">{dim?.icon||'📝'}</span>
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-2 mb-1">
-                              <span className="text-xs font-semibold" style={{color:dim?.color||'#6B7280'}}>{dim?.label||c.dimension_key}</span>
-                              {c.visibility==='public'
-                                ?<span className="flex items-center gap-0.5 text-[9px] text-emerald-400"><Unlock size={9}/> Public</span>
-                                :<span className="flex items-center gap-0.5 text-[9px] text-white/30"><Lock size={9}/> Manager seul</span>
-                              }
-                            </div>
-                            <p className="text-xs text-white/70 leading-relaxed">{c.comment}</p>
-                          </div>
-                          <button onClick={()=>handleDelete(c.id)} disabled={deleting===c.id}
-                            className="p-1 rounded text-white/20 hover:text-red-400 transition-colors flex-shrink-0 disabled:opacity-40">
-                            <Trash2 size={12}/>
-                          </button>
-                        </div>
-                      )
-                    })}
+      <div className="rounded-2xl p-5" style={GLASS_STYLE}>
+        <p className="text-xs font-semibold text-white/30 uppercase tracking-wider mb-3">
+          Évolution du mois ({scores.length} jours)
+        </p>
+        {scores.length > 0 ? (
+          <div className="space-y-1.5">
+            {scores.slice(-10).map(s => {
+              const pct = s.total_score ?? 0
+              const c = pct >= 75 ? '#10B981' : pct >= 50 ? '#F59E0B' : '#EF4444'
+              return (
+                <div key={s.id} className="flex items-center gap-2">
+                  <span className="text-[10px] text-white/30 w-16">
+                    {new Date(s.score_date).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' })}
+                  </span>
+                  <div className="flex-1 h-2 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.04)' }}>
+                    <div className="h-full rounded-full" style={{ width: `${pct}%`, background: c }} />
                   </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
+                  <span className="text-[10px] font-bold w-8 text-right" style={{ color: c }}>{pct}%</span>
+                </div>
+              )
+            })}
+            {avg != null && (
+              <div className="mt-3 pt-3 border-t border-white/[0.06] flex justify-between items-center">
+                <span className="text-[11px] text-white/30">Moyenne du mois</span>
+                <span className="text-sm font-black" style={{ color: '#4F46E5' }}>{avg}%</span>
+              </div>
+            )}
+          </div>
+        ) : (
+          <p className="text-sm text-white/30">Aucun score ce mois-ci.</p>
+        )}
+      </div>
+    </div>
+  )
+}
+
+// ─── PANEL OKR ───────────────────────────────────────────────
+function OKRPanel() {
+  const { profile } = useAuth()
+  const { data: periods = [], isLoading: loadingP } = useActiveOKRPeriods()
+  const activePeriodId = periods[0]?.id ?? null
+  const { data: objectives = [], isLoading: loadingO } = useObjectives(activePeriodId, { owner_id: profile?.id })
+
+  if (loadingP || loadingO) return <div className="h-32 animate-pulse rounded-2xl" style={GLASS_STYLE} />
+  if (!activePeriodId) return <EmptyState icon={Target} title="Aucune période active" description="Aucune période OKR active pour le moment." />
+  if (objectives.length === 0) return <EmptyState icon={Target} title="Aucun objectif" description="Vous n'avez pas encore d'objectifs sur cette période." />
+
+  return (
+    <div className="space-y-3">
+      <div className="rounded-2xl px-4 py-2.5 flex items-center gap-2" style={GLASS_STYLE_SUBTLE}>
+        <Calendar size={12} className="text-emerald-400" />
+        <span className="text-[11px] text-white/40">{periods[0]?.name}</span>
+        <span className="ml-auto text-[10px] text-emerald-400">{objectives.length} objectif{objectives.length > 1 ? 's' : ''}</span>
+      </div>
+      {objectives.map(obj => {
+        const krs = obj.key_results ?? []
+        const progress = krs.length
+          ? Math.round(krs.reduce((s, kr) => s + (kr.score ?? 0), 0) / krs.length)
+          : 0
+        const c = progress >= 80 ? '#10B981' : progress >= 50 ? '#F59E0B' : '#EF4444'
+        return (
+          <div key={obj.id} className="rounded-2xl p-4" style={GLASS_STYLE}>
+            <div className="flex items-start justify-between gap-2 mb-2">
+              <p className="text-sm font-semibold text-white/80 leading-snug">{obj.title}</p>
+              <span className="text-xs font-black flex-shrink-0" style={{ color: c }}>{progress}%</span>
+            </div>
+            <div className="h-1.5 rounded-full overflow-hidden mb-2" style={{ background: 'rgba(255,255,255,0.05)' }}>
+              <div className="h-full rounded-full transition-all" style={{ width: `${progress}%`, background: c }} />
+            </div>
+            <p className="text-[10px] text-white/30">{krs.length} résultat{krs.length > 1 ? 's' : ''} clé{krs.length > 1 ? 's' : ''}</p>
           </div>
         )
       })}
@@ -243,305 +172,182 @@ function MesCommentaires() {
   )
 }
 
-// ─── Onglet Vue Manager ───────────────────────────────────────
-function VueManagerTransparence({ iprData, todayScore, settings }) {
-  const { data: sharedNotes = [] } = useSharedManagerNotes()
-  const transparencyOn = isTransparencyEnabled(settings)
-  if (!transparencyOn) return (
-    <div className="flex flex-col items-center justify-center py-16 gap-4 text-center">
-      <div className="w-16 h-16 rounded-full flex items-center justify-center"
-        style={{background:'rgba(79,70,229,0.08)',border:'1px solid rgba(79,70,229,0.15)'}}>
-        <Eye size={24} className="text-indigo-400/40"/>
-      </div>
-      <p className="text-white/50 font-medium">Mode Transparence désactivé</p>
-      <p className="text-white/25 text-sm max-w-xs">Demandez à votre administrateur d'activer le mode transparence pour voir ce que votre manager voit.</p>
-    </div>
-  )
-  const qualLabel = iprData?.ipr!=null ? getQualitativeLabel(iprData.ipr) : null
+// ─── PANEL ENTRETIENS ─────────────────────────────────────────
+function EntretiensPanel() {
+  const { data: reviews = [], isLoading } = useMyReviews()
+
+  if (isLoading) return <div className="h-32 animate-pulse rounded-2xl" style={GLASS_STYLE} />
+  if (reviews.length === 0) return <EmptyState icon={Users} title="Aucun entretien" description="Votre historique d'entretiens annuels apparaîtra ici." />
+
   return (
-    <div className="space-y-5">
-      <div className="flex items-center gap-3 px-4 py-3 rounded-xl"
-        style={{background:'rgba(79,70,229,0.08)',border:'1px solid rgba(79,70,229,0.15)'}}>
-        <Eye size={14} className="text-indigo-400 flex-shrink-0"/>
-        <p className="text-xs text-indigo-300">Vous voyez ici exactement ce que votre manager voit sur votre profil.</p>
-      </div>
-
-      {iprData && (
-        <div className="rounded-2xl p-5 border border-white/[0.06]" style={{background:'rgba(255,255,255,0.02)'}}>
-          <div className="flex items-center gap-2 mb-4">
-            <Users size={14} className="text-indigo-400"/>
-            <span className="text-sm font-semibold text-white">Profil vu par votre manager</span>
-            {qualLabel && <span className="ml-auto text-xs font-bold px-2 py-0.5 rounded-full" style={{background:`${qualLabel.color}18`,color:qualLabel.color}}>{qualLabel.label}</span>}
-          </div>
-          <ProfilPerformance data={iprData} showDetails />
-        </div>
-      )}
-
-      {todayScore && (
-        <div className="rounded-2xl p-5 border border-white/[0.06]" style={{background:'rgba(255,255,255,0.02)'}}>
-          <div className="flex items-center gap-2 mb-3">
-            <Zap size={14} className="text-amber-400"/>
-            <span className="text-sm font-semibold text-white">Score PULSE brut du jour</span>
-          </div>
-          <div className="flex items-center gap-5">
-            <GaugeRing value={todayScore.score_total??0} size={72} color={iprColor(todayScore.score_total??0)}/>
-            <div className="flex-1 space-y-2">
-              {[{label:'Exécution',v:todayScore.score_delivery??0,c:'#4F46E5'},{label:'Qualité',v:todayScore.score_quality??0,c:'#10B981'},{label:'Régularité',v:todayScore.score_regularity??0,c:'#F59E0B'},{label:'Bonus',v:todayScore.score_bonus??0,c:'#EC4899'}].map(d=>(
-                <div key={d.label} className="flex items-center gap-2">
-                  <span className="text-[10px] text-white/40 w-20">{d.label}</span>
-                  <div className="flex-1 h-1.5 rounded-full bg-white/5 overflow-hidden">
-                    <div className="h-full rounded-full" style={{width:`${d.v}%`,background:d.c}}/>
-                  </div>
-                  <span className="text-xs font-bold w-10 text-right" style={{color:d.c}}>{d.v}%</span>
-                </div>
-              ))}
+    <div className="space-y-3">
+      {reviews.map(rev => {
+        const statusColor = ANNUAL_REVIEW_STATUS_COLORS[rev.status] || '#6B7280'
+        const ratingColor = rev.overall_rating ? OVERALL_RATING_COLORS[rev.overall_rating] : null
+        return (
+          <div key={rev.id} className="rounded-2xl p-4" style={GLASS_STYLE}>
+            <div className="flex items-center justify-between gap-2 mb-1.5">
+              <p className="text-sm font-semibold text-white/80">{rev.campaign?.title || `Entretien ${rev.campaign?.year || ''}`}</p>
+              <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full flex-shrink-0"
+                style={{ background: `${statusColor}18`, color: statusColor }}>
+                {ANNUAL_REVIEW_STATUS_LABELS[rev.status] || rev.status}
+              </span>
+            </div>
+            <div className="flex items-center gap-3">
+              {rev.overall_rating && ratingColor && (
+                <span className="flex items-center gap-1 text-[11px] font-semibold" style={{ color: ratingColor }}>
+                  <Star size={10} />
+                  {OVERALL_RATING_LABELS[rev.overall_rating]}
+                </span>
+              )}
+              {rev.manager && (
+                <span className="text-[10px] text-white/30">
+                  Manager : {rev.manager.first_name} {rev.manager.last_name}
+                </span>
+              )}
+              <span className="text-[10px] text-white/25 ml-auto">
+                {rev.created_at ? new Date(rev.created_at).toLocaleDateString('fr-FR', { year: 'numeric', month: 'long' }) : '—'}
+              </span>
             </div>
           </div>
-        </div>
-      )}
-
-      {iprData?.nita && (
-        <div className="rounded-2xl p-5 border border-white/[0.06]" style={{background:'rgba(255,255,255,0.02)'}}>
-          <div className="flex items-center gap-2 mb-4">
-            <BarChart2 size={14} className="text-amber-400"/>
-            <span className="text-sm font-semibold text-white">Activité Réelle NITA</span>
-          </div>
-          <div className="grid grid-cols-3 gap-3">
-            {[{label:'Résilience',v:iprData.nita.resilience??0,c:'#4F46E5'},{label:'Fiabilité',v:iprData.nita.reliability??0,c:'#10B981'},{label:'Endurance',v:iprData.nita.endurance??0,c:'#F59E0B'}].map(s=>(
-              <div key={s.label} className="rounded-xl p-3 text-center" style={{background:`${s.c}08`,border:`1px solid ${s.c}18`}}>
-                <p className="text-2xl font-black mb-0.5" style={{color:s.c}}>{s.v}%</p>
-                <p className="text-[11px] font-semibold text-white/70">{s.label}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {sharedNotes.length > 0 && (
-        <div className="rounded-2xl p-5 border border-white/[0.06]" style={{background:'rgba(255,255,255,0.02)'}}>
-          <div className="flex items-center gap-2 mb-4">
-            <MessageSquare size={14} className="text-purple-400"/>
-            <span className="text-sm font-semibold text-white">Notes de votre manager</span>
-            <span className="ml-auto text-[10px] text-white/30">Partagées avec vous</span>
-          </div>
-          <div className="space-y-3">
-            {sharedNotes.map(note => {
-              const nt = NOTE_TYPE_LABELS[note.note_type]||NOTE_TYPE_LABELS.general
-              return (
-                <div key={note.id} className="flex items-start gap-3 p-3 rounded-xl"
-                  style={{background:`${nt.color}06`,border:`1px solid ${nt.color}15`}}>
-                  <span className="text-base flex-shrink-0">{nt.icon}</span>
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className="text-xs font-semibold" style={{color:nt.color}}>{nt.label}</span>
-                      {note.manager&&<span className="text-[10px] text-white/25">par {note.manager.first_name} {note.manager.last_name}</span>}
-                      <span className="text-[10px] text-white/20 ml-auto">{note.period_key}</span>
-                    </div>
-                    <p className="text-xs text-white/70 leading-relaxed">{note.note_text}</p>
-                  </div>
-                </div>
-              )
-            })}
-          </div>
-        </div>
-      )}
+        )
+      })}
     </div>
   )
 }
 
-// ─── Page principale ──────────────────────────────────────────
-export default function MaPerformance() {
-  const { profile } = useAuth()
-  const { can }     = usePermission()
-  const { data: settings } = useAppSettings()
-  const pulseOn       = isPulseEnabled(settings) && can('pulse', 'own', 'read')
-  const transparencyOn = isTransparencyEnabled(settings)
-  const [tab, setTab] = useState('performance')
-  const [activeDimIdx, setDim] = useState(0)
-  const [periodCount, setPeriod] = useState(12)
-  const [hoverIdx, setHoverIdx] = useState(null)
+// ─── PANEL FEEDBACK ───────────────────────────────────────────
+function FeedbackPanel() {
+  const { data: feedbacks = [], isLoading } = useFeedbackReceived(null)
 
-  const { data: todayScore } = useTodayScore()
-  const { data: iprData }    = useMyIPR()
-  const { data: allMonths = [] } = useMonthlyHistory(profile?.id)
-  const { data: comparison } = useMonthComparison(profile?.id)
+  if (isLoading) return <div className="h-32 animate-pulse rounded-2xl" style={GLASS_STYLE} />
+  if (feedbacks.length === 0) return <EmptyState icon={MessageSquare} title="Aucun feedback reçu" description="Les feedbacks 360° validés apparaîtront ici." />
 
-  useEffect(() => { logPageVisit(profile?.id, '/ma-performance') }, [profile?.id])
-
-  const months = allMonths.slice(-periodCount)
-  const activeDim = DIMS[activeDimIdx]
-  const sparkData = allMonths.filter(m=>m.avg!==null).map(m=>m.avg)
-  const qualLabel = iprData?.ipr!=null ? getQualitativeLabel(iprData.ipr) : null
-  const hoverMonth = hoverIdx!==null ? months[hoverIdx] : null
-
-  const TABS = [
-    { id:'performance',  label:'Ma Performance',   icon:Activity },
-    { id:'vue_manager',  label:'Vue Manager',       icon:Eye },
-    { id:'commentaires', label:'Mes Commentaires',  icon:MessageSquare },
-    { id:'rapports',     label:'Mes Rapports',      icon:FileText, badge:'S44' },
-  ]
+  const allResponses = feedbacks.flatMap(f => f.responses ?? [])
+  const avgScores = computeAverageScores(allResponses)
 
   return (
-    <motion.div variants={stagger} initial="hidden" animate="visible"
-      className="flex flex-col h-full overflow-y-auto"
-      style={{background:'linear-gradient(180deg,rgba(79,70,229,0.05) 0%,transparent 220px)'}}>
-
-      <motion.div variants={fadeUp} className="px-6 pt-6 pb-0 border-b border-white/[0.06]">
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl flex items-center justify-center"
-              style={{background:'rgba(79,70,229,0.12)',border:'1px solid rgba(79,70,229,0.2)'}}>
-              <Activity size={16} style={{color:'#4F46E5'}}/>
-            </div>
-            <div>
-              <h1 className="text-xl font-bold text-white" style={{fontFamily:"'Syne',sans-serif"}}>Ma Performance</h1>
-              <p className="text-xs text-white/30">Profil multi-dimensionnel · PULSE · Activité NITA</p>
-            </div>
-          </div>
-          {qualLabel && (
-            <span className="hidden sm:inline text-xs font-bold px-3 py-1.5 rounded-full"
-              style={{background:`${qualLabel.color}18`,color:qualLabel.color,border:`1px solid ${qualLabel.color}30`}}>
-              {qualLabel.label}
-            </span>
-          )}
-        </div>
-        <div className="flex gap-1">
-          {TABS.map(t => {
-            const Icon = t.icon; const active = tab===t.id
+    <div className="space-y-4">
+      <div className="rounded-2xl p-5" style={GLASS_STYLE_STRONG}>
+        <p className="text-xs font-semibold text-white/30 uppercase tracking-wider mb-3">
+          Scores moyens ({feedbacks.length} feedback{feedbacks.length > 1 ? 's' : ''})
+        </p>
+        <div className="space-y-2.5">
+          {FEEDBACK_QUESTIONS.map(q => {
+            const score = avgScores[q.key]
+            const pct = score != null ? Math.round((score / 5) * 100) : null
+            const c = pct != null ? (pct >= 80 ? '#10B981' : pct >= 60 ? '#F59E0B' : '#EF4444') : '#6B7280'
             return (
-              <button key={t.id} onClick={()=>setTab(t.id)}
-                className={`flex items-center gap-1.5 px-4 py-2.5 text-sm font-medium rounded-t-lg transition-all border-b-2 ${active?'text-white border-indigo-500 bg-indigo-500/8':'text-white/35 border-transparent hover:text-white/60'}`}>
-                <Icon size={13}/>
-                <span className="hidden sm:inline">{t.label}</span>
-                {t.id==='vue_manager'&&transparencyOn&&<span className="w-1.5 h-1.5 rounded-full bg-emerald-400"/>}
-                {t.badge&&<span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full" style={{background:'rgba(129,140,248,0.15)',color:'#818CF8'}}>{t.badge}</span>}
-              </button>
+              <div key={q.key} className="flex items-center gap-3">
+                <span className="text-base w-6">{q.icon}</span>
+                <span className="text-[11px] text-white/50 flex-1">{q.label}</span>
+                <div className="w-24 h-1.5 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.05)' }}>
+                  {pct != null && <div className="h-full rounded-full" style={{ width: `${pct}%`, background: c }} />}
+                </div>
+                <span className="text-[11px] font-bold w-8 text-right" style={{ color: c }}>
+                  {score != null ? score.toFixed(1) : '—'}
+                </span>
+              </div>
             )
           })}
         </div>
-      </motion.div>
-
-      <div className="flex-1 px-6 py-5 space-y-5 pb-24 md:pb-6">
-        <AnimatePresence mode="wait">
-          {tab==='performance' && (
-            <motion.div key="perf" variants={stagger} initial="hidden" animate="visible" className="space-y-5">
-              {pulseOn && iprData && (
-                <motion.div variants={fadeUp}>
-                  <p className="text-xs font-semibold text-white/40 uppercase tracking-wider mb-3">Profil de performance</p>
-                  <ProfilPerformance data={iprData} showDetails />
-                </motion.div>
-              )}
-              {pulseOn && (
-                <motion.div variants={fadeUp} className="rounded-2xl p-5 border border-white/[0.06]" style={{background:'rgba(255,255,255,0.02)'}}>
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="flex items-center gap-2"><Calendar size={14} className="text-indigo-400"/><span className="text-sm font-semibold text-white">Historique</span></div>
-                    <div className="flex gap-1">{PERIOD_OPTIONS.map(p=><button key={p.label} onClick={()=>setPeriod(p.count)} className={`px-2.5 py-1 text-[11px] font-medium rounded-lg transition-all ${periodCount===p.count?'bg-indigo-500/20 text-indigo-400':'text-white/25 hover:text-white/50'}`}>{p.label}</button>)}</div>
-                  </div>
-                  <div className="flex flex-wrap gap-1.5 mb-4">
-                    {DIMS.map((d,i)=><button key={d.key} onClick={()=>setDim(i)} className="px-2.5 py-1 text-[10px] font-semibold rounded-lg transition-all" style={activeDimIdx===i?{background:`${d.color}20`,border:`1px solid ${d.color}40`,color:d.color}:{background:'transparent',border:'1px solid transparent',color:'rgba(255,255,255,0.25)'}}>{d.label}</button>)}
-                  </div>
-                  {months.length>1 ? (
-                    <>
-                      <HistoryChart months={months} activeDimKey={activeDim.key} activeDimColor={activeDim.color} onHover={setHoverIdx}/>
-                      <AnimatePresence>
-                        {hoverMonth&&!hoverMonth.isEmpty&&(
-                          <motion.div initial={{opacity:0,y:4}} animate={{opacity:1,y:0}} exit={{opacity:0}}
-                            className="mt-3 flex items-center justify-between px-3 py-2 rounded-xl" style={{background:'rgba(255,255,255,0.03)'}}>
-                            <span className="text-xs text-white/40">{hoverMonth.month} {hoverMonth.year}</span>
-                            <div className="flex items-center gap-4">
-                              <span className="text-sm font-bold" style={{color:activeDim.color}}>{hoverMonth[activeDim.key]??'—'}%</span>
-                              <span className="text-[10px] text-white/30">{hoverMonth.daysCount}j</span>
-                            </div>
-                          </motion.div>
-                        )}
-                      </AnimatePresence>
-                    </>
-                  ) : <p className="text-sm text-white/20 py-6 text-center">Pas encore de données sur cette période.</p>}
-                </motion.div>
-              )}
-              {pulseOn && comparison && (
-                <motion.div variants={fadeUp}>
-                  <p className="text-xs font-semibold text-white/40 uppercase tracking-wider mb-3 flex items-center gap-2">
-                    Comparatif mensuel <span className="text-[10px] font-normal text-white/25 normal-case">Mois courant vs mois précédent</span>
-                  </p>
-                  <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-                    <DeltaCard label="Score global" current={comparison.current.avg}       delta={comparison.delta}            color="#4F46E5"/>
-                    <DeltaCard label="Exécution"    current={comparison.current.delivery}  delta={comparison.deltaDelivery}    color="#4F46E5"/>
-                    <DeltaCard label="Qualité"      current={comparison.current.quality}   delta={comparison.deltaQuality}     color="#10B981"/>
-                    <DeltaCard label="Régularité"   current={comparison.current.regularity}delta={comparison.deltaRegularity}  color="#F59E0B"/>
-                  </div>
-                </motion.div>
-              )}
-              {pulseOn && (
-                <motion.div variants={fadeUp} className="rounded-2xl p-5 border border-white/[0.06]" style={{background:'rgba(255,255,255,0.02)'}}>
-                  <div className="flex items-center gap-2 mb-4"><Zap size={14} className="text-indigo-400"/><span className="text-sm font-semibold text-white">PULSE — Aujourd'hui</span></div>
-                  {todayScore ? (
-                    <div className="flex items-center gap-5">
-                      <GaugeRing value={todayScore.score_total??0} size={76} color={iprColor(todayScore.score_total??0)}/>
-                      <div className="flex-1 grid grid-cols-2 gap-2">
-                        {[{label:'Exécution',v:todayScore.score_delivery??0,c:'#4F46E5'},{label:'Qualité',v:todayScore.score_quality??0,c:'#10B981'},{label:'Régularité',v:todayScore.score_regularity??0,c:'#F59E0B'},{label:'Bonus',v:todayScore.score_bonus??0,c:'#EC4899'}].map(d=>(
-                          <div key={d.label} className="rounded-xl p-2.5" style={{background:`${d.c}08`,border:`1px solid ${d.c}18`}}>
-                            <p className="text-[10px] text-white/35 mb-1">{d.label}</p>
-                            <div className="flex items-center gap-2">
-                              <span className="text-base font-black" style={{color:d.c}}>{d.v}%</span>
-                              <div className="flex-1 h-1 rounded-full bg-white/5 overflow-hidden"><div className="h-full rounded-full" style={{width:`${d.v}%`,background:d.c}}/></div>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  ) : <p className="text-sm text-white/25 py-2">Aucun score PULSE pour aujourd'hui.</p>}
-                  {sparkData.length>2 && (
-                    <div className="mt-4 pt-4 border-t border-white/[0.04]">
-                      <p className="text-[11px] text-white/25 mb-2">Évolution mensuelle (12 mois)</p>
-                      <Sparkline data={sparkData} height={36} color="#4F46E5"/>
-                    </div>
-                  )}
-                </motion.div>
-              )}
-              {pulseOn && iprData?.nita && (
-                <motion.div variants={fadeUp} className="rounded-2xl p-5 border border-white/[0.06]" style={{background:'rgba(255,255,255,0.02)'}}>
-                  <div className="flex items-center gap-2 mb-4">
-                    <BarChart2 size={14} className="text-amber-400"/>
-                    <span className="text-sm font-semibold text-white">Activité Réelle NITA</span>
-                    <span className="ml-auto text-[9px] font-bold px-1.5 py-0.5 rounded-full" style={{background:'rgba(245,158,11,0.15)',color:'#F59E0B'}}>NITA</span>
-                  </div>
-                  <div className="grid grid-cols-3 gap-3">
-                    {[{label:'Résilience',v:iprData.nita.resilience??0,c:'#4F46E5',d:'Jours de pic'},{label:'Fiabilité',v:iprData.nita.reliability??0,c:'#10B981',d:'Taux erreur'},{label:'Endurance',v:iprData.nita.endurance??0,c:'#F59E0B',d:'Shifts longs'}].map(s=>(
-                      <div key={s.label} className="rounded-xl p-3 text-center" style={{background:`${s.c}08`,border:`1px solid ${s.c}18`}}>
-                        <p className="text-2xl font-black mb-0.5" style={{color:s.c}}>{s.v}%</p>
-                        <p className="text-[11px] font-semibold text-white/70">{s.label}</p>
-                        <p className="text-[10px] text-white/30 mt-0.5">{s.d}</p>
-                      </div>
-                    ))}
-                  </div>
-                </motion.div>
-              )}
-              {!pulseOn && (
-                <motion.div variants={fadeUp} className="rounded-2xl p-10 border border-dashed border-white/[0.08] text-center">
-                  <Activity size={32} className="text-white/15 mx-auto mb-3"/>
-                  <p className="text-sm text-white/30">Activez PULSE dans les Paramètres pour accéder à votre profil de performance.</p>
-                </motion.div>
-              )}
-            </motion.div>
-          )}
-          {tab==='vue_manager' && (
-            <motion.div key="vue" initial={{opacity:0,y:8}} animate={{opacity:1,y:0}}>
-              <VueManagerTransparence iprData={iprData} todayScore={todayScore} settings={settings}/>
-            </motion.div>
-          )}
-          {tab==='commentaires' && (
-            <motion.div key="comments" initial={{opacity:0,y:8}} animate={{opacity:1,y:0}}>
-              <MesCommentaires/>
-            </motion.div>
-          )}
-          {tab==='rapports' && (
-            <motion.div key="rapports" initial={{opacity:0,y:8}} animate={{opacity:1,y:0}} className="-mx-6">
-              <ReportingIA/>
-            </motion.div>
-          )}
-        </AnimatePresence>
       </div>
-    </motion.div>
+      <div className="space-y-2">
+        {feedbacks.slice(0, 5).map(fb => (
+          <div key={fb.id} className="rounded-2xl p-3.5 flex items-center gap-3" style={GLASS_STYLE}>
+            <div className="w-7 h-7 rounded-xl flex items-center justify-center flex-shrink-0"
+              style={{ background: 'rgba(236,72,153,0.12)' }}>
+              <MessageSquare size={12} style={{ color: '#EC4899' }} />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-[11px] text-white/60 font-medium truncate">{fb.campaign?.title || 'Feedback'}</p>
+              <p className="text-[10px] text-white/30">
+                {fb.evaluator ? `De : ${fb.evaluator.first_name} ${fb.evaluator.last_name}` : 'Anonyme'}
+                {fb.submitted_at && ` · ${new Date(fb.submitted_at).toLocaleDateString('fr-FR')}`}
+              </p>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+// ─── HOOK KPIs STATS ─────────────────────────────────────────
+function useMaPerformanceStats() {
+  const { profile } = useAuth()
+  const { startDate, endDate } = getPeriodDates('month')
+  const { data: scores = [] }     = useUserScoreHistory(null, startDate, endDate)
+  const { data: periods = [] }    = useActiveOKRPeriods()
+  const activePeriodId            = periods[0]?.id ?? null
+  const { data: objectives = [] } = useObjectives(activePeriodId, { owner_id: profile?.id })
+  const { data: reviews = [] }    = useMyReviews()
+
+  const nonNull  = scores.filter(s => s.total_score != null)
+  const avgPulse = nonNull.length
+    ? Math.round(nonNull.reduce((a, s) => a + s.total_score, 0) / nonNull.length)
+    : null
+
+  const okrAtteints = objectives.filter(obj => {
+    const krs = obj.key_results ?? []
+    return krs.length > 0 && (krs.reduce((s, kr) => s + (kr.score ?? 0), 0) / krs.length) >= 80
+  }).length
+
+  const entretiensCompletes = reviews.filter(r => ['completed', 'signed'].includes(r.status)).length
+
+  return { avgPulse, okrAtteints, okrTotal: objectives.length, entretiensCompletes }
+}
+
+// ─── PAGE PRINCIPALE ──────────────────────────────────────────
+export default function MaPerformance() {
+  const [searchParams, setSearchParams] = useSearchParams()
+  const activeTab = TABS.find(t => t.id === searchParams.get('tab'))?.id ?? DEFAULT_TAB
+
+  const { data: settings } = useAppSettings()
+  const pulseOn = isPulseEnabled(settings)
+
+  const { avgPulse, okrAtteints, okrTotal, entretiensCompletes } = useMaPerformanceStats()
+
+  return (
+    <div className="min-h-screen p-4 md:p-6 space-y-5">
+      <div>
+        <h1 className="text-2xl font-black text-white" style={{ fontFamily: "'Syne', sans-serif" }}>Ma Performance</h1>
+        <p className="text-sm text-white/40">Pulse · OKR · Entretiens · Feedback 360°</p>
+      </div>
+
+      <div className="grid grid-cols-3 gap-3">
+        <StatCard icon={Activity}     label="Score pulse moyen"    value={avgPulse != null ? `${avgPulse}%` : '—'} color="#4F46E5" />
+        <StatCard icon={Target}       label="OKR atteints"         value={okrTotal > 0 ? `${okrAtteints}/${okrTotal}` : '—'} color="#10B981" />
+        <StatCard icon={CheckCircle2} label="Entretiens complétés" value={entretiensCompletes} color="#F59E0B" />
+      </div>
+
+      <div className="flex gap-1 p-1 rounded-2xl" style={GLASS_STYLE_SUBTLE}>
+        {TABS.map(tab => {
+          const active = tab.id === activeTab
+          const Icon   = tab.icon
+          return (
+            <button
+              key={tab.id}
+              onClick={() => setSearchParams({ tab: tab.id })}
+              className="flex-1 flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl text-xs font-semibold transition-all duration-200"
+              style={active
+                ? { background: `${tab.color}20`, color: tab.color, border: `1px solid ${tab.color}30` }
+                : { color: 'rgba(255,255,255,0.35)', border: '1px solid transparent' }
+              }
+            >
+              <Icon size={13} />
+              <span className="hidden sm:inline">{tab.label}</span>
+            </button>
+          )
+        })}
+      </div>
+
+      <motion.div key={activeTab} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.25 }}>
+        {activeTab === 'pulse'      && <PulsePanel      pulseOn={pulseOn} />}
+        {activeTab === 'okr'        && <OKRPanel />}
+        {activeTab === 'entretiens' && <EntretiensPanel />}
+        {activeTab === 'feedback'   && <FeedbackPanel />}
+      </motion.div>
+    </div>
   )
 }
