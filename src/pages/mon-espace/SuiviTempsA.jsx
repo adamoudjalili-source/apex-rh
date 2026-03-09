@@ -1,10 +1,10 @@
 // ============================================================
-// APEX RH — SuiviTempsA.jsx — S124 enrichi
-// Onglets : Saisie du temps (grille éditable) · Timer
+// APEX RH — SuiviTempsA.jsx — S124 enrichi v2
+// Onglets : Saisie du temps (grille éditable + tâches) · Timer
 // ============================================================
 import { useState, useCallback, useEffect, useRef } from 'react'
 import { Plus, Trash2, AlertTriangle, ChevronLeft, ChevronRight,
-         Send, Copy, Play, Square, MessageSquare } from 'lucide-react'
+         Send, Copy, Play, Square, MessageSquare, Link2 } from 'lucide-react'
 
 import {
   useMyCurrentTimeSheet, useCreateTimeSheet, useTimeEntries,
@@ -13,7 +13,10 @@ import {
   useTimeStats, formatHours, getWeekDates, getCurrentWeekStart,
   ENTRY_TYPE_LABELS,
 } from '../../hooks/useTemps'
+import { useTasks }    from '../../hooks/useTasks'
 import { useProjects } from '../../hooks/useProjects'
+import { useAuth }     from '../../contexts/AuthContext'
+import { TASK_STATUS } from '../../utils/constants'
 import { KpiCard, SectionCard, ProgressBar, StatusBadge,
          SubmitBtn, NavBtn, formatDateFR } from './SuiviTempsShared'
 
@@ -36,46 +39,71 @@ const INP = {
 }
 const SEL = { ...INP, cursor: 'pointer' }
 
+// ─── Hook tâches filtrées sur l'utilisateur ──────────────────
+function useMyActiveTasks() {
+  const { profile } = useAuth()
+  const { data: tasks = [] } = useTasks({})
+  return tasks.filter(t =>
+    [TASK_STATUS.A_FAIRE, TASK_STATUS.EN_COURS, TASK_STATUS.EN_REVUE].includes(t.status) &&
+    t.task_assignees?.some(a => a.user_id === profile?.id)
+  )
+}
+
 // ─── Ligne d'entrée éditable ─────────────────────────────────
-function EntryRow({ entry, timesheetId, projects }) {
+function EntryRow({ entry, timesheetId, projects, tasks }) {
   const update  = useUpdateTimeEntry()
   const destroy = useDeleteTimeEntry()
   const [local, setLocal] = useState({
     hours:       entry.hours ?? 0,
     entry_type:  entry.entry_type ?? 'regular',
     project_id:  entry.project_id ?? '',
+    task_id:     entry.task_id ?? '',
     description: entry.description ?? '',
   })
 
   const save = useCallback((field, value) => {
-    const val = value === '' ? null : value
     setLocal(l => ({ ...l, [field]: value }))
-    update.mutate({ id: entry.id, timesheetId, [field]: val })
+    update.mutate({ id: entry.id, timesheetId, [field]: value === '' ? null : value })
   }, [entry.id, timesheetId, update])
 
   const anomaly = local.hours > 10
+  const linkedTask = tasks.find(t => t.id === local.task_id)
 
   return (
     <div style={{
-      display: 'grid', gridTemplateColumns: '70px 120px 1fr 28px',
+      display: 'grid', gridTemplateColumns: '64px 110px 140px 1fr 28px',
       gap: 6, alignItems: 'center', padding: '8px 10px', borderRadius: 10,
       background: anomaly ? 'rgba(251,146,60,.05)' : 'rgba(255,255,255,.025)',
-      border: `1px solid ${anomaly ? 'rgba(251,146,60,.2)' : 'rgba(255,255,255,.05)'}`,
+      border: `1px solid ${anomaly ? 'rgba(251,146,60,.2)' : local.task_id ? 'rgba(129,140,248,.15)' : 'rgba(255,255,255,.05)'}`,
     }}>
+      {/* Heures */}
       <div style={{ position: 'relative' }}>
         <input type="number" min="0" max="24" step="0.5" value={local.hours}
           onChange={e => setLocal(l => ({ ...l, hours: +e.target.value }))}
           onBlur={e => save('hours', +e.target.value)}
           style={{ ...INP, width: '100%', color: local.hours >= 8 ? '#34D399' : local.hours > 0 ? '#fff' : 'rgba(255,255,255,.3)' }}
         />
-        {anomaly && <AlertTriangle size={10} style={{ color: '#FB923C', position: 'absolute', right: 6, top: '50%', transform: 'translateY(-50%)' }} />}
+        {anomaly && <AlertTriangle size={10} style={{ color: '#FB923C', position: 'absolute', right: 5, top: '50%', transform: 'translateY(-50%)' }} />}
       </div>
 
+      {/* Type */}
       <select value={local.entry_type} onChange={e => save('entry_type', e.target.value)} style={SEL}>
         {TYPES.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
       </select>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '110px 1fr', gap: 6 }}>
+      {/* Tâche liée */}
+      <div style={{ position: 'relative' }}>
+        <select value={local.task_id} onChange={e => save('task_id', e.target.value)} style={{ ...SEL, width: '100%', paddingLeft: local.task_id ? 26 : 10 }}>
+          <option value="">— Tâche —</option>
+          {tasks.map(t => <option key={t.id} value={t.id}>{t.title}</option>)}
+        </select>
+        {local.task_id && (
+          <Link2 size={10} style={{ color: '#818CF8', position: 'absolute', left: 8, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }} />
+        )}
+      </div>
+
+      {/* Projet + description */}
+      <div style={{ display: 'grid', gridTemplateColumns: '100px 1fr', gap: 6 }}>
         <select value={local.project_id} onChange={e => save('project_id', e.target.value)} style={SEL}>
           <option value="">— Projet —</option>
           {projects.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
@@ -87,6 +115,7 @@ function EntryRow({ entry, timesheetId, projects }) {
         />
       </div>
 
+      {/* Supprimer */}
       <button onClick={() => destroy.mutate({ id: entry.id, timesheetId })}
         style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,.2)', padding: 4, borderRadius: 6, display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'color .15s' }}
         onMouseEnter={e => e.currentTarget.style.color = '#F87171'}
@@ -98,10 +127,10 @@ function EntryRow({ entry, timesheetId, projects }) {
 }
 
 // ─── Bloc jour ───────────────────────────────────────────────
-function DayBlock({ dateStr, entries, timesheetId, projects, sheetStatus, rejectionReason }) {
-  const addEntry  = useAddTimeEntry()
+function DayBlock({ dateStr, entries, timesheetId, projects, tasks, sheetStatus, rejectionReason }) {
+  const addEntry = useAddTimeEntry()
   const [adding, setAdding] = useState(false)
-  const [draft, setDraft]   = useState({ hours: 8, entry_type: 'regular', project_id: '', description: '' })
+  const [draft, setDraft]   = useState({ hours: 8, entry_type: 'regular', project_id: '', task_id: '', description: '' })
 
   const todayStr   = new Date().toISOString().slice(0, 10)
   const dayEntries = entries.filter(e => e.entry_date === dateStr)
@@ -116,9 +145,11 @@ function DayBlock({ dateStr, entries, timesheetId, projects, sheetStatus, reject
     await addEntry.mutateAsync({
       timesheetId, entryDate: dateStr,
       hours: draft.hours, entryType: draft.entry_type,
-      projectId: draft.project_id || null, description: draft.description || null,
+      projectId: draft.project_id || null,
+      taskId:    draft.task_id    || null,
+      description: draft.description || null,
     })
-    setDraft({ hours: 8, entry_type: 'regular', project_id: '', description: '' })
+    setDraft({ hours: 8, entry_type: 'regular', project_id: '', task_id: '', description: '' })
     setAdding(false)
   }
 
@@ -128,9 +159,9 @@ function DayBlock({ dateStr, entries, timesheetId, projects, sheetStatus, reject
       background: isToday ? 'rgba(129,140,248,.04)' : 'rgba(255,255,255,.02)',
       border: `1px solid ${isToday ? 'rgba(129,140,248,.15)' : 'rgba(255,255,255,.05)'}`,
     }}>
-      {/* En-tête jour */}
+      {/* En-tête */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px', borderBottom: '1px solid rgba(255,255,255,.05)', background: 'rgba(255,255,255,.02)' }}>
-        <span style={{ fontSize: 13, fontWeight: 800, color: isToday ? '#818CF8' : 'rgba(255,255,255,.7)', minWidth: 130 }}>
+        <span style={{ fontSize: 13, fontWeight: 800, color: isToday ? '#818CF8' : 'rgba(255,255,255,.7)', minWidth: 130, textTransform: 'capitalize' }}>
           {formatDateFR(dateStr, { weekday: 'long', day: 'numeric', month: 'short' })}
         </span>
         <span style={{ fontSize: 13, fontWeight: 700, color: totalH >= 8 ? '#34D399' : totalH > 0 ? '#FCD34D' : 'rgba(255,255,255,.2)' }}>
@@ -146,11 +177,17 @@ function DayBlock({ dateStr, entries, timesheetId, projects, sheetStatus, reject
             <AlertTriangle size={11} /> &gt; 10h
           </span>
         )}
+        {/* Nb tâches liées */}
+        {dayEntries.filter(e => e.task_id).length > 0 && (
+          <span style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, color: '#818CF8', background: 'rgba(129,140,248,.1)', border: '1px solid rgba(129,140,248,.2)', borderRadius: 7, padding: '2px 8px' }}>
+            <Link2 size={10} /> {dayEntries.filter(e => e.task_id).length} tâche{dayEntries.filter(e => e.task_id).length > 1 ? 's' : ''} liée{dayEntries.filter(e => e.task_id).length > 1 ? 's' : ''}
+          </span>
+        )}
         <div style={{ flex: 1 }} />
         <StatusBadge status={sheetStatus ?? 'draft'} />
       </div>
 
-      {/* Commentaire de rejet */}
+      {/* Motif de rejet */}
       {sheetStatus === 'rejected' && rejectionReason && (
         <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8, margin: '8px 14px 0', padding: '8px 12px', borderRadius: 10, background: 'rgba(239,68,68,.06)', border: '1px solid rgba(239,68,68,.18)' }}>
           <MessageSquare size={13} style={{ color: '#F87171', flexShrink: 0, marginTop: 1 }} />
@@ -163,26 +200,41 @@ function DayBlock({ dateStr, entries, timesheetId, projects, sheetStatus, reject
 
       {/* Corps */}
       <div style={{ padding: '10px 14px', display: 'flex', flexDirection: 'column', gap: 6 }}>
+        {/* En-tête colonnes */}
+        {dayEntries.length > 0 && !isLeave && (
+          <div style={{ display: 'grid', gridTemplateColumns: '64px 110px 140px 1fr 28px', gap: 6, padding: '0 10px' }}>
+            {['Heures', 'Type', 'Tâche liée', 'Projet / Description', ''].map((h, i) => (
+              <span key={i} style={{ fontSize: 10, color: 'rgba(255,255,255,.25)', fontWeight: 600, letterSpacing: '.05em', textTransform: 'uppercase' }}>{h}</span>
+            ))}
+          </div>
+        )}
+
         {isLeave ? (
           <div style={{ padding: '8px 10px', fontSize: 12, color: '#10B981', fontStyle: 'italic', background: 'rgba(16,185,129,.05)', border: '1px solid rgba(16,185,129,.12)', borderRadius: 10 }}>
             🌿 Congé — journée non travaillée
           </div>
         ) : dayEntries.length === 0 ? (
           <p style={{ fontSize: 12, color: 'rgba(255,255,255,.2)', fontStyle: 'italic', margin: 0 }}>Aucune saisie</p>
-        ) : dayEntries.map(e => (
-          <EntryRow key={e.id} entry={e} timesheetId={timesheetId} projects={projects} />
-        ))}
+        ) : (
+          dayEntries.map(e => (
+            <EntryRow key={e.id} entry={e} timesheetId={timesheetId} projects={projects} tasks={tasks} />
+          ))
+        )}
 
-        {/* Formulaire +ligne inline */}
+        {/* Formulaire +ligne */}
         {adding && !isLeave && (
-          <div style={{ display: 'grid', gridTemplateColumns: '70px 120px 1fr 64px', gap: 6, alignItems: 'center', padding: '8px 10px', borderRadius: 10, background: 'rgba(129,140,248,.06)', border: '1px solid rgba(129,140,248,.15)' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '64px 110px 140px 1fr 64px', gap: 6, alignItems: 'center', padding: '8px 10px', borderRadius: 10, background: 'rgba(129,140,248,.06)', border: '1px solid rgba(129,140,248,.18)' }}>
             <input type="number" min="0" max="24" step="0.5" value={draft.hours}
               onChange={e => setDraft(d => ({ ...d, hours: +e.target.value }))}
               style={{ ...INP, width: '100%' }} />
             <select value={draft.entry_type} onChange={e => setDraft(d => ({ ...d, entry_type: e.target.value }))} style={SEL}>
               {TYPES.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
             </select>
-            <div style={{ display: 'grid', gridTemplateColumns: '110px 1fr', gap: 6 }}>
+            <select value={draft.task_id} onChange={e => setDraft(d => ({ ...d, task_id: e.target.value }))} style={SEL}>
+              <option value="">— Tâche —</option>
+              {tasks.map(t => <option key={t.id} value={t.id}>{t.title}</option>)}
+            </select>
+            <div style={{ display: 'grid', gridTemplateColumns: '100px 1fr', gap: 6 }}>
               <select value={draft.project_id} onChange={e => setDraft(d => ({ ...d, project_id: e.target.value }))} style={SEL}>
                 <option value="">— Projet —</option>
                 {projects.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
@@ -221,27 +273,30 @@ export function OngletSaisie() {
   const weekStart = getCurrentWeekStart(new Date(Date.now() + weekOffset * 7 * 86400000))
   const weekDates = getWeekDates(weekStart).slice(0, 5)
 
-  const { data: sheet,    isLoading: loadingSheet   } = useMyCurrentTimeSheet()
-  const { data: entries = [], isLoading: loadingE   } = useTimeEntries(sheet?.id)
-  const { data: projects = [] }                        = useProjects({})
-  const { data: stats }                                = useTimeStats({ period: 'month' })
-  const createSheet = useCreateTimeSheet()
-  const submitSheet = useSubmitTimeSheet()
+  const { data: sheet,    isLoading: loadingSheet  } = useMyCurrentTimeSheet()
+  const { data: entries = [], isLoading: loadingE  } = useTimeEntries(sheet?.id)
+  const { data: projects = [] }                       = useProjects({})
+  const { data: stats }                               = useTimeStats({ period: 'month' })
+  const tasks        = useMyActiveTasks()
+  const createSheet  = useCreateTimeSheet()
+  const submitSheet  = useSubmitTimeSheet()
 
   const totalWeek = entries.reduce((s, e) => s + (e.hours ?? 0), 0)
   const dispo     = Math.round((totalWeek / OBJ_SEMAINE) * 100)
+  const taskLinked = entries.filter(e => e.task_id).length
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+      {/* KPIs */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 12 }}>
-        <KpiCard label="Disponibilité"  value={`${dispo}%`}             sub="semaine en cours"           color="#818CF8" bar={dispo}           barMax={100} />
-        <KpiCard label="Heures semaine" value={formatHours(totalWeek)}   sub={`objectif : ${OBJ_SEMAINE}h`} color="#34D399" bar={totalWeek}     barMax={OBJ_SEMAINE} />
-        <KpiCard label="H. supp. mois"  value={formatHours(stats?.overtime ?? 0)} sub="seuil : 10h/mois" color="#FB923C" bar={stats?.overtime ?? 0} barMax={10} />
-        <KpiCard label="Statut feuille" value={sheet?.status ?? '—'}     sub={sheet?.status === 'rejected' ? 'rejetée — voir motif' : sheet?.status === 'submitted' ? 'en attente validation' : 'non soumise'} color={sheet?.status === 'rejected' ? '#F87171' : '#FCD34D'} />
+        <KpiCard label="Disponibilité"   value={`${dispo}%`}                   sub="semaine en cours"            color="#818CF8" bar={dispo}             barMax={100} />
+        <KpiCard label="Heures semaine"  value={formatHours(totalWeek)}         sub={`objectif : ${OBJ_SEMAINE}h`}  color="#34D399" bar={totalWeek}         barMax={OBJ_SEMAINE} />
+        <KpiCard label="H. supp. mois"   value={formatHours(stats?.overtime ?? 0)} sub="seuil : 10h/mois"         color="#FB923C" bar={stats?.overtime ?? 0} barMax={10} />
+        <KpiCard label="Tâches liées"    value={taskLinked}                     sub={`${entries.length} saisies au total`} color="#818CF8" />
       </div>
 
-      {/* Nav semaine */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+      {/* Nav semaine + actions */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
         <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
           <NavBtn onClick={() => setWeekOffset(w => w - 1)}><ChevronLeft size={13} style={{ display: 'inline' }} /> Préc.</NavBtn>
           <span style={{ fontSize: 13, fontWeight: 700, color: 'rgba(255,255,255,.7)' }}>
@@ -267,7 +322,8 @@ export function OngletSaisie() {
         </div>
       ) : weekDates.map(d => (
         <DayBlock key={d} dateStr={d} entries={entries} timesheetId={sheet?.id}
-          projects={projects} sheetStatus={sheet?.status} rejectionReason={sheet?.rejection_reason} />
+          projects={projects} tasks={tasks}
+          sheetStatus={sheet?.status} rejectionReason={sheet?.rejection_reason} />
       ))}
 
       {/* Actions bas */}
@@ -317,7 +373,9 @@ export function OngletTimer() {
   const hh = Math.floor(seconds / 3600)
   const mm = Math.floor((seconds % 3600) / 60)
   const ss = seconds % 60
-  const display = hh > 0 ? `${String(hh).padStart(2,'0')}:${String(mm).padStart(2,'0')}` : `${String(mm).padStart(2,'0')}:${String(ss).padStart(2,'0')}`
+  const display = hh > 0
+    ? `${String(hh).padStart(2,'0')}:${String(mm).padStart(2,'0')}`
+    : `${String(mm).padStart(2,'0')}:${String(ss).padStart(2,'0')}`
   const todayLog = entries.filter(e => e.entry_date === new Date().toISOString().slice(0, 10))
 
   return (
@@ -344,10 +402,17 @@ export function OngletTimer() {
         ) : todayLog.map(e => (
           <div key={e.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 0', borderBottom: '1px solid rgba(255,255,255,.05)' }}>
             <div>
-              <div style={{ fontSize: 12, color: 'rgba(255,255,255,.65)', fontWeight: 600 }}>{e.description || ENTRY_TYPE_LABELS[e.entry_type] || 'Travail'}</div>
-              <div style={{ fontSize: 10, color: 'rgba(255,255,255,.25)', marginTop: 2 }}>{e.entry_date}</div>
+              <div style={{ fontSize: 12, color: 'rgba(255,255,255,.65)', fontWeight: 600 }}>
+                {e.tasks?.title || e.description || ENTRY_TYPE_LABELS[e.entry_type] || 'Travail'}
+              </div>
+              {e.tasks?.title && e.description && (
+                <div style={{ fontSize: 10, color: 'rgba(255,255,255,.3)', marginTop: 1 }}>{e.description}</div>
+              )}
             </div>
-            <span style={{ fontSize: 11, fontWeight: 700, color: '#818CF8' }}>{formatHours(e.hours)}</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              {e.task_id && <Link2 size={11} style={{ color: '#818CF8' }} />}
+              <span style={{ fontSize: 11, fontWeight: 700, color: '#818CF8' }}>{formatHours(e.hours)}</span>
+            </div>
           </div>
         ))}
       </SectionCard>

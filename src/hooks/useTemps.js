@@ -1131,3 +1131,28 @@ export function usePendingOvertimeSheets() {
     enabled: !!orgId,
   })
 }
+
+// ─── TASK TIME ENTRIES — temps timesheet lié à une tâche ──────
+export function useTaskTimeEntries(taskId) {
+  const { profile } = useAuth()
+  const orgId = profile?.organization_id
+
+  return useQuery({
+    queryKey: ['task_time_entries', taskId, orgId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('time_entries')
+        .select(`
+          id, entry_date, hours, description, entry_type,
+          user:users(id, first_name, last_name),
+          time_sheets(week_start)
+        `)
+        .eq('task_id', taskId)
+        .eq('organization_id', orgId)
+        .order('entry_date', { ascending: false })
+      if (error) throw error
+      return data || []
+    },
+    enabled: !!taskId && !!orgId,
+  })
+}

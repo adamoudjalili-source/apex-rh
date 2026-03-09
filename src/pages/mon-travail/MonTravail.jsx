@@ -13,7 +13,7 @@ import {
   Clock,
 } from 'lucide-react'
 
-import { useMyCurrentTimeSheet, formatHours } from '../../hooks/useTemps'
+import { useMyCurrentTimeSheet, useTimeEntries, formatHours } from '../../hooks/useTemps'
 import { TASK_STATUS } from '../../utils/constants'
 import StatCard        from '../../components/ui/StatCard'
 
@@ -84,24 +84,78 @@ function useMonTravailStats() {
   }
 }
 
-// ─── Widget temps de travail (connexion suivi temps) ──────────
-function TempsWidget() {
-  const navigate = useNavigate()
-  const { data: sheet } = useMyCurrentTimeSheet()
-  const totalH = sheet?.time_entries?.reduce((s, e) => s + (e.hours ?? 0), 0) ?? 0
-  const pct    = Math.min(100, Math.round((totalH / 37) * 100))
-  const color  = pct >= 80 ? '#34D399' : pct >= 50 ? '#FCD34D' : '#818CF8'
+// ─── Widget taux d'occupation ────────────────────────────────
+const OBJ_H = 37
+const TASK_COLORS = ['#818CF8','#34D399','#FB923C','#F87171','#FCD34D','#A78BFA','#38BDF8']
+
+function OccupationWidget() {
+  const navigate          = useNavigate()
+  const { data: sheet }  = useMyCurrentTimeSheet()
+  const { data: entries = [] } = useTimeEntries(sheet?.id)
+
+  const totalH = entries.reduce((s, e) => s + (e.hours ?? 0), 0)
+  const taux   = Math.min(100, Math.round((totalH / OBJ_H) * 100))
+  const color  = taux >= 80 ? '#34D399' : taux >= 50 ? '#FCD34D' : '#818CF8'
+
+  // Regroupement par tâche (ou type si pas de tâche)
+  const byTask = entries.reduce((acc, e) => {
+    const key   = e.tasks?.title || e.projects?.name || e.entry_type || 'Autre'
+    acc[key] = (acc[key] || 0) + (e.hours ?? 0)
+    return acc
+  }, {})
+  const breakdown = Object.entries(byTask)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 4)
 
   return (
-    <StatCard
-      icon={Clock}
-      label="Suivi du temps"
-      value={formatHours(totalH)}
-      sub={`${pct}% de l'objectif semaine`}
-      color={color}
-      loading={false}
+    <div
       onClick={() => navigate('/mon-suivi-temps?tab=saisie')}
-    />
+      className="rounded-xl border border-white/[0.08] p-4 cursor-pointer transition-all hover:border-white/20"
+      style={{ background: 'rgba(255,255,255,.03)' }}
+    >
+      <div className="flex items-start justify-between mb-3">
+        <div>
+          <div className="flex items-center gap-2 mb-0.5">
+            <Clock size={14} style={{ color }} />
+            <span className="text-xs font-semibold text-white/50">Taux d'occupation</span>
+          </div>
+          <div className="text-2xl font-black" style={{ color }}>{taux}%</div>
+          <div className="text-[11px] text-white/30 mt-0.5">{formatHours(totalH)} / {OBJ_H}h cette semaine</div>
+        </div>
+        {/* Anneau SVG */}
+        <svg width="44" height="44" viewBox="0 0 44 44">
+          <circle cx="22" cy="22" r="18" fill="none" stroke="rgba(255,255,255,.06)" strokeWidth="4" />
+          <circle cx="22" cy="22" r="18" fill="none" stroke={color} strokeWidth="4"
+            strokeDasharray={`${(taux / 100) * 113} 113`}
+            strokeLinecap="round"
+            transform="rotate(-90 22 22)"
+            style={{ transition: 'stroke-dasharray .6s ease' }}
+          />
+        </svg>
+      </div>
+
+      {/* Barre de progression */}
+      <div className="h-1 rounded-full bg-white/[0.06] overflow-hidden mb-3">
+        <div className="h-full rounded-full transition-all duration-700" style={{ width: `${taux}%`, background: color }} />
+      </div>
+
+      {/* Breakdown tâches */}
+      {breakdown.length > 0 && (
+        <div className="space-y-1.5">
+          {breakdown.map(([label, h], i) => {
+            const pct = Math.round((h / totalH) * 100)
+            return (
+              <div key={label} className="flex items-center gap-2">
+                <div className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: TASK_COLORS[i % TASK_COLORS.length] }} />
+                <span className="text-[11px] text-white/40 truncate flex-1 min-w-0">{label}</span>
+                <span className="text-[11px] font-semibold text-white/60 flex-shrink-0">{formatHours(h)}</span>
+                <span className="text-[10px] text-white/25 flex-shrink-0 w-7 text-right">{pct}%</span>
+              </div>
+            )
+          })}
+        </div>
+      )}
+    </div>
   )
 }
 
@@ -148,7 +202,7 @@ function StatsHeader({ onTabClick }) {
         loading={loading}
         onClick={() => onTabClick('objectifs')}
       />
-      <TempsWidget />
+      <OccupationWidget />
     </div>
   )
 }
