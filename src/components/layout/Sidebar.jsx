@@ -298,6 +298,7 @@ export default function Sidebar() {
             <MonEspace collapsed={collapsed} pulseOn={pulseOn}/>
 
             <Section label="Mon Service" collapsed={collapsed}/>
+            <NavItem icon={Briefcase}      label="Mon Service"           path="/mon-service"   color="#6366F1" collapsed={collapsed}/>
             <NavItem icon={Users}          label="Mon Équipe"            path="/mon-equipe"     color="#3B82F6" collapsed={collapsed}/>
             <NavItem icon={TrendingUp}     label="Performance équipe"    path="/performance"    color="#818CF8" collapsed={collapsed}/>
             <NavItem icon={ClipboardCheck} label="Évaluations équipe"    path="/evaluations"    color="#A78BFA" collapsed={collapsed}/>

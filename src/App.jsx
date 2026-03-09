@@ -35,6 +35,7 @@ const ProjectsPage   = lazy(() => import('./pages/projects/Projects'))
 // ── Management ───────────────────────────────────────────────
 const ManagementHub = lazy(() => import('./pages/management/ManagementHub'))
 const MonEquipe     = lazy(() => import('./pages/mon-equipe/MonEquipe'))
+const MonService    = lazy(() => import('./pages/mon-service/MonService'))
 
 // ── Hubs RH V2 ───────────────────────────────────────────────
 const DeveloppementHub     = lazy(() => import('./pages/developpement/DeveloppementHub'))
@@ -156,7 +157,7 @@ export default function App() {
           <Route path="/validations"     element={<Navigate to="/temps-absences"                replace />} />
 
           {/* ── S110 — Hubs futurs (Batch 2-3) ── */}
-          <Route path="/mon-service" element={<Navigate to="/management" replace />} />
+          <Route path="/mon-service" element={<S><MonService /></S>} />
           <Route path="/ma-division" element={<Navigate to="/management" replace />} />
           <Route path="/pilotage"    element={<Navigate to="/dashboard"  replace />} />
 
