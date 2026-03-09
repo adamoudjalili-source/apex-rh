@@ -23,7 +23,6 @@ const today      = () => new Date()
 const isoDate    = d => d.toISOString().split('T')[0]
 const monthStart = (d = today()) =>
   isoDate(new Date(d.getFullYear(), d.getMonth(), 1))
-  isoDate(new Date(d.getFullYear(), d.getMonth() + 1, 0))
 const prevStart  = () =>
   isoDate(new Date(today().getFullYear(), today().getMonth() - 1, 1))
 const prevEnd    = () =>
