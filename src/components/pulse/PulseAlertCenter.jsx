@@ -8,8 +8,8 @@ import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { usePermission } from '../../hooks/usePermission'
 import { CRITICALITY } from '../../utils/constants'
-import {
 import ConfirmModal from '../ui/ConfirmModal'
+import {
   useTeamPulseAlerts,
   usePulseAlerts,
   useAcknowledgeAlert,
