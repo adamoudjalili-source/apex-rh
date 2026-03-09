@@ -14,7 +14,7 @@ import {
   ClipboardList, History, Users, Settings, BarChart3,
   Clock, CheckCircle, AlertCircle, Star,
   ChevronRight, Calendar, Loader2, Lock,
-  UserCheck, CalendarRange,
+  UserCheck, CalendarRange, RefreshCw,
 } from 'lucide-react'
 import { useAuth }        from '../../contexts/AuthContext'
 import { usePermission }  from '../../hooks/usePermission'
@@ -36,6 +36,16 @@ import ReviewSelfAssessmentForm from '../../components/entretiens/ReviewSelfAsse
 import ReviewManagerDashboard   from '../../components/entretiens/ReviewManagerDashboard'
 import MidYearCampaignPanel     from '../../components/entretiens/MidYearCampaignPanel'
 import { REVIEW_STATUS, STATUS, TASK_STATUS } from '../../utils/constants'
+
+// S81 — imports Feedback 360°
+import {
+  useActiveFeedback360Cycle,
+  useMyFeedback360ToComplete,
+} from '../../hooks/useFeedback360'
+import Feedback360Form       from '../../components/feedback360/Feedback360Form'
+import Feedback360Summary    from '../../components/feedback360/Feedback360Summary'
+import Feedback360Trends     from '../../components/feedback360/Feedback360Trends'
+import Feedback360CycleAdmin from '../../components/feedback360/Feedback360CycleAdmin'
 
 const CalibrationPage = lazy(() => import('../intelligence/CalibrationPage'))
 
