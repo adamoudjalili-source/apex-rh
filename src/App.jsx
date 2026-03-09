@@ -181,6 +181,7 @@ export default function App() {
           <Route path="/ma-division"       element={<Navigate to="/management" replace />} />
           <Route path="/pilotage"          element={<Navigate to="/dashboard" replace />} />
           <Route path="/super-admin"       element={<Navigate to="/admin/super-admin" replace />} />
+          <Route path="/validations"       element={<Navigate to="/temps-absences" replace />} />
 
           <Route path="*" element={<Navigate to="/dashboard" replace />} />
         </Route>

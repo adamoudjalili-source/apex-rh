@@ -44,11 +44,11 @@
 //                  Communication
 // ============================================================
 import { useState } from 'react'
-import { NavLink, useNavigate, useLocation } from 'react-router-dom'
+import { NavLink, useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   LayoutDashboard, Users, BarChart3, TrendingUp,
-  ChevronLeft, ChevronRight, LogOut, ChevronDown,
+  ChevronLeft, ChevronRight, LogOut,
   ClipboardList, ClipboardCheck, Settings,
   ShieldCheck, MessageCircle, Clock,
   Globe, UserSquare2, GraduationCap, RefreshCw,
@@ -274,7 +274,7 @@ export default function Sidebar() {
             <NavItem icon={ClipboardCheck} label="Évaluations division"  path="/evaluations"    color="#A78BFA" collapsed={collapsed}/>
             <NavItem icon={GraduationCap}  label="Formation division"    path="/developpement"  color="#10B981" collapsed={collapsed}/>
             <NavItem icon={Clock}          label="Temps & Congés"        path="/temps-absences" color="#34D399" collapsed={collapsed}/>
-            <NavItem icon={CheckSquare}    label="Validations"           path="/temps-absences" color="#10B981" collapsed={collapsed}/>
+            <NavItem icon={CheckSquare}    label="Validations"           path="/validations" color="#10B981" collapsed={collapsed}/>
             <NavItem icon={BarChart3}      label="Intelligence RH"       path="/intelligence"   color="#8B5CF6" collapsed={collapsed}/>
 
             <Section label="Communication" collapsed={collapsed}/>
@@ -297,7 +297,7 @@ export default function Sidebar() {
             <NavItem icon={ClipboardCheck} label="Évaluations équipe"    path="/evaluations"    color="#A78BFA" collapsed={collapsed}/>
             <NavItem icon={GraduationCap}  label="Formation équipe"      path="/developpement"  color="#10B981" collapsed={collapsed}/>
             <NavItem icon={Clock}          label="Temps & Congés"        path="/temps-absences" color="#34D399" collapsed={collapsed}/>
-            <NavItem icon={CheckSquare}    label="Validations"           path="/temps-absences" color="#10B981" collapsed={collapsed}/>
+            <NavItem icon={CheckSquare}    label="Validations"           path="/validations" color="#10B981" collapsed={collapsed}/>
 
             <Section label="Communication" collapsed={collapsed}/>
             <NavItem icon={MessageCircle}  label="Communication"         path="/communication"  color="#06B6D4" badge={unreadCount || null} collapsed={collapsed}/>
