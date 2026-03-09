@@ -105,7 +105,6 @@ export default function Journal() {
             </div>
           )}
         </motion.div>
-      )}
 
       {/* Onglets Brief / Journal */}
       <>

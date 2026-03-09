@@ -1,5 +1,5 @@
 // APEX RH — taskHelpers.js
-import { ROLES, TASK_STATUS } from '../utils/constants'
+import { ROLES } from '../utils/constants'
 // Session 19 — Fix isOverdue() : exclut les tâches terminées
 // Session 19 bis — Fix isDueSoon() : même logique, exclut les tâches terminées
 // ============================================================
