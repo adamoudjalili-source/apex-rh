@@ -30,6 +30,7 @@ const Compensation     = lazy(() => import('./pages/compensation/Compensation'))
 // ── Travail ───────────────────────────────────────────────────
 const Tasks          = lazy(() => import('./pages/tasks/Tasks'))
 const ObjectivesPage = lazy(() => import('./pages/objectives/Objectives'))
+const OKRHub         = lazy(() => import('./pages/okr/OKRHub'))
 const ProjectsPage   = lazy(() => import('./pages/projects/Projects'))
 
 // ── Management ───────────────────────────────────────────────
@@ -104,6 +105,7 @@ export default function App() {
           <Route path="/travail/taches"    element={<S><Tasks /></S>} />
           <Route path="/travail/projets"   element={<S><ProjectsPage /></S>} />
           <Route path="/travail/objectifs" element={<S><ObjectivesPage /></S>} />
+          <Route path="/okr"              element={<S><OKRHub /></S>} />
 
           {/* ── Management ── */}
           <Route path="/management" element={<S><ManagementHub /></S>} />

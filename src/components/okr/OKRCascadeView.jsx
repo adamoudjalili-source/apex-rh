@@ -5,7 +5,7 @@
 import { useState, useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { ChevronDown, ChevronRight, Target, TrendingUp, Circle } from 'lucide-react'
-import { useOKRAlignmentTree } from '../../hooks/useObjectives'
+import { useOKRAlignmentTree } from '../../hooks/useOkrCycles'
 
 const LEVEL_CONFIG = {
   strategique: { label: 'Stratégique', color: '#818cf8', bg: 'bg-indigo-900/30', border: 'border-indigo-500/40', dot: '#6366f1' },

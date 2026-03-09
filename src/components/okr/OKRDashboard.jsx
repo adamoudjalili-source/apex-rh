@@ -4,7 +4,7 @@
 // ============================================================
 import { useMemo } from 'react'
 import { Target, TrendingUp, AlertTriangle, CheckCircle, BarChart3 } from 'lucide-react'
-import { useOKRCycleStats, useCurrentCycle, useOKRAlignmentTree } from '../../hooks/useObjectives'
+import { useOKRCycleStats, useCurrentCycle, useOKRAlignmentTree } from '../../hooks/useOkrCycles'
 
 function StatCard({ icon: Icon, label, value, sub, color = 'text-indigo-400', bg = 'bg-indigo-900/20' }) {
   return (

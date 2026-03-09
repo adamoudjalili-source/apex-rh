@@ -4,7 +4,7 @@
 // ============================================================
 import { useState } from 'react'
 import { TrendingUp, TrendingDown, Minus, AlertTriangle, CheckCircle, Send } from 'lucide-react'
-import { useCreateCheckin } from '../../hooks/useObjectives'
+import { useCreateCheckin } from '../../hooks/useOkrCycles'
 
 const CONFIDENCE_OPTIONS = [
   { value: 'high',    label: 'Confiant',   icon: TrendingUp,   color: 'text-green-400',  bg: 'bg-green-900/30',  border: 'border-green-500/50' },

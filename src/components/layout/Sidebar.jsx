@@ -54,7 +54,7 @@ import {
   Globe, UserSquare2, GraduationCap, RefreshCw,
   Briefcase, CalendarDays, Wallet, Trophy,
   Activity, Building2, Bell, Zap,
-  CheckSquare, UserCircle2, Gauge,
+  CheckSquare, UserCircle2, Gauge, Target,
 } from 'lucide-react'
 import { useAuth }        from '../../contexts/AuthContext'
 import { useAppSettings } from '../../hooks/useSettings'
@@ -203,6 +203,7 @@ export default function Sidebar() {
             <NavItem icon={RefreshCw}      label="Cycle RH"              path="/cycle-rh"             color="#C9A227" collapsed={collapsed}/>
             <NavItem icon={BarChart3}      label="Intelligence RH"       path="/intelligence"         color="#8B5CF6" collapsed={collapsed}/>
             <NavItem icon={Gauge}          label="Analytics RH"          path="/analytics"            color="#6366F1" collapsed={collapsed}/>
+            <NavItem icon={Target}         label="Hub OKR"               path="/okr"                  color="#A5B4FC" collapsed={collapsed}/>
 
             <Section label="Administration" collapsed={collapsed}/>
             <NavItem icon={Building2}      label="Organisation"          path="/admin/organisation"   color="#6B7280" collapsed={collapsed}/>
@@ -235,6 +236,7 @@ export default function Sidebar() {
             <NavItem icon={RefreshCw}      label="Cycle RH"              path="/cycle-rh"             color="#C9A227" collapsed={collapsed}/>
             <NavItem icon={BarChart3}      label="Intelligence RH"       path="/intelligence"         color="#8B5CF6" collapsed={collapsed}/>
             <NavItem icon={Gauge}          label="Analytics RH"          path="/analytics"            color="#6366F1" collapsed={collapsed}/>
+            <NavItem icon={Target}         label="Hub OKR"               path="/okr"                  color="#A5B4FC" collapsed={collapsed}/>
 
             <Section label="Administration" collapsed={collapsed}/>
             <NavItem icon={Building2}      label="Organisation"          path="/admin/organisation"   color="#6B7280" collapsed={collapsed}/>
@@ -262,6 +264,7 @@ export default function Sidebar() {
             <NavItem icon={GraduationCap}  label="Formation & Dév"       path="/developpement" color="#10B981" collapsed={collapsed}/>
             <NavItem icon={BarChart3}      label="Intelligence RH"       path="/intelligence"  color="#8B5CF6" collapsed={collapsed}/>
             <NavItem icon={Gauge}          label="Analytics RH"          path="/analytics"     color="#6366F1" collapsed={collapsed}/>
+            <NavItem icon={Target}         label="Hub OKR"               path="/okr"           color="#A5B4FC" collapsed={collapsed}/>
 
             <Section label="Communication" collapsed={collapsed}/>
             <NavItem icon={MessageCircle}  label="Communication"         path="/communication" color="#06B6D4" badge={unreadCount || null} collapsed={collapsed}/>
@@ -310,6 +313,7 @@ export default function Sidebar() {
             <NavItem icon={GraduationCap}  label="Formation équipe"      path="/developpement"  color="#10B981" collapsed={collapsed}/>
             <NavItem icon={Clock}          label="Temps & Congés"        path="/temps-absences" color="#34D399" collapsed={collapsed}/>
             <NavItem icon={CheckSquare}    label="Validations"           path="/validations" color="#10B981" collapsed={collapsed}/>
+            <NavItem icon={Target}         label="Hub OKR"               path="/okr"            color="#A5B4FC" collapsed={collapsed}/>
 
             <Section label="Communication" collapsed={collapsed}/>
             <NavItem icon={MessageCircle}  label="Communication"         path="/communication"  color="#06B6D4" badge={unreadCount || null} collapsed={collapsed}/>

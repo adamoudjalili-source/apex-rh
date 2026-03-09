@@ -4,7 +4,7 @@
 // ============================================================
 import { useMemo } from 'react'
 import { TrendingUp, TrendingDown, AlertTriangle, Minus, User, MessageSquare } from 'lucide-react'
-import { useOKRCheckins } from '../../hooks/useObjectives'
+import { useOKRCheckins } from '../../hooks/useOkrCycles'
 
 const CONFIDENCE_CONFIG = {
   high:    { icon: TrendingUp,   color: 'text-green-400',  label: 'Confiant' },

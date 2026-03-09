@@ -40,10 +40,12 @@ import PulseCalibration               from '../../components/pulse/PulseCalibrat
 // ── Objectives (hooks) ────────────────────────────────────────
 import {
   useObjectives,
+} from '../../hooks/useObjectives'
+import {
   useCurrentCycle,
   useOKRCycleStats,
   useOKRAlignmentTree,
-} from '../../hooks/useObjectives'
+} from '../../hooks/useOkrCycles'
 import { useOkrPeriods }              from '../../hooks/useOkrPeriods'
 import {
   useTodayScore,

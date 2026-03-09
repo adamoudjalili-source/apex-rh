@@ -6,7 +6,7 @@ import { useState } from 'react'
 import { Target, Link2, Unlink, Plus, ChevronDown, ChevronRight, TrendingUp } from 'lucide-react'
 import { useProjectOKRLinks, useLinkProjectToOKR, useUnlinkProjectOKR } from '../../hooks/useProjects'
 import { useObjectives } from '../../hooks/useObjectives'
-import { useCurrentCycle } from '../../hooks/useObjectives'
+import { useCurrentCycle } from '../../hooks/useOkrCycles'
 
 const CONFIDENCE_COLORS = {
   high: '#10B981',

@@ -10,7 +10,8 @@ import {
   TrendingUp, AlertCircle, RefreshCw, Network, LayoutDashboard
 } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
-import { useObjectives, useUpdateKeyResult, useDeleteKeyResult, useDeleteObjective, useCurrentCycle } from '../../hooks/useObjectives'
+import { useObjectives, useUpdateKeyResult, useDeleteKeyResult, useDeleteObjective } from '../../hooks/useObjectives'
+import { useCurrentCycle } from '../../hooks/useOkrCycles'
 import {
   canCreateObjective, getLevelInfo, getScoreColor, formatScore,
   formatScorePercent, LEVEL_ORDER, OBJECTIVE_LEVELS
@@ -31,7 +32,8 @@ import { exportObjectives } from '../../lib/exportExcel'
 import OKRCycleManager from '../../components/okr/OKRCycleManager'
 import OKRCascadeView from '../../components/okr/OKRCascadeView'
 import OKRDashboard from '../../components/okr/OKRDashboard'
-import StatCard from '../../components/ui/StatCard'
+import StatCard   from '../../components/ui/StatCard'
+import EmptyState from '../../components/ui/EmptyState'
 
 export default function Objectives() {
   const { profile } = useAuth()
@@ -222,7 +224,7 @@ export default function Objectives() {
           {!isLoading && view === 'list' && (
             <div className="space-y-3">
               {objectives.length === 0 ? (
-                <EmptyState />
+                <EmptyState icon={Target} title="Aucun objectif trouvé" description="Créez votre premier objectif pour commencer" />
               ) : (
                 objectives.map((obj) => (
                   <ObjectiveCard
@@ -306,18 +308,6 @@ export default function Objectives() {
 
 // ─── Composants internes ─────────────────────────────────
 
-
-function EmptyState() {
-  return (
-    <div className="flex flex-col items-center justify-center py-16 text-center">
-      <div className="w-14 h-14 rounded-2xl bg-white/5 flex items-center justify-center mb-4">
-        <Target size={24} className="text-white/15" />
-      </div>
-      <p className="text-white/30 text-sm mb-1">Aucun objectif trouvé</p>
-      <p className="text-white/15 text-xs">Créez votre premier objectif pour commencer</p>
-    </div>
-  )
-}
 
 function StatsView({ objectives, stats }) {
   return (
