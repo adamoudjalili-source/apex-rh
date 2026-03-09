@@ -16,25 +16,10 @@ import {
 } from '../../hooks/useFormations'
 import { useAuth } from '../../contexts/AuthContext'
 import { TASK_STATUS } from '../../utils/constants'
+import StatCard from '../ui/StatCard'
 
 const CURRENT_YEAR = new Date().getFullYear()
 
-function StatCard({ icon: Icon, label, value, color, sub }) {
-  return (
-    <div className="rounded-xl p-4"
-      style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
-      <div className="flex items-center gap-2 mb-2">
-        <div className="w-7 h-7 rounded-lg flex items-center justify-center"
-          style={{ background: `${color}18` }}>
-          <Icon size={14} style={{ color }}/>
-        </div>
-        <p className="text-xs text-white/40">{label}</p>
-      </div>
-      <p className="text-2xl font-bold text-white">{value}</p>
-      {sub && <p className="text-[11px] text-white/25 mt-0.5">{sub}</p>}
-    </div>
-  )
-}
 
 function EnrollmentRow({ enrollment }) {
   const { training_catalog: training, users: user, status, enrolled_at, completed_at, progress_pct } = enrollment

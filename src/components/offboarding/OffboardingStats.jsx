@@ -5,24 +5,8 @@
 import { motion } from 'framer-motion'
 import { TrendingUp, Users, CheckSquare, Star, Heart, BarChart2 } from 'lucide-react'
 import { useOffboardingStats, EXIT_REASON_LABELS } from '../../hooks/useOffboarding'
+import StatCard from '../ui/StatCard'
 
-function StatCard({ icon: Icon, label, value, sub, color }) {
-  return (
-    <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
-      className="rounded-2xl p-4"
-      style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
-      <div className="flex items-center gap-3 mb-2">
-        <div className="w-8 h-8 rounded-xl flex items-center justify-center"
-          style={{ background: `${color}18` }}>
-          <Icon size={16} style={{ color }}/>
-        </div>
-        <span className="text-xs text-white/40">{label}</span>
-      </div>
-      <p className="text-2xl font-bold text-white">{value ?? '—'}</p>
-      {sub && <p className="text-xs text-white/30 mt-0.5">{sub}</p>}
-    </motion.div>
-  )
-}
 
 function DonutChart({ data, total }) {
   if (total === 0) return null

@@ -9,6 +9,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { usePermission } from '../../hooks/usePermission'
 import { CRITICALITY } from '../../utils/constants'
 import {
+import ConfirmModal from '../ui/ConfirmModal'
   useTeamPulseAlerts,
   usePulseAlerts,
   useAcknowledgeAlert,
@@ -54,6 +55,7 @@ function formatRelativeTime(dateStr) {
 
 function AcknowledgeModal({ alert, onClose }) {
   const [note, setNote] = useState('')
+  const [confirmRuleId, setConfirmRuleId] = useState(null)
   const [action, setAction] = useState('acknowledged')
   const { mutate, isPending } = useAcknowledgeAlert()
 
@@ -510,7 +512,7 @@ export default function PulseAlertCenter() {
                         Modifier
                       </button>
                       <button
-                        onClick={() => window.confirm('Supprimer cette règle ?') && deleteRule.mutate(rule.id)}
+                        onClick={() => setConfirmRuleId(rule.id)}
                         className="px-3 py-1.5 text-xs rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-400 transition-colors"
                       >
                         Supprimer
@@ -528,6 +530,15 @@ export default function PulseAlertCenter() {
       {selectedAlert && (
         <AcknowledgeModal alert={selectedAlert} onClose={() => setSelectedAlert(null)} />
       )}
+      <ConfirmModal
+        isOpen={!!confirmRuleId}
+        onClose={() => setConfirmRuleId(null)}
+        onConfirm={() => { deleteRule.mutate(confirmRuleId); setConfirmRuleId(null) }}
+        title="Supprimer cette règle ?"
+        message="Les alertes associées ne seront plus déclenchées."
+        confirmLabel="Supprimer"
+        danger
+      />
       {editRule !== null && (
         <RuleModal rule={editRule?.id ? editRule : null} onClose={() => setEditRule(null)} />
       )}

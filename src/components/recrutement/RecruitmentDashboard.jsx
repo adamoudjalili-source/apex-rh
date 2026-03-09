@@ -17,24 +17,9 @@ import {
   getScoreInfo, SCORE_LABELS,
 } from '../../hooks/useRecruitment'
 import { usePermission } from '../../hooks/usePermission'
+import StatCard from '../ui/StatCard'
 
 // ─── Stat Card ────────────────────────────────────────────────
-function StatCard({ icon: Icon, label, value, sub, color = '#6366F1' }) {
-  return (
-    <div className="rounded-xl p-4"
-      style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}>
-      <div className="flex items-center gap-2 mb-2">
-        <div className="w-7 h-7 rounded-lg flex items-center justify-center"
-          style={{ background: color + '20' }}>
-          <Icon size={14} style={{ color }}/>
-        </div>
-        <span className="text-xs text-white/30">{label}</span>
-      </div>
-      <p className="text-2xl font-extrabold text-white">{value ?? '–'}</p>
-      {sub && <p className="text-[11px] text-white/25 mt-0.5">{sub}</p>}
-    </div>
-  )
-}
 
 // ─── Funnel de conversion (SVG) ───────────────────────────────
 function ConversionFunnel({ applications }) {

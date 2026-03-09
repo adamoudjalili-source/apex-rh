@@ -278,38 +278,16 @@ export default function MyCertifications() {
         })}
       </div>
 
-      {/* Confirm delete */}
-      <AnimatePresence>
-        {confirmDelete && (
-          <motion.div
-            className="fixed inset-0 z-50 flex items-center justify-center p-4"
-            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-            <div className="absolute inset-0 bg-black/60" onClick={() => setConfirmDelete(null)}/>
-            <motion.div
-              initial={{ scale: 0.95 }} animate={{ scale: 1 }} exit={{ scale: 0.95 }}
-              className="relative rounded-2xl p-6 max-w-sm w-full space-y-4"
-              style={{ background: '#0d0d24', border: '1px solid rgba(255,255,255,0.08)' }}>
-              <p className="text-sm font-semibold text-white">Supprimer la certification ?</p>
-              <p className="text-xs text-white/40">Cette action est irréversible.</p>
-              <div className="flex gap-2">
-                <button onClick={() => setConfirmDelete(null)}
-                  className="flex-1 py-2 rounded-lg border border-white/[0.07] text-sm text-white/40 hover:text-white/60 transition-colors">
-                  Annuler
-                </button>
-                <button
-                  onClick={async () => {
-                    await deleteCert.mutateAsync(confirmDelete)
-                    setConfirmDelete(null)
-                  }}
-                  className="flex-1 py-2 rounded-lg bg-red-500/20 text-red-300 text-sm font-medium hover:bg-red-500/30 transition-colors">
-                  Supprimer
-                </button>
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
 
+      <ConfirmModal
+        isOpen={!!confirmDelete}
+        onClose={() => setConfirmDelete(null)}
+        onConfirm={async () => { await deleteCert.mutateAsync(confirmDelete); setConfirmDelete(null) }}
+        title="Supprimer la certification ?"
+        message="Cette action est irréversible."
+        confirmLabel="Supprimer"
+        danger
+      />
       {/* Add modal */}
       {showAdd && <AddCertificationModal onClose={() => setShowAdd(false)}/>}
     </div>

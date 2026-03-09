@@ -40,6 +40,7 @@ import Feedback360CycleAdmin                from '../../components/feedback360/F
 import ENPSScore                            from '../../components/enps/ENPSScore'
 import ENPSSegmentation                     from '../../components/enps/ENPSSegmentation'
 import ENPSTrend                            from '../../components/enps/ENPSTrend'
+import StatCard from '../../components/ui/StatCard'
 
 // ── Animation ──────────────────────────────────────────────────
 const fadeIn = {
@@ -82,22 +83,6 @@ function AccessDenied({ message = "Accès réservé — droits insuffisants" }) 
   )
 }
 
-// ── StatMini ──────────────────────────────────────────────────
-function StatMini({ label, value, color, icon: Icon }) {
-  return (
-    <div className="rounded-xl p-4 flex items-center gap-3"
-      style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
-      <div className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0"
-        style={{ background: `${color}18` }}>
-        <Icon size={16} style={{ color }} />
-      </div>
-      <div className="min-w-0">
-        <div className="text-lg font-bold text-white">{value}</div>
-        <div className="text-xs text-white/40 truncate">{label}</div>
-      </div>
-    </div>
-  )
-}
 
 // ── Onglet Mes Entretiens ─────────────────────────────────────
 function OngletMesEntretiens() {

@@ -22,6 +22,7 @@ import Recrutement from '../recrutement/Recrutement'
 import Onboarding  from '../onboarding/Onboarding'
 import Offboarding from '../offboarding/Offboarding'
 import { TASK_STATUS } from '../../utils/constants'
+import StatCard from '../../components/ui/StatCard'
 
 // ─── Animations ──────────────────────────────────────────────
 const fadeUp = {
@@ -44,21 +45,6 @@ function AccessDenied() {
 }
 
 // ─── KPI Card ────────────────────────────────────────────────
-function KpiCard({ label, value, color, icon: Icon, alert }) {
-  return (
-    <div
-      className="rounded-xl p-4 text-center"
-      style={{
-        background: alert ? 'rgba(239,68,68,0.08)' : 'rgba(255,255,255,0.03)',
-        border: alert ? '1px solid rgba(239,68,68,0.2)' : '1px solid rgba(255,255,255,0.06)',
-      }}
-    >
-      <Icon size={16} className="mx-auto mb-1.5" style={{ color }} />
-      <p className="text-xl font-extrabold text-white">{value ?? '–'}</p>
-      <p className="text-[10px] text-white/30 mt-0.5">{label}</p>
-    </div>
-  )
-}
 
 // ─── Vue d'ensemble Tab ──────────────────────────────────────
 function VueEnsembleTab() {
@@ -124,7 +110,7 @@ function VueEnsembleTab() {
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             {kpis.map(kpi => (
-              <KpiCard key={kpi.label} {...kpi} />
+              <StatCard key={kpi.label} {...kpi} />
             ))}
           </div>
         </div>

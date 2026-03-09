@@ -10,6 +10,7 @@ import { useMarkAnnouncementRead } from '../../hooks/useCommunication'
 import MessageStats from './MessageStats'
 import { useAuth } from '../../contexts/AuthContext'
 import { ROLES } from '../../utils/constants'
+import ConfirmModal from '../ui/ConfirmModal'
 
 const EMOJIS = ['👍','❤️','😮','🎉','👏','🙏']
 
@@ -143,6 +144,8 @@ function CommentsSection({ annonceId }) {
 }
 
 export default function AnnouncementCard({ annonce, onEdit }) {
+  const [confirmDelete, setConfirmDelete] = useState(null)
+  
   const { profile } = useAuth()
   const [expanded, setExpanded]         = useState(false)
   const [showComments, setShowComments] = useState(false)
@@ -259,7 +262,7 @@ export default function AnnouncementCard({ annonce, onEdit }) {
                 className="p-1.5 rounded-lg text-white/30 hover:text-white/70 hover:bg-white/[0.08] transition-colors">
                 <Edit2 size={13}/>
               </button>
-              <button onClick={() => window.confirm('Supprimer cette annonce ?') && deleteAnnonce.mutate(annonce.id)}
+              <button onClick={() => setConfirmDelete(annonce.id)}
                 className="p-1.5 rounded-lg text-white/30 hover:text-red-400 hover:bg-red-500/10 transition-colors">
                 <Trash2 size={13}/>
               </button>
