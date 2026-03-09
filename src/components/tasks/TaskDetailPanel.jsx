@@ -13,7 +13,7 @@ import { useAuth } from '../../contexts/AuthContext'
 import { useTask, useUpdateTask, useUpdateTaskStatus, useDeleteTask, useUpdateAssignees, useAllUsers } from '../../hooks/useTasks'
 import { useTaskDetailRealtime } from '../../hooks/useTaskRealtime'
 import {
-  getStatusInfo, getPriorityInfo, TASK_STATUS, TASK_PRIORITY,
+  getStatusInfo, getPriorityInfo, TASK_PRIORITY,
   formatDate, isOverdue, isDueSoon, getChecklistProgress,
   getUserFullName, getUserInitials, canValidateTask, canEditTask, canDeleteTask,
   getAllowedStatuses
@@ -41,31 +41,27 @@ const LEVEL_LABELS = {
   strategique: 'Stratégique',
   division: 'Division',
   service: 'Service',
-  individuel: 'Individuel',
-}
+  individuel: 'Individuel'}
 
 const LEVEL_COLORS = {
   strategique: '#C9A227',
   division: '#8B5CF6',
   service: '#3B82F6',
-  individuel: '#10B981',
-}
+  individuel: '#10B981'}
 
 const PROJECT_STATUS_LABELS = {
   planifie: 'Planifié',
   en_cours: 'En cours',
   en_pause: 'En pause',
   termine: 'Terminé',
-  annule: 'Annulé',
-}
+  annule: 'Annulé'}
 
 const PROJECT_STATUS_COLORS = {
   planifie: '#6B7280',
   en_cours: '#3B82F6',
   en_pause: '#F59E0B',
   termine: '#10B981',
-  annule: '#EF4444',
-}
+  annule: '#EF4444'}
 
 function getKrScoreColor(score) {
   if (score >= 0.7) return '#10B981'
@@ -111,8 +107,7 @@ export default function TaskDetailPanel({ taskId, onClose }) {
     await updateStatus.mutateAsync({
       taskId: task.id,
       newStatus,
-      oldStatus: task.status,
-    })
+      oldStatus: task.status})
   }
 
   // ✅ Session 19 — Utilise useUpdateTaskStatus au lieu d'un appel RPC direct
@@ -122,8 +117,7 @@ export default function TaskDetailPanel({ taskId, onClose }) {
       await updateStatus.mutateAsync({
         taskId: task.id,
         newStatus: 'terminee',
-        oldStatus: task.status,
-      })
+        oldStatus: task.status})
       onClose()
     } catch (err) {
     }
@@ -137,8 +131,7 @@ export default function TaskDetailPanel({ taskId, onClose }) {
         taskId: task.id,
         newStatus: TASK_STATUS.EN_COURS,
         oldStatus: task.status,
-        rejectionReason: rejectReason,
-      })
+        rejectionReason: rejectReason})
       setShowRejectModal(false)
       setRejectReason('')
       onClose()
@@ -455,8 +448,7 @@ export default function TaskDetailPanel({ taskId, onClose }) {
                                       className="h-full rounded-full transition-all duration-500"
                                       style={{
                                         width: `${Math.round((kr.score || 0) * 100)}%`,
-                                        background: getKrScoreColor(kr.score || 0),
-                                      }}
+                                        background: getKrScoreColor(kr.score || 0)}}
                                     />
                                   </div>
                                   <span
@@ -673,8 +665,7 @@ function PulseTimeWidget({ taskId, todayLog }) {
       className="rounded-xl px-4 py-3 flex items-center gap-3"
       style={{
         background: 'rgba(79,70,229,0.06)',
-        border: '1px solid rgba(79,70,229,0.12)',
-      }}
+        border: '1px solid rgba(79,70,229,0.12)'}}
     >
       <div
         className="w-6 h-6 rounded-lg flex items-center justify-center text-xs flex-shrink-0"
