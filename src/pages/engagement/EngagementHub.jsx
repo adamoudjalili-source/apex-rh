@@ -11,6 +11,7 @@ import AwardsPage       from '../pulse/Awards'
 import GamificationPage from '../pulse/Gamification'
 import AICoachPage      from '../pulse/AICoach'
 import ReportsPage      from '../pulse/Reports'
+import ReportingIA      from '../intelligence/ReportingIA'
 
 const TABS = [
   { id:'awards',       label:'Récompenses',       icon:Trophy,       component:AwardsPage,       color:'#C9A227', moduleKey:null },         // Étape 22
