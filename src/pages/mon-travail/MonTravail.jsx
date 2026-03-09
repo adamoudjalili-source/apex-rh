@@ -4,14 +4,16 @@
 // Onglets via useSearchParams(?tab=taches|projets|okr)
 // Header stats rapides · Max 400 lignes
 // ============================================================
-import { useSearchParams } from 'react-router-dom'
+import { useSearchParams, useNavigate } from 'react-router-dom'
 import { motion }          from 'framer-motion'
 import {
   CheckSquare,
   FolderKanban,
   Target,
+  Clock,
 } from 'lucide-react'
 
+import { useMyCurrentTimeSheet, formatHours } from '../../hooks/useTemps'
 import { TASK_STATUS } from '../../utils/constants'
 import StatCard        from '../../components/ui/StatCard'
 
@@ -82,7 +84,28 @@ function useMonTravailStats() {
   }
 }
 
-// ─── STATS HEADER ─────────────────────────────────────────────
+// ─── Widget temps de travail (connexion suivi temps) ──────────
+function TempsWidget() {
+  const navigate = useNavigate()
+  const { data: sheet } = useMyCurrentTimeSheet()
+  const totalH = sheet?.time_entries?.reduce((s, e) => s + (e.hours ?? 0), 0) ?? 0
+  const pct    = Math.min(100, Math.round((totalH / 37) * 100))
+  const color  = pct >= 80 ? '#34D399' : pct >= 50 ? '#FCD34D' : '#818CF8'
+
+  return (
+    <StatCard
+      icon={Clock}
+      label="Suivi du temps"
+      value={formatHours(totalH)}
+      sub={`${pct}% de l'objectif semaine`}
+      color={color}
+      loading={false}
+      onClick={() => navigate('/mon-suivi-temps?tab=saisie')}
+    />
+  )
+}
+
+
 function StatsHeader({ onTabClick }) {
   const {
     loading,
@@ -92,7 +115,7 @@ function StatsHeader({ onTabClick }) {
   } = useMonTravailStats()
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 px-6 py-4">
+    <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 px-6 py-4">
       <StatCard
         icon={CheckSquare}
         label="Tâches ouvertes"
@@ -125,6 +148,7 @@ function StatsHeader({ onTabClick }) {
         loading={loading}
         onClick={() => onTabClick('objectifs')}
       />
+      <TempsWidget />
     </div>
   )
 }

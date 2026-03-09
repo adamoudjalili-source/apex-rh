@@ -45,6 +45,8 @@ const AnalyticsHub  = lazy(() => import('./pages/analytics/AnalyticsHub'))
 const DeveloppementHub     = lazy(() => import('./pages/developpement/DeveloppementHub'))
 const CycleRHHub           = lazy(() => import('./pages/cycle-rh/CycleRHHub'))
 const GestionTempsAbsences = lazy(() => import('./pages/temps-absences/GestionTempsAbsences'))
+const MesConges            = lazy(() => import('./pages/mon-espace/MesConges'))
+const MonSuiviTemps        = lazy(() => import('./pages/mon-espace/MonSuiviTemps'))
 const PerformanceHub       = lazy(() => import('./pages/performance/PerformanceHub'))
 const EvaluationsHub       = lazy(() => import('./pages/evaluations/EvaluationsHub'))
 const IntelligenceRH       = lazy(() => import('./pages/intelligence/IntelligenceRH'))
@@ -114,7 +116,9 @@ export default function App() {
           {/* ── Hubs RH V2 ── */}
           <Route path="/developpement"  element={<S><DeveloppementHub /></S>} />
           <Route path="/cycle-rh"       element={<S><CycleRHHub /></S>} />
-          <Route path="/temps-absences" element={<S><GestionTempsAbsences /></S>} />
+          <Route path="/temps-absences"     element={<S><GestionTempsAbsences /></S>} />
+          <Route path="/mes-conges"         element={<S><MesConges /></S>} />
+          <Route path="/mon-suivi-temps"    element={<S><MonSuiviTemps /></S>} />
           <Route path="/performance"    element={<S><PerformanceHub /></S>} />
           <Route path="/evaluations"    element={<S><EvaluationsHub /></S>} />
           <Route path="/intelligence"   element={<S><IntelligenceRH /></S>} />
@@ -144,8 +148,9 @@ export default function App() {
           <Route path="/recrutement"         element={<Navigate to="/cycle-rh"                   replace />} />
           <Route path="/onboarding"          element={<Navigate to="/cycle-rh"                   replace />} />
           <Route path="/offboarding"         element={<Navigate to="/cycle-rh"                   replace />} />
-          <Route path="/temps"               element={<Navigate to="/temps-absences?tab=ma-feuille" replace />} />
-          <Route path="/conges"              element={<Navigate to="/temps-absences?tab=ma-feuille" replace />} />
+          <Route path="/temps"               element={<Navigate to="/mon-suivi-temps?tab=saisie" replace />} />
+          <Route path="/conges"              element={<Navigate to="/mes-conges" replace />} />
+          <Route path="/mon-timesheet"       element={<Navigate to="/mon-suivi-temps?tab=saisie" replace />} />
           <Route path="/pulse/*"             element={<Navigate to="/intelligence"                replace />} />
           <Route path="/administration"      element={<Navigate to="/admin/settings"              replace />} />
           <Route path="/mon-espace"          element={<Navigate to="/dashboard"                   replace />} />
@@ -153,8 +158,6 @@ export default function App() {
           <Route path="/mes-reconnaissances" element={<Navigate to="/engagement"                  replace />} />
 
           {/* ── S110 — Routes Mon Espace ── */}
-          <Route path="/mon-timesheet"   element={<Navigate to="/temps-absences?tab=ma-feuille" replace />} />
-          <Route path="/mes-conges"      element={<Navigate to="/temps-absences?tab=conges"     replace />} />
           <Route path="/mes-entretiens"  element={<Navigate to="/entretiens"                    replace />} />
           <Route path="/ma-remuneration" element={<Navigate to="/compensation?tab=my"           replace />} />
           <Route path="/mon-suivi-rh"    element={<Navigate to="/cycle-rh"                      replace />} />
