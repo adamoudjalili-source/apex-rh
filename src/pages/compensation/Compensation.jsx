@@ -5,6 +5,7 @@
 // S100 : Migration Phase C RBAC — usePermission() V2
 // ============================================================
 import { useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { DollarSign, BarChart3, Clock, Users, Settings, Lock, GitBranch, Calendar, TrendingUp, LayoutDashboard } from 'lucide-react'
 import { usePermission }          from '../../hooks/usePermission'
@@ -59,7 +60,8 @@ function S74Badge() {
 export default function Compensation() {
   const { can } = usePermission()
   const { data: settings } = useAppSettings()
-  const [tab, setTab]      = useState('dashboard')
+  const [searchParams]     = useSearchParams()
+  const [tab, setTab]      = useState(() => searchParams.get('tab') || 'dashboard')
 
   // Vérification module activé
   const moduleEnabled = settings?.modules?.compensation_enabled !== false

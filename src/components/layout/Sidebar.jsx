@@ -52,7 +52,7 @@ import {
   ClipboardList, ClipboardCheck, Settings,
   ShieldCheck, MessageCircle, Clock,
   Globe, UserSquare2, GraduationCap, RefreshCw,
-  Briefcase, CalendarDays, Wallet,
+  Briefcase, CalendarDays, Wallet, Trophy,
   Activity, Building2, Bell, Zap,
   CheckSquare,
 } from 'lucide-react'
@@ -122,7 +122,7 @@ function Section({ label, collapsed }) {
 }
 
 // ─── MonEspace — bloc identique pour tous les profils ────────
-function MonEspace({ collapsed }) {
+function MonEspace({ collapsed, pulseOn }) {
   return (
     <>
       <Section label="Mon Espace" collapsed={collapsed}/>
@@ -133,6 +133,10 @@ function MonEspace({ collapsed }) {
       <NavItem icon={ClipboardList} label="Mes Entretiens"     path="/mes-entretiens"    color="#A78BFA" collapsed={collapsed}/>
       <NavItem icon={RefreshCw}     label="Mon Suivi RH"       path="/mon-suivi-rh"      color="#C9A227" collapsed={collapsed}/>
       <NavItem icon={Wallet}        label="Ma Rémunération"    path="/ma-remuneration"   color="#F59E0B" collapsed={collapsed}/>
+      <NavItem icon={Trophy}        label="Récompenses"        path="/engagement"        color="#C9A227" collapsed={collapsed}/>
+      {pulseOn && (
+        <NavItem icon={Activity}    label="Ma Performance"     path="/ma-performance"    color="#4F46E5" collapsed={collapsed}/>
+      )}
     </>
   )
 }
@@ -187,7 +191,7 @@ export default function Sidebar() {
           <>
             <NavItem icon={LayoutDashboard} label="Tableau de Bord"     path="/dashboard"            color="#C9A227" collapsed={collapsed}/>
 
-            <MonEspace collapsed={collapsed}/>
+            <MonEspace collapsed={collapsed} pulseOn={pulseOn}/>
 
             <Section label="Modules RH" collapsed={collapsed}/>
             <NavItem icon={UserSquare2}    label="Gestion Employés"      path="/employes"             color="#3B82F6" collapsed={collapsed}/>
@@ -218,7 +222,7 @@ export default function Sidebar() {
           <>
             <NavItem icon={LayoutDashboard} label="Tableau de Bord"     path="/dashboard"            color="#C9A227" collapsed={collapsed}/>
 
-            <MonEspace collapsed={collapsed}/>
+            <MonEspace collapsed={collapsed} pulseOn={pulseOn}/>
 
             <Section label="Modules RH" collapsed={collapsed}/>
             <NavItem icon={UserSquare2}    label="Gestion Employés"      path="/employes"             color="#3B82F6" collapsed={collapsed}/>
@@ -246,7 +250,7 @@ export default function Sidebar() {
           <>
             <NavItem icon={LayoutDashboard} label="Tableau de Bord"     path="/dashboard"     color="#C9A227" collapsed={collapsed}/>
 
-            <MonEspace collapsed={collapsed}/>
+            <MonEspace collapsed={collapsed} pulseOn={pulseOn}/>
 
             <Section label="Pilotage" collapsed={collapsed}/>
             <NavItem icon={Activity}       label="Performance org"       path="/performance"   color="#818CF8" collapsed={collapsed}/>
@@ -266,7 +270,7 @@ export default function Sidebar() {
           <>
             <NavItem icon={LayoutDashboard} label="Mon Tableau de Bord"  path="/mon-tableau-de-bord" color="#C9A227" collapsed={collapsed}/>
 
-            <MonEspace collapsed={collapsed}/>
+            <MonEspace collapsed={collapsed} pulseOn={pulseOn}/>
 
             <Section label="Ma Division" collapsed={collapsed}/>
             <NavItem icon={Users}          label="Mon Équipe"            path="/mon-equipe"     color="#3B82F6" collapsed={collapsed}/>
@@ -276,6 +280,7 @@ export default function Sidebar() {
             <NavItem icon={Clock}          label="Temps & Congés"        path="/temps-absences" color="#34D399" collapsed={collapsed}/>
             <NavItem icon={CheckSquare}    label="Validations"           path="/validations" color="#10B981" collapsed={collapsed}/>
             <NavItem icon={BarChart3}      label="Intelligence RH"       path="/intelligence"   color="#8B5CF6" collapsed={collapsed}/>
+            <NavItem icon={Wallet}         label="Compensation équipe"   path="/compensation?tab=team" color="#34D399" collapsed={collapsed}/>
 
             <Section label="Communication" collapsed={collapsed}/>
             <NavItem icon={MessageCircle}  label="Communication"         path="/communication"  color="#06B6D4" badge={unreadCount || null} collapsed={collapsed}/>
@@ -289,7 +294,7 @@ export default function Sidebar() {
           <>
             <NavItem icon={LayoutDashboard} label="Mon Tableau de Bord"  path="/mon-tableau-de-bord" color="#C9A227" collapsed={collapsed}/>
 
-            <MonEspace collapsed={collapsed}/>
+            <MonEspace collapsed={collapsed} pulseOn={pulseOn}/>
 
             <Section label="Mon Service" collapsed={collapsed}/>
             <NavItem icon={Users}          label="Mon Équipe"            path="/mon-equipe"     color="#3B82F6" collapsed={collapsed}/>
@@ -311,7 +316,7 @@ export default function Sidebar() {
           <>
             <NavItem icon={LayoutDashboard} label="Mon Tableau de Bord"  path="/mon-tableau-de-bord" color="#C9A227" collapsed={collapsed}/>
 
-            <MonEspace collapsed={collapsed}/>
+            <MonEspace collapsed={collapsed} pulseOn={pulseOn}/>
 
             <Section label="Communication" collapsed={collapsed}/>
             <NavItem icon={MessageCircle}  label="Communication"         path="/communication"  color="#06B6D4" badge={unreadCount || null} collapsed={collapsed}/>

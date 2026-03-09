@@ -6,6 +6,7 @@
 // Pattern V2 : can() via usePermission() — jamais check rôle direct
 // ============================================================
 import { useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   Clock, Users, TrendingUp, CheckSquare, Settings2,
@@ -334,7 +335,8 @@ function SectionCard({ title, action, children }) {
 // ── Hub principal ──────────────────────────────────────────
 export default function GestionTempsAbsences() {
   const { can } = usePermission()
-  const [activeTab, setActiveTab] = useState('ma-feuille')
+  const [searchParams]            = useSearchParams()
+  const [activeTab, setActiveTab] = useState(() => searchParams.get('tab') || 'ma-feuille')
 
   // Permissions
   const canViewTeam       = can('temps', 'team', 'read')
@@ -383,7 +385,9 @@ export default function GestionTempsAbsences() {
   ].filter(t => t.show)
 
   // Normalise activeTab si un onglet disparaît
-  const validTab = TABS.find(t => t.id === activeTab) ? activeTab : TABS[0]?.id
+  // 'conges' est un alias de 'ma-feuille' (venu de /mes-conges)
+  const normalizedTab = activeTab === 'conges' ? 'ma-feuille' : activeTab
+  const validTab = TABS.find(t => t.id === normalizedTab) ? normalizedTab : TABS[0]?.id
 
   return (
     <div
