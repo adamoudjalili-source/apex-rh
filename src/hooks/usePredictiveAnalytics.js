@@ -9,6 +9,7 @@ import { useQuery } from '@tanstack/react-query'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
 import { getLastNMonthKeys } from './useAnalytics'
+import { ROLES } from '../utils/constants'
 
 // ─── CONSTANTES ──────────────────────────────────────────────
 
@@ -213,9 +214,9 @@ export function useCorrelationData(months = 6) {
         .select('id, first_name, last_name, service_id, services(name)')
         .eq('is_active', true)
 
-      if (profile.role === 'chef_service' && profile.service_id)
+      if (profile.role === ROLES.CHEF_SERVICE && profile.service_id)
         usersQ = usersQ.eq('service_id', profile.service_id)
-      else if (profile.role === 'chef_division' && profile.division_id) {
+      else if (profile.role === ROLES.CHEF_DIVISION && profile.division_id) {
         const { data: svcs } = await supabase
           .from('services').select('id').eq('division_id', profile.division_id)
         const ids = svcs?.map(s => s.id) || []
@@ -425,7 +426,7 @@ export function useTrendData(months = 6) {
  */
 export function useTeamTrendData(months = 6) {
   const { profile } = useAuth()
-  const isManager = ['chef_service','chef_division','directeur','administrateur']
+  const isManager = [ROLES.CHEF_SERVICE,ROLES.CHEF_DIVISION,ROLES.DIRECTEUR,ROLES.ADMINISTRATEUR]
     .includes(profile?.role)
 
   return useQuery({
@@ -442,9 +443,9 @@ export function useTeamTrendData(months = 6) {
         .select('user_id, date, resilience_score, reliability_score, endurance_score, users!inner(service_id, division_id)')
         .gte('date', fromDate)
 
-      if (profile.role === 'chef_service' && profile.service_id)
+      if (profile.role === ROLES.CHEF_SERVICE && profile.service_id)
         nitaQ = nitaQ.eq('users.service_id', profile.service_id)
-      else if (profile.role === 'chef_division' && profile.division_id)
+      else if (profile.role === ROLES.CHEF_DIVISION && profile.division_id)
         nitaQ = nitaQ.eq('users.division_id', profile.division_id)
 
       const { data: nitaRaw } = await nitaQ.order('date', { ascending: true })
@@ -455,9 +456,9 @@ export function useTeamTrendData(months = 6) {
         .select('user_id, score_date, score_delivery, score_quality, score_total, users!inner(service_id, division_id)')
         .gte('score_date', fromDate)
 
-      if (profile.role === 'chef_service' && profile.service_id)
+      if (profile.role === ROLES.CHEF_SERVICE && profile.service_id)
         pulseQ = pulseQ.eq('users.service_id', profile.service_id)
-      else if (profile.role === 'chef_division' && profile.division_id)
+      else if (profile.role === ROLES.CHEF_DIVISION && profile.division_id)
         pulseQ = pulseQ.eq('users.division_id', profile.division_id)
 
       const { data: pulseRaw } = await pulseQ.order('score_date', { ascending: true })

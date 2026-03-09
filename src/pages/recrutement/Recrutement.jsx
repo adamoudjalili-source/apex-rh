@@ -25,6 +25,7 @@ import CVParserPanel                from '../../components/recrutement/CVParserP
 import RecruitmentPipelineKanban    from '../../components/recrutement/RecruitmentPipelineKanban'
 import RecruitmentDashboard         from '../../components/recrutement/RecruitmentDashboard'
 import RecruitmentScoringPanel      from '../../components/recrutement/RecruitmentScoringPanel'
+import { ROLES } from '../../utils/constants'
 
 const stagger = {
   hidden:  {},
@@ -74,7 +75,7 @@ export default function Recrutement() {
   const canAdmin = can('recrutement', 'templates', 'admin')
   const canManageOrg = can('recrutement', 'pipeline', 'update')
   const role = profile?.role
-  const canPipeline     = canManageOrg || role === 'chef_division'
+  const canPipeline     = canManageOrg || role === ROLES.CHEF_DIVISION
   const canRecruitAdmin = canManageOrg
 
   const TABS = useMemo(() => {

@@ -6,15 +6,16 @@
 // - Se met à jour automatiquement si un module est activé/désactivé
 // ============================================================
 import { useState } from 'react'
-import { Shield, ChevronDown, ChevronRight, Info, EyeOff, RefreshCw } from 'lucide-react'
+import { ChevronDown, ChevronRight, Info, EyeOff, RefreshCw } from 'lucide-react'
 import { useOrgModuleSettings } from '../../hooks/useSettings'
+import { ROLES } from '../../utils/constants'
 
 const ROLES = [
-  { key: 'collaborateur',  label: 'Collaborateur',    color: '#22C55E', short: 'Collab'    },
-  { key: 'chef_service',   label: 'Chef de Service',  color: '#06B6D4', short: 'Chef svc'  },
-  { key: 'chef_division',  label: 'Chef de Division', color: '#3B82F6', short: 'Chef div'  },
-  { key: 'directeur',      label: 'Directeur',        color: '#A855F7', short: 'Directeur' },
-  { key: 'administrateur', label: 'Administrateur',   color: '#F59E0B', short: 'Admin'     },
+  { key: ROLES.COLLABORATEUR,  label: 'Collaborateur',    color: '#22C55E', short: 'Collab'    },
+  { key: ROLES.CHEF_SERVICE,   label: 'Chef de Service',  color: '#06B6D4', short: 'Chef svc'  },
+  { key: ROLES.CHEF_DIVISION,  label: 'Chef de Division', color: '#3B82F6', short: 'Chef div'  },
+  { key: ROLES.DIRECTEUR,      label: 'Directeur',        color: '#A855F7', short: 'Directeur' },
+  { key: ROLES.ADMINISTRATEUR, label: 'Administrateur',   color: '#F59E0B', short: 'Admin'     },
 ]
 
 // MODULES_DEF — source de vérité

@@ -1,4 +1,5 @@
 // ============================================================
+import { ROLES } from '../utils/constants'
 // APEX RH — objectiveHelpers.js
 // Session 10 — Constantes, helpers, permissions OKR
 // Session 16 — Fix canEditObjective + canDeleteObjective pour managers
@@ -107,10 +108,10 @@ export function formatDateFr(dateStr) {
 
 export function getAllowedLevels(role) {
   switch (role) {
-    case 'administrateur': return ['strategique', 'division', 'service', 'individuel']
-    case 'directeur':      return ['strategique']
-    case 'chef_division':  return ['division']
-    case 'chef_service':   return ['service', 'individuel']
+    case ROLES.ADMINISTRATEUR: return ['strategique', 'division', 'service', 'individuel']
+    case ROLES.DIRECTEUR:      return ['strategique']
+    case ROLES.CHEF_DIVISION:  return ['division']
+    case ROLES.CHEF_SERVICE:   return ['service', 'individuel']
     default:               return []
   }
 }
@@ -122,22 +123,22 @@ export function canCreateObjective(role) {
 // Session 16 — Autorise les managers hierarchiques a modifier les objectifs de leur perimetre
 export function canEditObjective(obj, user) {
   if (!obj || !user) return false
-  if (user.role === 'administrateur') return true
+  if (user.role === ROLES.ADMINISTRATEUR) return true
   if (obj.owner_id === user.id) return true
-  if (user.role === 'directeur' && obj.direction_id && obj.direction_id === user.direction_id) return true
-  if (user.role === 'chef_division' && obj.division_id && obj.division_id === user.division_id) return true
-  if (user.role === 'chef_service' && obj.service_id && obj.service_id === user.service_id) return true
+  if (user.role === ROLES.DIRECTEUR && obj.direction_id && obj.direction_id === user.direction_id) return true
+  if (user.role === ROLES.CHEF_DIVISION && obj.division_id && obj.division_id === user.division_id) return true
+  if (user.role === ROLES.CHEF_SERVICE && obj.service_id && obj.service_id === user.service_id) return true
   return false
 }
 
 // Session 16 — Meme logique pour la suppression
 export function canDeleteObjective(obj, user) {
   if (!obj || !user) return false
-  if (user.role === 'administrateur') return true
+  if (user.role === ROLES.ADMINISTRATEUR) return true
   if (obj.owner_id === user.id) return true
-  if (user.role === 'directeur' && obj.direction_id && obj.direction_id === user.direction_id) return true
-  if (user.role === 'chef_division' && obj.division_id && obj.division_id === user.division_id) return true
-  if (user.role === 'chef_service' && obj.service_id && obj.service_id === user.service_id) return true
+  if (user.role === ROLES.DIRECTEUR && obj.direction_id && obj.direction_id === user.direction_id) return true
+  if (user.role === ROLES.CHEF_DIVISION && obj.division_id && obj.division_id === user.division_id) return true
+  if (user.role === ROLES.CHEF_SERVICE && obj.service_id && obj.service_id === user.service_id) return true
   return false
 }
 
@@ -158,13 +159,13 @@ export function canValidateN1(obj, user) {
   if (!obj || !user) return false
   if (obj.evaluation_status !== 'auto_evaluation') return false
   if (obj.level === 'individuel')
-    return user.role === 'chef_service' && user.service_id === obj.service_id
+    return user.role === ROLES.CHEF_SERVICE && user.service_id === obj.service_id
   if (obj.level === 'service')
-    return user.role === 'chef_division' && user.division_id === obj.division_id
+    return user.role === ROLES.CHEF_DIVISION && user.division_id === obj.division_id
   if (obj.level === 'division')
-    return user.role === 'directeur' && user.direction_id === obj.direction_id
+    return user.role === ROLES.DIRECTEUR && user.direction_id === obj.direction_id
   if (obj.level === 'strategique')
-    return user.role === 'administrateur'
+    return user.role === ROLES.ADMINISTRATEUR
   return false
 }
 
@@ -177,13 +178,13 @@ export function canCalibrateRH(obj, user) {
   if (!obj || !user) return false
   if (obj.evaluation_status !== 'validation_n1') return false
   // Admin peut toujours calibrer
-  if (user.role === 'administrateur') return true
+  if (user.role === ROLES.ADMINISTRATEUR) return true
   // Individuel -> N+2 = Chef de Division
   if (obj.level === 'individuel')
-    return user.role === 'chef_division' && user.division_id === obj.division_id
+    return user.role === ROLES.CHEF_DIVISION && user.division_id === obj.division_id
   // Service -> N+2 = Directeur
   if (obj.level === 'service')
-    return user.role === 'directeur' && user.direction_id === obj.direction_id
+    return user.role === ROLES.DIRECTEUR && user.direction_id === obj.direction_id
   // Division et Strategique -> Admin (deja couvert ci-dessus)
   return false
 }

@@ -4,7 +4,7 @@
 // ============================================================
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Bell, CheckCircle, Filter, Clock, ChevronRight, AlertTriangle, RefreshCw } from 'lucide-react'
+import { Bell, CheckCircle, Clock, ChevronRight, AlertTriangle, RefreshCw } from 'lucide-react'
 import {
   useBehavioralAlerts,
   useAcknowledgeAlert,
@@ -14,6 +14,7 @@ import {
   RISK_CONFIG,
 } from '../../hooks/useBehavioralIntelligence'
 import { usePermission } from '../../hooks/usePermission'
+import { CRITICALITY } from '../../utils/constants'
 
 const SEVERITY_CONFIG = {
   info:     { label: 'Info',    color: '#6B7280', bg: 'rgba(107,114,128,0.12)' },
@@ -203,7 +204,7 @@ export default function BehavioralAlerts({ compact = false }) {
         {[
           { id: 'all',      label: 'Toutes' },
           { id: 'unread',   label: 'Non lues' },
-          { id: 'critical', label: 'Critique' },
+          { id: CRITICALITY.CRITICAL, label: 'Critique' },
           { id: 'high',     label: 'Élevé' },
           { id: 'medium',   label: 'Modéré' },
         ].map(f => (

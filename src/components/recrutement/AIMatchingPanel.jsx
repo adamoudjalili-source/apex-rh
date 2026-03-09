@@ -28,7 +28,6 @@ import {
   useAnalyzeCandidate,
 } from '../../hooks/useRecruitmentAI'
 import { useJobPostings, APPLICATION_STATUS_LABELS } from '../../hooks/useRecruitment'
-import CandidateAIScore from './CandidateAIScore'
 
 const stagger = {
   hidden:  {},

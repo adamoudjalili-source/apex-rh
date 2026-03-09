@@ -21,6 +21,7 @@ import { useOffboardingProcesses }   from '../../hooks/useOffboarding'
 import Recrutement from '../recrutement/Recrutement'
 import Onboarding  from '../onboarding/Onboarding'
 import Offboarding from '../offboarding/Offboarding'
+import { TASK_STATUS } from '../../utils/constants'
 
 // ─── Animations ──────────────────────────────────────────────
 const fadeUp = {
@@ -66,7 +67,7 @@ function VueEnsembleTab() {
   const { data: offboardingList = [] }  = useOffboardingProcesses()
 
   const offActive  = offboardingList.filter(p => p.status === 'in_progress').length
-  const offOverdue = offboardingList.filter(p => p.status === 'overdue').length
+  const offOverdue = offboardingList.filter(p => p.status === TASK_STATUS.OVERDUE).length
 
   const sections = [
     {

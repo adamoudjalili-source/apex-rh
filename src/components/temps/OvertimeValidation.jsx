@@ -4,8 +4,9 @@
 // Managers : approuver / refuser les HS soumises
 // ============================================================
 import { useState } from 'react'
-import { CheckCircle, XCircle, Clock, ChevronDown, ChevronUp, Users, Filter } from 'lucide-react'
+import { CheckCircle, XCircle, Clock } from 'lucide-react'
 import { usePermission }       from '../../hooks/usePermission'
+import { LEAVE_STATUS } from '../../utils/constants'
 import {
   usePendingOvertimeSheets,
   useApproveOvertime,
@@ -153,7 +154,7 @@ function OtSheetCard({ sheet, onApproved, onRejected }) {
 
 // ─── Historique des validations ───────────────────────────────
 function OtHistory() {
-  const { data: sheets } = useTimeSheets({ status: 'hr_approved' })
+  const { data: sheets } = useTimeSheets({ status: LEAVE_STATUS.HR_APPROVED })
   const recent = (sheets || []).filter(s => s.overtime_hours > 0).slice(0, 8)
 
   if (!recent.length) return (

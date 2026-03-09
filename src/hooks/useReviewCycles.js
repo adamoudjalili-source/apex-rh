@@ -8,6 +8,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
+import { REVIEW_STATUS, ROLES, TASK_STATUS } from '../utils/constants'
 
 // ─── CONSTANTES ──────────────────────────────────────────────
 
@@ -67,7 +68,7 @@ export const CYCLE_STATUS_LABELS = {
 // ─── HELPER ──────────────────────────────────────────────────
 
 export function isManagerRole(role) {
-  return ['administrateur', 'directeur', 'chef_division', 'chef_service'].includes(role)
+  return [ROLES.ADMINISTRATEUR, ROLES.DIRECTEUR, ROLES.CHEF_DIVISION, ROLES.CHEF_SERVICE].includes(role)
 }
 
 // ─── TEMPLATES ───────────────────────────────────────────────
@@ -216,7 +217,7 @@ export function useManagerPendingEvals() {
           evaluatee:users!review_evaluations_evaluatee_id_fkey(id, first_name, last_name, role)
         `)
         .eq('evaluator_id', profile.id)
-        .eq('status', 'self_submitted')
+        .eq('status', REVIEW_STATUS.SELF_SUBMITTED)
         .order('self_submitted_at', { ascending: true })
       if (error) throw error
       return data ?? []
@@ -316,7 +317,7 @@ export function useCollaboratorSynthesis(userId, periodStart, periodEnd) {
           .lte('created_at', `${periodEnd}T23:59:59Z`)
 
         if (objectives && objectives.length > 0) {
-          const completed  = objectives.filter(o => o.status === 'termine' || o.progress >= 100)
+          const completed  = objectives.filter(o => o.status === TASK_STATUS.TERMINE || o.progress >= 100)
           const avgProgress = Math.round(objectives.reduce((a, o) => a + (o.progress ?? 0), 0) / objectives.length)
           synthesis.okr_count            = objectives.length
           synthesis.okr_completed_count  = completed.length
@@ -461,7 +462,7 @@ export function useSubmitSelfEvaluation() {
         .from('review_evaluations')
         .update({
           self_answers,
-          status: 'self_submitted',
+          status: REVIEW_STATUS.SELF_SUBMITTED,
           self_submitted_at: new Date().toISOString(),
         })
         .eq('id', evaluation_id)

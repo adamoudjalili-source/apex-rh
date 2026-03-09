@@ -16,11 +16,12 @@ import {
   PLAN_ITEM_STATUS_LABELS, TRAINING_TYPE_LABELS, TRAINING_TYPE_COLORS,
 } from '../../hooks/useFormations'
 import { useAuth } from '../../contexts/AuthContext'
+import { TASK_STATUS } from '../../utils/constants'
 
 const CURRENT_YEAR = new Date().getFullYear()
 
 const PRIORITY_OPTIONS = ['haute', 'moyenne', 'basse']
-const ITEM_STATUS_OPTIONS = ['planifie', 'inscrit', 'en_cours', 'termine', 'reporte', 'annule']
+const ITEM_STATUS_OPTIONS = ['planifie', 'inscrit', TASK_STATUS.EN_COURS, TASK_STATUS.TERMINE, 'reporte', 'annule']
 
 function PriorityDot({ priority }) {
   const color = PLAN_PRIORITY_COLORS[priority] || '#6B7280'
@@ -246,7 +247,7 @@ export default function TrainingPlanPanel() {
   const updatePlanItem = useUpdatePlanItem()
 
   const items = plan?.training_plan_items || []
-  const completedItems = items.filter(i => i.status === 'termine').length
+  const completedItems = items.filter(i => i.status === TASK_STATUS.TERMINE).length
   const progressPct = items.length > 0 ? Math.round((completedItems / items.length) * 100) : 0
 
   async function ensurePlanExists() {

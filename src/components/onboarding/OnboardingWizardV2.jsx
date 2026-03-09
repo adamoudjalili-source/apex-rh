@@ -10,7 +10,7 @@ import {
   ChevronRight, SkipForward, Check, Bell, ExternalLink,
   BookOpen, Target, Users, BarChart2, Smartphone, ArrowRight,
 } from 'lucide-react'
-import { useOnboarding, ONBOARDING_STEPS, getRoleGroup } from '../../hooks/useOnboarding'
+import { useOnboarding, getRoleGroup } from '../../hooks/useOnboarding'
 import { usePushNotifications } from '../../hooks/usePushNotifications'
 
 // ─── CHECKLIST PAR RÔLE ──────────────────────────────────────
@@ -259,7 +259,7 @@ export function OnboardingChecklist() {
     catch { return [] }
   })
 
-  const roleGroup = profile?.role ? getRoleGroup(profile.role) : 'collaborateur'
+  const roleGroup = profile?.role ? getRoleGroup(profile.role) : ROLES.COLLABORATEUR
   const items = CHECKLIST_ITEMS[roleGroup] || CHECKLIST_ITEMS.collaborateur
 
   const isItemDone = (key) => {
@@ -403,3 +403,4 @@ export function OnboardingChecklist() {
 
 // Import useAuth pour la checklist
 import { useAuth } from '../../contexts/AuthContext'
+import { ROLES } from '../../utils/constants'

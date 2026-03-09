@@ -3,7 +3,6 @@
 // Session 57 — Vue manager : formations équipe + certifications
 // ============================================================
 import { useState } from 'react'
-import { motion } from 'framer-motion'
 import {
   Users, Award, Clock, TrendingUp, CheckCircle2,
   AlertTriangle, BookOpen, Loader2, ChevronRight,
@@ -16,6 +15,7 @@ import {
   PLAN_PRIORITY_LABELS, PLAN_PRIORITY_COLORS,
 } from '../../hooks/useFormations'
 import { useAuth } from '../../contexts/AuthContext'
+import { TASK_STATUS } from '../../utils/constants'
 
 const CURRENT_YEAR = new Date().getFullYear()
 
@@ -55,7 +55,7 @@ function EnrollmentRow({ enrollment }) {
         <p className="text-xs text-white/35 truncate">{training.title}</p>
       </div>
       <div className="flex items-center gap-2 flex-shrink-0">
-        {(status === 'en_cours') && (
+        {(status === TASK_STATUS.EN_COURS) && (
           <span className="text-[11px] text-white/25">{progress_pct}%</span>
         )}
         <span className="text-[11px] px-2 py-0.5 rounded-full font-medium"
@@ -114,8 +114,8 @@ export default function TeamFormationDashboard() {
 
   // ── Stats globales équipe
   const totalEnroll   = enrollments.length
-  const inProgress    = enrollments.filter(e => e.status === 'en_cours').length
-  const completed     = enrollments.filter(e => e.status === 'termine').length
+  const inProgress    = enrollments.filter(e => e.status === TASK_STATUS.EN_COURS).length
+  const completed     = enrollments.filter(e => e.status === TASK_STATUS.TERMINE).length
   const totalCerts    = certifications.length
   const expiringCerts = certifications.filter(c => {
     const days = c.expires_at
@@ -241,7 +241,7 @@ export default function TeamFormationDashboard() {
             </div>
           ) : plans.map(plan => {
             const items = plan.training_plan_items || []
-            const done  = items.filter(i => i.status === 'termine').length
+            const done  = items.filter(i => i.status === TASK_STATUS.TERMINE).length
             const pct   = items.length > 0 ? Math.round((done / items.length) * 100) : 0
             const user  = plan.users
 
@@ -262,10 +262,10 @@ export default function TeamFormationDashboard() {
                   </div>
                   <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
                     plan.status === 'valide' ? 'bg-emerald-500/15 text-emerald-300'
-                    : plan.status === 'en_cours' ? 'bg-blue-500/15 text-blue-300'
+                    : plan.status === TASK_STATUS.EN_COURS ? 'bg-blue-500/15 text-blue-300'
                     : 'bg-white/[0.05] text-white/35'
                   }`}>
-                    {plan.status === 'valide' ? 'Validé' : plan.status === 'en_cours' ? 'En cours' : 'Brouillon'}
+                    {plan.status === 'valide' ? 'Validé' : plan.status === TASK_STATUS.EN_COURS ? 'En cours' : 'Brouillon'}
                   </span>
                 </div>
                 {items.length > 0 && (

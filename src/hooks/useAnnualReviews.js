@@ -5,15 +5,16 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '../lib/supabase'
 import { useAuth }  from '../contexts/AuthContext'
+import { REVIEW_STATUS } from '../utils/constants'
 
 // ─── CONSTANTES ──────────────────────────────────────────────
 
 export const ANNUAL_REVIEW_STATUS = {
   pending:              'pending',
-  self_in_progress:     'self_in_progress',
-  self_submitted:       'self_submitted',
-  meeting_scheduled:    'meeting_scheduled',
-  manager_in_progress:  'manager_in_progress',
+  self_in_progress:     REVIEW_STATUS.SELF_IN_PROGRESS,
+  self_submitted:       REVIEW_STATUS.SELF_SUBMITTED,
+  meeting_scheduled:    REVIEW_STATUS.MEETING_SCHEDULED,
+  manager_in_progress:  REVIEW_STATUS.MANAGER_IN_PROGRESS,
   completed:            'completed',
   signed:               'signed',
   archived:             'archived',
@@ -167,10 +168,10 @@ export function getReviewStatusOrder(status) {
 export function isReviewEditable(review, userId) {
   if (!review || !userId) return false
   if (review.employee_id === userId) {
-    return ['pending', 'self_in_progress'].includes(review.status)
+    return ['pending', REVIEW_STATUS.SELF_IN_PROGRESS].includes(review.status)
   }
   if (review.manager_id === userId) {
-    return ['self_submitted', 'meeting_scheduled', 'manager_in_progress'].includes(review.status)
+    return [REVIEW_STATUS.SELF_SUBMITTED, REVIEW_STATUS.MEETING_SCHEDULED, REVIEW_STATUS.MANAGER_IN_PROGRESS].includes(review.status)
   }
   return false
 }
@@ -265,6 +266,7 @@ export function useActiveCampaigns() {
       const { data, error } = await supabase
         .from('annual_review_campaigns')
         .select('id, title, description, year, status, start_date, end_date, self_eval_deadline, manager_eval_deadline, meeting_deadline, require_dual_signature, allow_employee_comment, include_pulse_synthesis, include_okr_synthesis, template_sections, created_at')
+        .eq('organization_id', profile.organization_id)
         .in('status', ['active', 'in_progress'])
         .order('year', { ascending: false })
       if (error) throw error
@@ -283,6 +285,7 @@ export function useAllCampaigns() {
       const { data, error } = await supabase
         .from('annual_review_campaigns')
         .select('id, title, description, year, status, start_date, end_date, self_eval_deadline, manager_eval_deadline, meeting_deadline, require_dual_signature, allow_employee_comment, include_pulse_synthesis, include_okr_synthesis, template_sections, created_by, created_at, updated_at')
+        .eq('organization_id', profile.organization_id)
         .order('year', { ascending: false })
       if (error) throw error
       return data ?? []
@@ -475,7 +478,7 @@ export function useManagerPendingReviews() {
           campaign:annual_review_campaigns(id, title, year, manager_eval_deadline)
         `)
         .eq('manager_id', profile.id)
-        .in('status', ['self_submitted', 'meeting_scheduled', 'manager_in_progress'])
+        .in('status', [REVIEW_STATUS.SELF_SUBMITTED, REVIEW_STATUS.MEETING_SCHEDULED, REVIEW_STATUS.MANAGER_IN_PROGRESS])
         .order('self_submitted_at', { ascending: true })
       if (error) throw error
       return data ?? []
@@ -516,6 +519,7 @@ export function useCreateCampaign() {
         .insert({
           ...payload,
           template_sections: payload.template_sections ?? DEFAULT_TEMPLATE_SECTIONS,
+          organization_id: profile.organization_id,
           created_by: profile.id,
           status: 'draft',
         })
@@ -622,7 +626,7 @@ export function useSaveAutoEval() {
         .update({
           self_eval,
           self_comment,
-          status: 'self_in_progress',
+          status: REVIEW_STATUS.SELF_IN_PROGRESS,
         })
         .eq('id', review_id)
         .eq('employee_id', profile.id)
@@ -647,7 +651,7 @@ export function useSubmitAutoEval() {
           self_eval,
           self_comment,
           auto_synthesis: auto_synthesis ?? null,
-          status: 'self_submitted',
+          status: REVIEW_STATUS.SELF_SUBMITTED,
           self_submitted_at: new Date().toISOString(),
         })
         .eq('id', review_id)
@@ -674,7 +678,7 @@ export function useScheduleMeeting() {
           meeting_date,
           meeting_location,
           meeting_notes,
-          status: 'meeting_scheduled',
+          status: REVIEW_STATUS.MEETING_SCHEDULED,
         })
         .eq('id', review_id)
         .eq('manager_id', profile.id)
@@ -706,7 +710,7 @@ export function useSaveManagerEval() {
           improvement_areas,
           objectives_next_year,
           development_plan,
-          status: 'manager_in_progress',
+          status: REVIEW_STATUS.MANAGER_IN_PROGRESS,
         })
         .eq('id', review_id)
         .eq('manager_id', profile.id)
@@ -904,7 +908,7 @@ export function useSubmitSelfAssessment() {
       if (submit) {
         const { error: revErr } = await supabase
           .from('annual_reviews')
-          .update({ status: 'self_submitted', self_submitted_at: new Date().toISOString() })
+          .update({ status: REVIEW_STATUS.SELF_SUBMITTED, self_submitted_at: new Date().toISOString() })
           .eq('id', review_id)
           .eq('employee_id', profile.id)
         if (revErr) throw revErr
@@ -997,7 +1001,7 @@ export function useMidYearReviews() {
           manager:users!annual_reviews_manager_id_fkey(id, first_name, last_name)
         `)
         .eq('review_type', 'mid_year')
-        .in('status', ['pending','self_in_progress','self_submitted','meeting_scheduled','manager_in_progress'])
+        .in('status', ['pending',REVIEW_STATUS.SELF_IN_PROGRESS,REVIEW_STATUS.SELF_SUBMITTED,REVIEW_STATUS.MEETING_SCHEDULED,REVIEW_STATUS.MANAGER_IN_PROGRESS])
         .order('created_at', { ascending: false })
       if (error) throw error
       return data ?? []

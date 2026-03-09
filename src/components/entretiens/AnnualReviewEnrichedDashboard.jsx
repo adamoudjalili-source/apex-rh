@@ -12,7 +12,6 @@ import {
   ChevronDown, ArrowUpRight, ArrowDownRight,
   Info, Loader2, RefreshCw, Award,
 } from 'lucide-react'
-import { useAuth }           from '../../contexts/AuthContext'
 import { useAllCampaigns }   from '../../hooks/useAnnualReviews'
 import {
   useMultiYearTrends,

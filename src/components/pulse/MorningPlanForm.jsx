@@ -3,7 +3,7 @@
 // ✅ Session 21 — Formulaire Brief Matinal PULSE
 // ============================================================
 import { useState, useEffect } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion } from 'framer-motion'
 import {
   Sun, Check, Clock, ChevronDown, ChevronUp, AlertCircle,
   CheckCircle2, Lock, Loader2, FileText

@@ -4,7 +4,7 @@
 // ============================================================
 import { useState, useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { ChevronDown, ChevronRight, Target, TrendingUp, AlertTriangle, Circle } from 'lucide-react'
+import { ChevronDown, ChevronRight, Target, TrendingUp, Circle } from 'lucide-react'
 import { useOKRAlignmentTree } from '../../hooks/useObjectives'
 
 const LEVEL_CONFIG = {

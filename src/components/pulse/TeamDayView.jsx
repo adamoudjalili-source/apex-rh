@@ -13,6 +13,7 @@ import {
 } from 'lucide-react'
 // 5. Hooks projet
 import { useTeamDailyLogs, useTeamDayStats } from '../../hooks/useManagerReview'
+import { ROLES } from '../../utils/constants'
 // 6. Helpers
 import {
   PULSE_COLORS,
@@ -42,7 +43,7 @@ export default function TeamDayView({ date, onSelectLog, teamMembers = [] }) {
 
   // Regrouper : membres avec log + membres sans log
   const membersWithStatus = teamMembers
-    .filter(m => m.role !== 'administrateur')
+    .filter(m => m.role !== ROLES.ADMINISTRATEUR)
     .map(m => ({
       ...m,
       log: logsMap[m.id] || null,

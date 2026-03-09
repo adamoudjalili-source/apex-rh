@@ -119,26 +119,30 @@ export function getCompaRatioLabel(ratio) {
 // ─── GRILLES SALARIALES ───────────────────────────────────────
 
 export function useSalaryGrades() {
+  const { organization_id } = useAuth()
   return useQuery({
-    queryKey: ['salary_grades'],
+    queryKey: ['salary_grades', organization_id],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('salary_grades')
         .select('*')
+        .eq('organization_id', organization_id)
         .order('sort_order', { ascending: true })
       if (error) throw error
       return data ?? []
     },
+    enabled: !!organization_id,
   })
 }
 
 export function useCreateGrade() {
   const qc = useQueryClient()
+  const { organization_id } = useAuth()
   return useMutation({
     mutationFn: async (payload) => {
       const { data, error } = await supabase
         .from('salary_grades')
-        .insert(payload)
+        .insert({ ...payload, organization_id })
         .select()
         .single()
       if (error) throw error

@@ -4,7 +4,7 @@
 // ============================================================
 import { useMemo } from 'react'
 import { motion } from 'framer-motion'
-import { getLevelInfo, getScoreColor, formatScore, formatScorePercent, LEVEL_ORDER } from '../../lib/objectiveHelpers'
+import { getLevelInfo, getScoreColor, formatScore, LEVEL_ORDER } from '../../lib/objectiveHelpers'
 
 export default function ObjectiveCascade({ objectives = [], onSelect }) {
   // Construire l'arbre

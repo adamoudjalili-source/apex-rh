@@ -145,7 +145,7 @@ export function engagementScoreLabel(score) {
  * Tous les surveys actifs + fermés visibles par l'utilisateur courant
  */
 export function useMySurveys() {
-  const { profile } = useAuth()
+  const { profile, organization_id } = useAuth()
 
   return useQuery({
     queryKey: ['engagement-surveys', profile?.id],
@@ -157,6 +157,7 @@ export function useMySurveys() {
           status, is_anonymous, created_at, created_by,
           service:services(id, name)
         `)
+        .eq('organization_id', organization_id)
         .in('status', ['active', 'closed'])
         .order('created_at', { ascending: false })
 
@@ -172,10 +173,10 @@ export function useMySurveys() {
  * Tous les surveys (managers : brouillons inclus)
  */
 export function useAllSurveys() {
-  const { profile } = useAuth()
+  const { profile, organization_id } = useAuth()
 
   return useQuery({
-    queryKey: ['engagement-surveys-all', profile?.id],
+    queryKey: ['engagement-surveys-all', organization_id],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('engagement_surveys')
@@ -184,6 +185,7 @@ export function useAllSurveys() {
           status, is_anonymous, created_at, created_by,
           service:services(id, name)
         `)
+        .eq('organization_id', organization_id)
         .order('created_at', { ascending: false })
 
       if (error) throw error

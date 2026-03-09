@@ -5,7 +5,7 @@
 // ============================================================
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Shield, AlertTriangle, Users, ChevronRight, TrendingUp, CheckCircle } from 'lucide-react'
+import { Shield, AlertTriangle, Users, TrendingUp, CheckCircle } from 'lucide-react'
 import { useSuccessionCoverage, useTalentPool, READINESS_CONFIG } from '../../hooks/useSuccessionVivier'
 
 // ─── Helpers ─────────────────────────────────────────────────

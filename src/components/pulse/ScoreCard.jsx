@@ -2,7 +2,7 @@
 // APEX RH — ScoreCard.jsx
 // ✅ Session 23 — Carte score décomposé PULSE (Phase C)
 // ============================================================
-import { TrendingUp, TrendingDown, Minus, User } from 'lucide-react'
+import { TrendingUp, TrendingDown, Minus } from 'lucide-react'
 import {
   getScoreColor,
   getScoreLabel,

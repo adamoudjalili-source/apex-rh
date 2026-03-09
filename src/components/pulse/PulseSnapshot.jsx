@@ -5,7 +5,7 @@
 // ============================================================
 import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { Activity, Sun, Moon, TrendingUp, ChevronRight } from 'lucide-react'
+import { Activity, Sun, Moon, ChevronRight } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
 import {
   useTodayMorningPlan,

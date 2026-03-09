@@ -3,7 +3,6 @@
 // Session 11 — Module Projets complet
 // ============================================================
 import { useState, useMemo } from 'react'
-import { motion } from 'framer-motion'
 import {
   FolderKanban, Plus, LayoutList, Columns3, BarChart3,
   TrendingUp, AlertTriangle, DollarSign, GanttChartSquare,
@@ -23,6 +22,7 @@ import PortfolioView from '../../components/projects/PortfolioView'
 import ProjectGanttAdvanced from '../../components/projects/ProjectGanttAdvanced'
 import ExportButton from '../../components/ui/ExportButton'
 import { exportProjects } from '../../lib/exportExcel'
+import { TASK_STATUS } from '../../utils/constants'
 
 export default function Projects() {
   const { profile } = useAuth()
@@ -46,14 +46,14 @@ export default function Projects() {
     const avgProgress = projects.reduce((s, p) => s + (p.progress || 0), 0) / projects.length
     const totalBudget = projects.reduce((s, p) => s + (p.budget || 0), 0)
     const atRisk = projects.filter((p) =>
-      p.status === 'en_cours' && (p.risks?.length || 0) > 0
+      p.status === TASK_STATUS.EN_COURS && (p.risks?.length || 0) > 0
     ).length
     return {
       total: projects.length,
       avgProgress,
       totalBudget,
       atRisk,
-      enCours: projects.filter((p) => p.status === 'en_cours').length,
+      enCours: projects.filter((p) => p.status === TASK_STATUS.EN_COURS).length,
     }
   }, [projects])
 

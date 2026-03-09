@@ -21,7 +21,7 @@ import { isPulseEnabled } from '../../lib/pulseHelpers'
 import { useTaskStats, useOkrStats, useProjectStats } from '../../hooks/useDashboard'
 import { useMyIPR, useTeamIPR } from '../../hooks/useIPR'
 import { useTodayScore } from '../../hooks/usePulse'
-import { GaugeRing, Sparkline, TrendBadge, iprColor, iprLabel } from '../../components/ui/premium'
+import { Sparkline, TrendBadge, iprColor } from '../../components/ui/premium'
 import { getQualitativeLabel } from '../../components/ui/ProfilPerformance'
 import { Activity } from 'lucide-react'
 

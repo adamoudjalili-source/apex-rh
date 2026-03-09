@@ -7,6 +7,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '../lib/supabase'
 import { useAuth }  from '../contexts/AuthContext'
 import * as XLSX    from 'xlsx'
+import { LEAVE_STATUS } from '../utils/constants'
 
 export const LEAVE_STATUS_LABELS = {
   draft:            'Brouillon',
@@ -252,7 +253,7 @@ export function useLeaveAlerts() {
       // Demandes en attente trop longtemps
       const { data: pending } = await supabase.from('leave_requests')
         .select('id,created_at,user_id,days_count,leave_types(name),users!leave_requests_user_id_fkey(first_name,last_name)')
-        .eq('organization_id', orgId).in('status', ['submitted','manager_approved']).lte('created_at', cutoff.toISOString())
+        .eq('organization_id', orgId).in('status', [LEAVE_STATUS.SUBMITTED,LEAVE_STATUS.MANAGER_APPROVED]).lte('created_at', cutoff.toISOString())
       for (const req of pending || []) {
         const hrs = Math.round((now - new Date(req.created_at))/3600000)
         const name = `${req.users?.first_name||''} ${req.users?.last_name||''}`.trim()
@@ -383,7 +384,7 @@ export function useSubmitLeaveRequest() {
   const invalidate = useInvalidateLeaves()
   return useMutation({
     mutationFn: async (id) => {
-      const { data, error } = await supabase.from('leave_requests').update({ status: 'submitted' }).eq('id', id).eq('organization_id', orgId).eq('user_id', profile?.id).select().single()
+      const { data, error } = await supabase.from('leave_requests').update({ status: LEAVE_STATUS.SUBMITTED }).eq('id', id).eq('organization_id', orgId).eq('user_id', profile?.id).select().single()
       if (error) throw error
       await supabase.from('notifications').insert({ organization_id: orgId, user_id: profile?.id, type: 'leave_submitted', title: 'Demande de congé soumise', content: 'Votre demande a été transmise à votre manager.', is_read: false }).then(() => {})
       return data
@@ -400,8 +401,8 @@ export function useApproveLeaveRequest() {
     mutationFn: async ({ id, level = 'manager' }) => {
       const isManager = level === 'manager'
       const update = isManager
-        ? { status: 'manager_approved', manager_approved_by: profile?.id, manager_approved_at: new Date().toISOString() }
-        : { status: 'hr_approved', hr_approved_by: profile?.id, hr_approved_at: new Date().toISOString() }
+        ? { status: LEAVE_STATUS.MANAGER_APPROVED, manager_approved_by: profile?.id, manager_approved_at: new Date().toISOString() }
+        : { status: LEAVE_STATUS.HR_APPROVED, hr_approved_by: profile?.id, hr_approved_at: new Date().toISOString() }
       const { data, error } = await supabase.from('leave_requests').update(update).eq('id', id).eq('organization_id', orgId).select('*, users!leave_requests_user_id_fkey(id)').single()
       if (error) throw error
       await supabase.from('notifications').insert({ organization_id: orgId, user_id: data.user_id, type: isManager ? 'leave_manager_approved' : 'leave_hr_approved', title: isManager ? 'Congé approuvé par votre manager' : 'Congé validé par les RH', content: isManager ? 'Transmise aux RH pour validation finale.' : 'Votre congé est définitivement validé.', is_read: false }).then(() => {})
@@ -463,7 +464,7 @@ export function useTeamCalendar({ month, year } = {}) {
     queryFn: async () => {
       const firstDay = `${y}-${String(m).padStart(2,'0')}-01`
       const lastDay  = new Date(y, m, 0).toISOString().split('T')[0]
-      const { data, error } = await supabase.from('leave_requests').select(`id,user_id,start_date,end_date,days_count,status,leave_types(id,name,code,color),users!leave_requests_user_id_fkey(id,first_name,last_name,avatar_url)`).eq('organization_id', orgId).in('status', ['submitted','manager_approved','hr_approved']).lte('start_date', lastDay).gte('end_date', firstDay).order('start_date')
+      const { data, error } = await supabase.from('leave_requests').select(`id,user_id,start_date,end_date,days_count,status,leave_types(id,name,code,color),users!leave_requests_user_id_fkey(id,first_name,last_name,avatar_url)`).eq('organization_id', orgId).in('status', [LEAVE_STATUS.SUBMITTED,LEAVE_STATUS.MANAGER_APPROVED,LEAVE_STATUS.HR_APPROVED]).lte('start_date', lastDay).gte('end_date', firstDay).order('start_date')
       if (error) throw error
       return data || []
     },
@@ -509,7 +510,7 @@ export function useExportPayroll() {
       const endDate   = new Date(year, month, 0).toISOString().split('T')[0]
       const { data, error } = await supabase.from('leave_requests')
         .select('*,leave_types(name,code,color,is_paid),users!leave_requests_user_id_fkey(id,first_name,last_name,email,services(name),divisions(name))')
-        .eq('organization_id', orgId).eq('status', 'hr_approved')
+        .eq('organization_id', orgId).eq('status', LEAVE_STATUS.HR_APPROVED)
         .lte('start_date', endDate).gte('end_date', startDate).order('start_date')
       if (error) throw error
       const rows = (data||[]).map(r => ({

@@ -3,7 +3,7 @@
 // Session 66 — Pointage entrée / sortie avec timer
 // ============================================================
 import { useState, useEffect } from 'react'
-import { Clock, LogIn, LogOut, Coffee, Timer } from 'lucide-react'
+import { Clock, LogIn, LogOut } from 'lucide-react'
 import { useClockIn, useClockOut, useLastClockEvent, CLOCK_EVENT_LABELS } from '../../hooks/useTemps'
 
 function elapsed(from) {

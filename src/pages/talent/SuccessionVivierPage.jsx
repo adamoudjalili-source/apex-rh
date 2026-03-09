@@ -13,6 +13,7 @@ import SuccessionMap   from '../../components/talent/SuccessionMap'
 import GapAnalysisChart from '../../components/talent/GapAnalysisChart'
 import { useSuccessionCoverage, useTalentGapAnalysis } from '../../hooks/useSuccessionVivier'
 import { supabase } from '../../lib/supabase'
+import { CRITICALITY } from '../../utils/constants'
 
 // ─── Onglets ─────────────────────────────────────────────────
 const TABS = [
@@ -62,7 +63,7 @@ export default function SuccessionVivierPage() {
   const { data: coverage }        = useSuccessionCoverage()
   const { data: gaps = [] }       = useTalentGapAnalysis()
 
-  const criticalGaps = gaps.filter(g => g.priority === 'critical').length
+  const criticalGaps = gaps.filter(g => g.priority === CRITICALITY.CRITICAL).length
   const atRisk       = coverage?.atRiskCount || 0
 
   return (

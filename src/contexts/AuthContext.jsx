@@ -2,6 +2,7 @@ import { createContext, useContext, useEffect, useState, useRef } from 'react'
 import { supabase } from '../lib/supabase'
 import { logAudit } from '../lib/auditLog'
 import { isAdminRole, isManagerRole } from '../lib/roles'
+import { ROLES } from '../utils/constants'
 
 const AuthContext = createContext({})
 
@@ -196,12 +197,12 @@ export const AuthProvider = ({ children }) => {
   const role = profile?.role || null
 
   // ── Helpers individuels S69 — valeurs exactes en DB ──────────────
-  const isSuperAdmin   = role === 'super_admin'
-  const isAdmin        = role === 'administrateur'
-  const isDirecteur    = role === 'directeur'
-  const isChefDivision = role === 'chef_division'
-  const isChefService  = role === 'chef_service'
-  const isCollab       = role === 'collaborateur'
+  const isSuperAdmin   = role === ROLES.SUPER_ADMIN
+  const isAdmin        = role === ROLES.ADMINISTRATEUR
+  const isDirecteur    = role === ROLES.DIRECTEUR
+  const isChefDivision = role === ROLES.CHEF_DIVISION
+  const isChefService  = role === ROLES.CHEF_SERVICE
+  const isCollab       = role === ROLES.COLLABORATEUR
 
   // ── Groupes fonctionnels S69 ──────────────────────────────────────
   const canAdmin      = isSuperAdmin || isAdmin                                   // config technique

@@ -4,7 +4,7 @@
 // Utilisé dans PulseAlertCenter et vue individuelle
 // ============================================================
 import { useMemo } from 'react'
-import { getScoreColor, PULSE_COLORS } from '../../lib/pulseHelpers'
+import { getScoreColor } from '../../lib/pulseHelpers'
 
 const W = 600
 const H = 160

@@ -5,12 +5,13 @@
 import { useMemo } from 'react'
 import { motion } from 'framer-motion'
 import { TrendingUp, DollarSign, Users, Calendar, FolderKanban } from 'lucide-react'
+import { TASK_STATUS } from '../../utils/constants'
 import {
   PROJECT_STATUS, getProjectStatusInfo, getProjectPriorityInfo,
   formatBudget, getProgressColor, getUserFullName, formatDateFr,
 } from '../../lib/projectHelpers'
 
-const STATUS_ORDER = ['en_cours', 'planifie', 'en_pause', 'termine', 'annule']
+const STATUS_ORDER = [TASK_STATUS.EN_COURS, 'planifie', 'en_pause', TASK_STATUS.TERMINE, 'annule']
 
 export default function PortfolioView({ projects, onSelect }) {
   // Grouper par statut

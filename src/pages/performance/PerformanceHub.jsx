@@ -22,8 +22,6 @@ import { usePermission }              from '../../hooks/usePermission'
 import OKRDashboard                   from '../../components/okr/OKRDashboard'
 import OKRCascadeView                 from '../../components/okr/OKRCascadeView'
 import OKRCycleManager                from '../../components/okr/OKRCycleManager'
-import OKRCheckinForm                 from '../../components/okr/OKRCheckinForm'
-import OKRCheckinHistory              from '../../components/okr/OKRCheckinHistory'
 
 // ── Pulse composants ──────────────────────────────────────────
 import PulseSnapshot                  from '../../components/pulse/PulseSnapshot'

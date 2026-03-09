@@ -2,8 +2,8 @@
 // APEX RH — src/components/temps/TimeEntryForm.jsx
 // Session 66 — Formulaire ajout/édition ligne de temps
 // ============================================================
-import { useState, useEffect } from 'react'
-import { X, Save, Briefcase, CheckSquare, Clock } from 'lucide-react'
+import { useState } from 'react'
+import { X, Save, Briefcase, CheckSquare } from 'lucide-react'
 import { useAddTimeEntry, useUpdateTimeEntry, ENTRY_TYPE_LABELS } from '../../hooks/useTemps'
 import { useProjects } from '../../hooks/useProjects'
 import { useTasks }    from '../../hooks/useTasks'

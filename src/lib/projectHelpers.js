@@ -1,4 +1,5 @@
 // ============================================================
+import { ROLES } from '../utils/constants'
 // APEX RH — projectHelpers.js
 // Session 11 — Constantes, helpers, permissions Projets
 // Session 16 fix — canEditProject/canDeleteProject vérifient
@@ -141,7 +142,7 @@ function isChefProjet(project, profile) {
 // Session 16 fix : le chef_projet (membre) peut aussi éditer/supprimer
 export function canEditProject(project, profile) {
   if (!project || !profile) return false
-  if (profile.role === 'administrateur') return true
+  if (profile.role === ROLES.ADMINISTRATEUR) return true
   if (project.owner_id === profile.id) return true
   if (isChefProjet(project, profile)) return true
   return false
@@ -149,7 +150,7 @@ export function canEditProject(project, profile) {
 
 export function canDeleteProject(project, profile) {
   if (!project || !profile) return false
-  if (profile.role === 'administrateur') return true
+  if (profile.role === ROLES.ADMINISTRATEUR) return true
   if (project.owner_id === profile.id) return true
   if (isChefProjet(project, profile)) return true
   return false
@@ -157,7 +158,7 @@ export function canDeleteProject(project, profile) {
 
 export function canManageMembers(project, profile, members = []) {
   if (!project || !profile) return false
-  if (profile.role === 'administrateur') return true
+  if (profile.role === ROLES.ADMINISTRATEUR) return true
   if (project.owner_id === profile.id) return true
   const allMembers = members.length > 0 ? members : (project?.project_members || [])
   const myMembership = allMembers.find((m) => m.user_id === profile.id)

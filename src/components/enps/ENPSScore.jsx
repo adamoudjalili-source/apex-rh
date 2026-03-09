@@ -3,7 +3,7 @@
 // Session 55 — Score eNPS principal
 // Affiche le score -100 → +100 avec promoteurs/passifs/détracteurs
 // ============================================================
-import { ENPS_BENCHMARK, ENPS_ZONE_CONFIG, getEnpsZone, formatENPS } from '../../hooks/useENPS'
+import { ENPS_BENCHMARK, getEnpsZone, formatENPS } from '../../hooks/useENPS'
 
 // ─── GAUGE ARC ────────────────────────────────────────────────
 

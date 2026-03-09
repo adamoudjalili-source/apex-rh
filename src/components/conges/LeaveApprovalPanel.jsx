@@ -4,7 +4,7 @@
 // ============================================================
 import { useState } from 'react'
 import { usePermission } from '../../hooks/usePermission'
-import { Check, X, MessageSquare, Calendar, Loader2, AlertCircle } from 'lucide-react'
+import { Check, X, MessageSquare, Calendar, Loader2 } from 'lucide-react'
 import {
   useTeamLeaveRequests,
   useApproveLeaveRequest,
@@ -14,6 +14,7 @@ import {
   formatDate,
 } from '../../hooks/useConges'
 import { useAuth } from '../../contexts/AuthContext'
+import { LEAVE_STATUS } from '../../utils/constants'
 // S69 — guards via AuthContext helpers
 
 function RejectModal({ onConfirm, onCancel, loading }) {
@@ -169,8 +170,8 @@ export default function LeaveApprovalPanel() {
   const role = profile?.role
   const isHR = canAdmin
 
-  // Managers voient les 'submitted', RH/admin voient aussi les 'manager_approved'
-  const statusFilter = isHR ? undefined : 'submitted'
+  // Managers voient les LEAVE_STATUS.SUBMITTED, RH/admin voient aussi les LEAVE_STATUS.MANAGER_APPROVED
+  const statusFilter = isHR ? undefined : LEAVE_STATUS.SUBMITTED
   const { data: requests = [], isLoading } = useTeamLeaveRequests(statusFilter)
 
   const approveReq = useApproveLeaveRequest()
@@ -181,13 +182,13 @@ export default function LeaveApprovalPanel() {
 
   // Filtrer selon rôle
   const pending = requests.filter(r => {
-    if (isHR) return ['submitted','manager_approved'].includes(r.status)
-    return r.status === 'submitted'
+    if (isHR) return [LEAVE_STATUS.SUBMITTED,LEAVE_STATUS.MANAGER_APPROVED].includes(r.status)
+    return r.status === LEAVE_STATUS.SUBMITTED
   })
 
   async function handleApprove(id) {
     setProcessingId(id)
-    const level = isHR && requests.find(r => r.id === id)?.status === 'manager_approved'
+    const level = isHR && requests.find(r => r.id === id)?.status === LEAVE_STATUS.MANAGER_APPROVED
       ? 'hr' : 'manager'
     await approveReq.mutateAsync({ id, level })
     setProcessingId(null)
@@ -240,7 +241,7 @@ export default function LeaveApprovalPanel() {
             <RequestRow
               key={r.id}
               request={r}
-              approveLevel={isHR && r.status === 'manager_approved' ? 'hr' : 'manager'}
+              approveLevel={isHR && r.status === LEAVE_STATUS.MANAGER_APPROVED ? 'hr' : 'manager'}
               onApprove={handleApprove}
               onReject={id => setRejectModal(id)}
               approving={approveReq.isPending && processingId === r.id}

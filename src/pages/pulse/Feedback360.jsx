@@ -643,7 +643,7 @@ function ValidationTab({ campaigns, selectedCampaignId, onSelectCampaign }) {
     }
   }
 
-  const submittedRequests = requests.filter(r => r.status === 'submitted')
+  const submittedRequests = requests.filter(r => r.status === STATUS.SUBMITTED)
   const validatedRequests = requests.filter(r => r.status === 'validated')
   const pendingRequests   = requests.filter(r => r.status === 'pending')
 
@@ -756,7 +756,7 @@ function FeedbackRequestRow({ request, onValidate, isValidating }) {
         </div>
         <div className="flex items-center gap-2 flex-shrink-0">
           <StatusBadge status={request.status} />
-          {request.status === 'submitted' && onValidate && (
+          {request.status === STATUS.SUBMITTED && onValidate && (
             <button
               onClick={e => { e.stopPropagation(); onValidate() }}
               disabled={isValidating}

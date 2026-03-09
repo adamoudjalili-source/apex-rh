@@ -4,7 +4,7 @@
 // ============================================================
 import { useState } from 'react'
 import { Download, FileText, Sheet } from 'lucide-react'
-import { useExportTimeSheets, getCurrentWeekStart } from '../../hooks/useTemps'
+import { useExportTimeSheets } from '../../hooks/useTemps'
 
 export default function TimeSheetExport({ showUserFilter = false }) {
   const today = new Date()

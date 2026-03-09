@@ -5,7 +5,6 @@
 // ============================================================
 import { useState, useMemo } from 'react'
 import { useTaskDependencies, useCreateDependency, useDeleteDependency, useTasks } from '../../hooks/useTasks'
-import { getStatusInfo, getPriorityInfo } from '../../lib/taskHelpers'
 
 const STATUS_COLORS = {
   a_faire: '#6B7280',

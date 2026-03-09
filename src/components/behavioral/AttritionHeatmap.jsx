@@ -7,9 +7,10 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { ChevronRight, Users, AlertTriangle, TrendingDown, TrendingUp } from 'lucide-react'
 import { useDivisionAttritionHeatmap, useAttritionStats, RISK_CONFIG, getRiskConfig } from '../../hooks/useBehavioralIntelligence'
 import AttritionRiskBadge, { AttritionRiskBar, AttritionRiskCircle } from './AttritionRiskBadge'
+import { CRITICALITY } from '../../utils/constants'
 
 function HeatmapCell({ div, onClick, selected }) {
-  const level = div.avgScore >= 75 ? 'critical' : div.avgScore >= 55 ? 'high' : div.avgScore >= 30 ? 'medium' : 'low'
+  const level = div.avgScore >= 75 ? CRITICALITY.CRITICAL : div.avgScore >= 55 ? 'high' : div.avgScore >= 30 ? 'medium' : 'low'
   const cfg = getRiskConfig(level)
 
   return (
@@ -35,7 +36,7 @@ function HeatmapCell({ div, onClick, selected }) {
 
       {/* Répartition mini barres */}
       <div className="space-y-1 mt-2">
-        {['critical', 'high', 'medium', 'low'].map(lvl => {
+        {[CRITICALITY.CRITICAL, 'high', 'medium', 'low'].map(lvl => {
           const count = div[lvl] || 0
           const pct   = div.users.length ? (count / div.users.length) * 100 : 0
           const c     = RISK_CONFIG[lvl]
@@ -73,7 +74,7 @@ function HeatmapCell({ div, onClick, selected }) {
 
 function DivisionDetail({ div, onClose }) {
   if (!div) return null
-  const cfg = getRiskConfig(div.avgScore >= 75 ? 'critical' : div.avgScore >= 55 ? 'high' : div.avgScore >= 30 ? 'medium' : 'low')
+  const cfg = getRiskConfig(div.avgScore >= 75 ? CRITICALITY.CRITICAL : div.avgScore >= 55 ? 'high' : div.avgScore >= 30 ? 'medium' : 'low')
 
   return (
     <motion.div

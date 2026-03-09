@@ -6,6 +6,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '../lib/supabase'
 import { useAuth }  from '../contexts/AuthContext'
+import { ROLES, TASK_STATUS } from '../utils/constants'
 
 // ─── Étapes par rôle ─────────────────────────────────────────
 export const ONBOARDING_STEPS = {
@@ -99,9 +100,9 @@ export const ONBOARDING_STEPS = {
 
 // Groupe de rôle → clé steps
 export function getRoleGroup(role) {
-  if (role === 'administrateur' || role === 'directeur') return 'admin'
-  if (role === 'chef_division' || role === 'chef_service') return 'manager'
-  return 'collaborateur'
+  if (role === ROLES.ADMINISTRATEUR || role === ROLES.DIRECTEUR) return 'admin'
+  if (role === ROLES.CHEF_DIVISION || role === ROLES.CHEF_SERVICE) return 'manager'
+  return ROLES.COLLABORATEUR
 }
 
 // ─── useOnboarding ───────────────────────────────────────────
@@ -494,7 +495,7 @@ export function useOnboardingStats() {
         const steps = a.onboarding_step_completions || []
         totalSteps     += steps.length
         completedSteps += steps.filter(s => s.status === 'completed').length
-        overdueSteps   += steps.filter(s => s.status === 'overdue').length
+        overdueSteps   += steps.filter(s => s.status === TASK_STATUS.OVERDUE).length
       })
 
       return {

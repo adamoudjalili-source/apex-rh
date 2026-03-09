@@ -4,7 +4,7 @@
 // Time-to-hire · Taux conversion · Sources · Délais
 // SVG natif — pas de recharts
 // ============================================================
-import { useState, useMemo } from 'react'
+import { useMemo } from 'react'
 import { motion } from 'framer-motion'
 import {
   TrendingUp, Clock, Users, CheckCircle2, Target, Briefcase,

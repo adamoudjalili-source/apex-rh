@@ -1,4 +1,5 @@
 // src/lib/roles.js
+import { ROLES } from '../utils/constants'
 // Sprint 1 — Étape 5 — Source unique de vérité pour les rôles APEX RH
 // ⚠️ Le rôle 'direction' N'EXISTE PAS en production — absent de tous les tableaux (décision B-1 · 2026-03-07)
 
@@ -7,13 +8,13 @@
 // ---------------------------------------------------------------------------
 
 /** Rôles avec droits d'administration complète (accès total plateforme) */
-export const ADMIN_ROLES = ['administrateur', 'directeur']
+export const ADMIN_ROLES = [ROLES.ADMINISTRATEUR, ROLES.DIRECTEUR]
 
 /** Rôles avec droits manager ou supérieur (encadrement + reporting) */
-export const MANAGER_ROLES = ['administrateur', 'directeur', 'chef_division', 'chef_service']
+export const MANAGER_ROLES = [ROLES.ADMINISTRATEUR, ROLES.DIRECTEUR, ROLES.CHEF_DIVISION, ROLES.CHEF_SERVICE]
 
 /** Tous les rôles valides de la plateforme */
-export const ALL_ROLES = ['super_admin', 'administrateur', 'directeur', 'chef_division', 'chef_service', 'collaborateur']
+export const ALL_ROLES = [ROLES.SUPER_ADMIN, ROLES.ADMINISTRATEUR, ROLES.DIRECTEUR, ROLES.CHEF_DIVISION, ROLES.CHEF_SERVICE, ROLES.COLLABORATEUR]
 
 // ---------------------------------------------------------------------------
 // Guards — fonctions pures (acceptent un string `role`)
@@ -34,19 +35,19 @@ export const isAdminRole = (role) => ADMIN_ROLES.includes(role)
 export const isManagerRole = (role) => MANAGER_ROLES.includes(role)
 
 /**
- * Vérifie si le rôle donné est exactement 'administrateur'.
+ * Vérifie si le rôle donné est exactement ROLES.ADMINISTRATEUR.
  * @param {string|null|undefined} role
  * @returns {boolean}
  */
-export const isAdmin = (role) => role === 'administrateur'
+export const isAdmin = (role) => role === ROLES.ADMINISTRATEUR
 
 /**
- * Vérifie si le rôle donné est exactement 'directeur'.
+ * Vérifie si le rôle donné est exactement ROLES.DIRECTEUR.
  * ⚠️ Ne pas confondre avec l'ancien rôle fantôme 'direction' (inexistant en prod).
  * @param {string|null|undefined} role
  * @returns {boolean}
  */
-export const isDirecteur = (role) => role === 'directeur'
+export const isDirecteur = (role) => role === ROLES.DIRECTEUR
 
 /**
  * Alias sémantique de isManagerRole — préférer dans les guards de composants.

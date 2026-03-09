@@ -6,6 +6,7 @@
 // ============================================================
 import { useAuth } from '../../contexts/AuthContext'
 import TaskStatusBadge from './TaskStatusBadge'
+import { TASK_STATUS } from '../../utils/constants'
 import {
   getPriorityInfo, formatDate, isOverdue, isDueSoon,
   getChecklistProgress, getUserFullName
@@ -24,7 +25,7 @@ export default function MyDayView({ tasks, onTaskClick }) {
 
   const dueToday = myTasks.filter(t => t.due_date === today)
   const overdue = myTasks.filter(t => t.due_date && t.due_date < today && t.status !== 'terminee')
-  const inProgress = myTasks.filter(t => t.status === 'en_cours' && t.due_date !== today)
+  const inProgress = myTasks.filter(t => t.status === TASK_STATUS.EN_COURS && t.due_date !== today)
   const inReview = myTasks.filter(t => t.status === 'en_revue')
   const upcoming = myTasks.filter(t => t.due_date && t.due_date > today && t.status !== 'terminee')
     .sort((a, b) => a.due_date.localeCompare(b.due_date))

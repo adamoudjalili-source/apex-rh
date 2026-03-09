@@ -39,6 +39,7 @@ export const AI_COACH_AXES = [
 // ─── HELPERS ────────────────────────────────────────────────
 
 import { MANAGER_ROLES } from '../lib/roles'
+import { ROLES } from '../utils/constants'
 
 export function isManagerRole(role) {
   return MANAGER_ROLES.includes(role)
@@ -136,7 +137,7 @@ export function useServiceMemberAnalyses(serviceId) {
         .from('users')
         .select('id, first_name, last_name, role')
         .eq('service_id', serviceId)
-        .eq('role', 'collaborateur')
+        .eq('role', ROLES.COLLABORATEUR)
         .eq('is_active', true)
 
       if (membersErr) throw membersErr

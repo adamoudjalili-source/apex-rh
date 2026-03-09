@@ -4,6 +4,7 @@
 // ============================================================
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
+import { ROLES } from '../../utils/constants'
 import {
   LayoutTemplate, Plus, Edit2, Trash2, Star, ChevronDown, ChevronUp, X, Save, GripVertical,
 } from 'lucide-react'
@@ -12,8 +13,8 @@ import {
   CHECKLIST_CATEGORY_LABELS,
 } from '../../hooks/useOffboarding'
 
-const EMPTY_STEP = { title: '', category: 'admin', assignee_role: 'administrateur', days_before_exit: 7 }
-const ROLES = ['administrateur', 'directeur', 'chef_service', 'chef_division', 'collaborateur']
+const EMPTY_STEP = { title: '', category: 'admin', assignee_role: ROLES.ADMINISTRATEUR, days_before_exit: 7 }
+const ROLES = [ROLES.ADMINISTRATEUR, ROLES.DIRECTEUR, ROLES.CHEF_SERVICE, ROLES.CHEF_DIVISION, ROLES.COLLABORATEUR]
 
 function StepRow({ step, index, onChange, onRemove }) {
   return (

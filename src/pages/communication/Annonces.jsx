@@ -4,12 +4,13 @@
 // ============================================================
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Megaphone, Plus, Filter, Pin, Loader2, X, ArrowLeft } from 'lucide-react'
+import { Megaphone, Plus, Pin, Loader2, ArrowLeft } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { useAnnonces } from '../../hooks/useAnnonces'
 import AnnouncementCard from '../../components/communication/AnnouncementCard'
 import AnnouncementForm from '../../components/communication/AnnouncementForm'
 import { useAuth } from '../../contexts/AuthContext'
+import { ROLES } from '../../utils/constants'
 
 const FILTERS = [
   { value: 'all',    label: 'Toutes' },
@@ -28,7 +29,7 @@ export default function AnnoncesPage() {
     pinned: filter === 'pinned' ? true : undefined,
   })
 
-  const isAdmin = ['administrateur', 'directeur', 'chef_division', 'chef_service'].includes(profile?.role)
+  const isAdmin = [ROLES.ADMINISTRATEUR, ROLES.DIRECTEUR, ROLES.CHEF_DIVISION, ROLES.CHEF_SERVICE].includes(profile?.role)
 
   const pinnedAnnonces = annonces.filter(a => a.pinned)
   const otherAnnonces  = annonces.filter(a => !a.pinned)

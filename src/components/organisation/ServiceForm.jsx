@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase';
+import { ROLES } from '../../utils/constants'
 
 export default function ServiceForm({ service, onSuccess, onCancel }) {
   const [form, setForm] = useState({
@@ -41,7 +42,7 @@ export default function ServiceForm({ service, onSuccess, onCancel }) {
     const { data } = await supabase
       .from('users')
       .select('id, first_name, last_name')
-      .eq('role', 'chef_service')
+      .eq('role', ROLES.CHEF_SERVICE)
       .eq('is_active', true)
       .order('last_name');
     setChefsService(data || []);

@@ -10,7 +10,6 @@ import {
   AlertTriangle, Award, MessageSquare, Bell,
   Brain, Calendar, Star, TrendingUp,
 } from 'lucide-react'
-import { useNotificationRealtime } from '../../hooks/useNotifications'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../contexts/AuthContext'
 

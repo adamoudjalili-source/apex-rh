@@ -3,7 +3,6 @@
 // Session 78 — Formulaire de check-in pour un Key Result
 // ============================================================
 import { useState } from 'react'
-import { motion } from 'framer-motion'
 import { TrendingUp, TrendingDown, Minus, AlertTriangle, CheckCircle, Send } from 'lucide-react'
 import { useCreateCheckin } from '../../hooks/useObjectives'
 

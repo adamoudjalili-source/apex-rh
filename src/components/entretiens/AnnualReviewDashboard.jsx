@@ -3,7 +3,7 @@
 // Session 60 — Vue manager : Tableau de bord entretiens équipe
 // ============================================================
 import { useState } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion } from 'framer-motion'
 import {
   Users, ChevronRight, Calendar, CheckCircle, Clock,
   AlertCircle, Filter, Search, Star, TrendingUp,
@@ -18,6 +18,7 @@ import {
   getReviewProgress, isDeadlineSoon, isDeadlineOverdue,
 } from '../../hooks/useAnnualReviews'
 import AnnualReviewForm from './AnnualReviewForm'
+import { REVIEW_STATUS, TASK_STATUS } from '../../utils/constants'
 
 // ─── Composants utilitaires ───────────────────────────────────
 
@@ -66,7 +67,7 @@ function ReviewCard({ review, onClick }) {
   const initials = (emp?.first_name?.[0] ?? '') + (emp?.last_name?.[0] ?? '')
   const progress = getReviewProgress(review)
   const deadline = review.campaign?.manager_eval_deadline
-  const urgency = isDeadlineOverdue(deadline) ? 'overdue' : isDeadlineSoon(deadline) ? 'soon' : null
+  const urgency = isDeadlineOverdue(deadline) ? TASK_STATUS.OVERDUE : isDeadlineSoon(deadline) ? 'soon' : null
 
   return (
     <motion.div
@@ -75,7 +76,7 @@ function ReviewCard({ review, onClick }) {
       className="group rounded-xl p-4 cursor-pointer transition-all hover:translate-y-[-1px]"
       style={{
         background: 'rgba(255,255,255,0.03)',
-        border: `1px solid ${urgency === 'overdue' ? 'rgba(239,68,68,0.2)' : 'rgba(255,255,255,0.06)'}`,
+        border: `1px solid ${urgency === TASK_STATUS.OVERDUE ? 'rgba(239,68,68,0.2)' : 'rgba(255,255,255,0.06)'}`,
       }}>
       <div className="flex items-start gap-3">
         {/* Avatar */}
@@ -100,9 +101,9 @@ function ReviewCard({ review, onClick }) {
           </div>
           {deadline && (
             <div className="mt-2 flex items-center gap-1.5">
-              <Clock size={11} style={{ color: urgency === 'overdue' ? '#EF4444' : urgency === 'soon' ? '#F59E0B' : '#ffffff30' }}/>
-              <span className="text-xs" style={{ color: urgency === 'overdue' ? '#EF4444' : urgency === 'soon' ? '#F59E0B' : '#ffffff30' }}>
-                {urgency === 'overdue' ? 'Délai dépassé' : `Délai : ${new Date(deadline).toLocaleDateString('fr-FR')}`}
+              <Clock size={11} style={{ color: urgency === TASK_STATUS.OVERDUE ? '#EF4444' : urgency === 'soon' ? '#F59E0B' : '#ffffff30' }}/>
+              <span className="text-xs" style={{ color: urgency === TASK_STATUS.OVERDUE ? '#EF4444' : urgency === 'soon' ? '#F59E0B' : '#ffffff30' }}>
+                {urgency === TASK_STATUS.OVERDUE ? 'Délai dépassé' : `Délai : ${new Date(deadline).toLocaleDateString('fr-FR')}`}
               </span>
             </div>
           )}
@@ -140,7 +141,7 @@ export default function AnnualReviewDashboard() {
   // Stats
   const total = teamReviews.length
   const pending = teamReviews.filter(r => r.status === 'pending').length
-  const submitted = teamReviews.filter(r => r.status === 'self_submitted').length
+  const submitted = teamReviews.filter(r => r.status === REVIEW_STATUS.SELF_SUBMITTED).length
   const completed = teamReviews.filter(r => ['completed', 'signed', 'archived'].includes(r.status)).length
   const signed = teamReviews.filter(r => r.status === 'signed').length
 
@@ -273,7 +274,7 @@ export default function AnnualReviewDashboard() {
           {filtered.map(review => (
             <ReviewCard key={review.id} review={review} onClick={() => {
               setSelectedReview(review)
-              const editable = ['self_submitted', 'meeting_scheduled', 'manager_in_progress'].includes(review.status)
+              const editable = [REVIEW_STATUS.SELF_SUBMITTED, REVIEW_STATUS.MEETING_SCHEDULED, REVIEW_STATUS.MANAGER_IN_PROGRESS].includes(review.status)
               const canSign = review.status === 'completed' && !review.manager_signed_at
               setReviewMode(editable || canSign ? 'manager' : 'view')
             }}/>

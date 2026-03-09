@@ -4,7 +4,7 @@
 // Aperçu colonnes + sélection mois + format CSV/XLSX
 // ============================================================
 import { useState } from 'react'
-import { Download, FileSpreadsheet, Eye, Calendar, CheckCircle, AlertCircle } from 'lucide-react'
+import { Download, FileSpreadsheet, Eye, CheckCircle, AlertCircle } from 'lucide-react'
 import { useExportOvertimePayroll, useOrgTimeSheets, formatHours } from '../../hooks/useTemps'
 
 // ─── Aperçu colonnes ──────────────────────────────────────────

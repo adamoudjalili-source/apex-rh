@@ -4,8 +4,9 @@
 // KPIs révisions + évolution masse salariale + distribution
 // ============================================================
 import { motion } from 'framer-motion'
-import { TrendingUp, DollarSign, Users, CheckCircle, Clock, AlertTriangle } from 'lucide-react'
+import { TrendingUp, DollarSign, CheckCircle, Clock, AlertTriangle } from 'lucide-react'
 import { usePermission } from '../../hooks/usePermission'
+import { TASK_STATUS } from '../../utils/constants'
 import {
   useRevisionStats, useCyclesProgress, useCompensationCycles,
   useOrgCompensationStats, formatSalary, formatSalaryShort,
@@ -91,7 +92,7 @@ function RevisionStatusBreakdown({ stats }) {
 
 // ─── Cycles en cours ─────────────────────────────────────────
 function ActiveCycles({ cycles, progress }) {
-  const active = cycles.filter(c => c.status === 'en_cours')
+  const active = cycles.filter(c => c.status === TASK_STATUS.EN_COURS)
   if (active.length === 0) return null
 
   const progressById = Object.fromEntries((progress ?? []).map(p => [p.cycle_id, p]))
@@ -178,7 +179,7 @@ export default function CompensationDashboardEnrichi() {
         <RevisionStatusBreakdown stats={stats} />
 
         {/* Cycles actifs */}
-        {cycles.some(c => c.status === 'en_cours') ? (
+        {cycles.some(c => c.status === TASK_STATUS.EN_COURS) ? (
           <ActiveCycles cycles={cycles} progress={progress} />
         ) : (
           <div className="rounded-xl p-4"

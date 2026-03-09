@@ -4,7 +4,7 @@
 // ============================================================
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { MessageSquare, Star, ThumbsUp, ThumbsDown, Save, Calendar, User } from 'lucide-react'
+import { ThumbsUp, ThumbsDown, Save, Calendar } from 'lucide-react'
 import {
   useOffboardingInterview, useCreateInterview, useUpdateInterview,
   EXIT_REASON_LABELS,
@@ -68,7 +68,7 @@ export default function ExitInterviewForm({ processId, readOnly = false }) {
         improvements:       interview.improvements || '',
       })
     }
-  }, [interview])
+  }, [interview, profile?.id])
 
   const handleSubmit = async (e) => {
     e.preventDefault()

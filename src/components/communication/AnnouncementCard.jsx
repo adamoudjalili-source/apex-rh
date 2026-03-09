@@ -9,6 +9,7 @@ import { useToggleAnnonceReaction, useAnnonceComments, useAddComment, useDeleteA
 import { useMarkAnnouncementRead } from '../../hooks/useCommunication'
 import MessageStats from './MessageStats'
 import { useAuth } from '../../contexts/AuthContext'
+import { ROLES } from '../../utils/constants'
 
 const EMOJIS = ['👍','❤️','😮','🎉','👏','🙏']
 
@@ -150,7 +151,7 @@ export default function AnnouncementCard({ annonce, onEdit }) {
   const togglePin     = useTogglePin()
   const markRead      = useMarkAnnouncementRead()
 
-  const isAdmin   = ['administrateur', 'directeur'].includes(profile?.role)
+  const isAdmin   = [ROLES.ADMINISTRATEUR, ROLES.DIRECTEUR].includes(profile?.role)
   const isAuthor  = annonce.author_id === profile?.id
   const canManage = isAdmin || isAuthor
   const isImportant = annonce.important === true

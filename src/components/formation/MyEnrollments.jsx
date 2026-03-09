@@ -4,6 +4,7 @@
 // ============================================================
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
+import { TASK_STATUS } from '../../utils/constants'
 import {
   CheckCircle2, Clock, PlayCircle, XCircle,
   Star, ChevronDown, ChevronUp, Loader2, BookOpen,
@@ -27,8 +28,8 @@ const STATUS_ICONS = {
 const STATUS_FILTER_OPTIONS = [
   { value: '',          label: 'Toutes' },
   { value: 'inscrit',   label: 'Inscrites' },
-  { value: 'en_cours',  label: 'En cours' },
-  { value: 'termine',   label: 'Terminées' },
+  { value: TASK_STATUS.EN_COURS,  label: 'En cours' },
+  { value: TASK_STATUS.TERMINE,   label: 'Terminées' },
   { value: 'annule',    label: 'Annulées' },
 ]
 
@@ -123,15 +124,15 @@ function EnrollmentRow({ enrollment }) {
   const StatusIcon = STATUS_ICONS[status] || Clock
   const statusColor = ENROLLMENT_STATUS_COLORS[status] || '#6B7280'
   const typeColor   = TRAINING_TYPE_COLORS[training.type] || '#6366F1'
-  const isCompleted = status === 'termine'
+  const isCompleted = status === TASK_STATUS.TERMINE
   const canStart    = status === 'inscrit'
-  const inProgress  = status === 'en_cours'
+  const inProgress  = status === TASK_STATUS.EN_COURS
 
   async function markInProgress() {
-    await updateEnroll.mutateAsync({ id, status: 'en_cours' })
+    await updateEnroll.mutateAsync({ id, status: TASK_STATUS.EN_COURS })
   }
   async function markCompleted() {
-    await updateEnroll.mutateAsync({ id, status: 'termine' })
+    await updateEnroll.mutateAsync({ id, status: TASK_STATUS.TERMINE })
   }
 
   return (

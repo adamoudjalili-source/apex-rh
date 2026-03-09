@@ -3,7 +3,7 @@
 // Session 60 — Administration : Campagnes d'entretiens annuels
 // ============================================================
 import { useState } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion } from 'framer-motion'
 import {
   Plus, Edit3, Archive, Play, CheckCircle,
   Users, BarChart3, Calendar, ChevronRight,
@@ -17,8 +17,6 @@ import {
   OVERALL_RATING_LABELS, OVERALL_RATING_COLORS,
   SALARY_RECOMMENDATION_LABELS,
 } from '../../hooks/useAnnualReviews'
-import { useQuery } from '@tanstack/react-query'
-import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../contexts/AuthContext'
 
 function StatMini({ label, value, color = '#818CF8' }) {

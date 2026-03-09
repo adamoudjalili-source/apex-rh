@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase';
+import { ROLES } from '../../utils/constants'
 
 export default function DirectionForm({ direction, onSuccess, onCancel }) {
   const [form, setForm] = useState({
@@ -28,7 +29,7 @@ export default function DirectionForm({ direction, onSuccess, onCancel }) {
     const { data } = await supabase
       .from('users')
       .select('id, first_name, last_name')
-      .eq('role', 'directeur')
+      .eq('role', ROLES.DIRECTEUR)
       .eq('is_active', true)
       .order('last_name');
     setDirecteurs(data || []);

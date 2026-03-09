@@ -5,7 +5,7 @@
 import { useState, useMemo } from 'react'
 import { Navigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Trophy, ChevronLeft, ChevronRight, Award, Star, TrendingUp, AlertCircle, Crown, Check, RefreshCw } from 'lucide-react'
+import { Trophy, ChevronLeft, ChevronRight, Crown, Check, RefreshCw } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
 import { usePermission } from '../../hooks/usePermission'
 import { useAppSettings } from '../../hooks/useSettings'
@@ -19,7 +19,7 @@ import {
   MONTH_NAMES_FR,
   formatAwardMonth,
 } from '../../hooks/useAwards'
-import { useLeaderboard, useTeamScoreHistory, buildLeaderboard, getPeriodDates } from '../../hooks/usePerformanceScores'
+import { useTeamScoreHistory, buildLeaderboard } from '../../hooks/usePerformanceScores'
 import { isPulseEnabled, PULSE_COLORS } from '../../lib/pulseHelpers'
 import { AwardCard } from '../../components/pulse/AwardBadge'
 

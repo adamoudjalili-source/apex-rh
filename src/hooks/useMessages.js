@@ -3,8 +3,8 @@
 // Session S65 — Communication Interne
 // CRUD messages + Realtime subscription par canal
 // ============================================================
-import { useEffect, useRef, useCallback } from 'react'
-import { useQuery, useMutation, useQueryClient, useInfiniteQuery } from '@tanstack/react-query'
+import { useEffect } from 'react'
+import { useMutation, useQueryClient, useInfiniteQuery } from '@tanstack/react-query'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
 

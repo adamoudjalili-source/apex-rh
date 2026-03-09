@@ -4,9 +4,10 @@
 // Création, suivi d'avancement, clôture
 // ============================================================
 import { useState } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
-import { Calendar, Plus, Lock, Unlock, TrendingUp, Users, CheckCircle, RefreshCw } from 'lucide-react'
+import { motion } from 'framer-motion'
+import { Calendar, Plus, Lock, RefreshCw } from 'lucide-react'
 import { usePermission } from '../../hooks/usePermission'
+import { TASK_STATUS } from '../../utils/constants'
 import {
   useCompensationCycles, useCreateCycle, useUpdateCycle, useDeleteCycle,
   useCyclesProgress, useRevisionBudgetSimulation, useRefreshCompensationMVs,
@@ -138,13 +139,13 @@ function CycleCard({ cycle, progress, onEdit, onClose, canAdmin }) {
       {canAdmin && cycle.status !== 'cloture' && (
         <div className="mt-3 flex gap-2">
           {cycle.status === 'ouvert' && (
-            <button onClick={() => onEdit({ ...cycle, status: 'en_cours' })}
+            <button onClick={() => onEdit({ ...cycle, status: TASK_STATUS.EN_COURS })}
               className="flex-1 py-1.5 rounded-lg text-xs font-semibold transition-all"
               style={{ background: 'rgba(245,158,11,0.15)', color: '#FCD34D', border: '1px solid rgba(245,158,11,0.2)' }}>
               Démarrer le cycle
             </button>
           )}
-          {cycle.status === 'en_cours' && (
+          {cycle.status === TASK_STATUS.EN_COURS && (
             <button onClick={() => onClose(cycle)}
               className="flex-1 py-1.5 rounded-lg text-xs font-semibold transition-all"
               style={{ background: 'rgba(107,114,128,0.15)', color: '#9CA3AF', border: '1px solid rgba(107,114,128,0.2)' }}>

@@ -7,6 +7,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '../lib/supabase'
 import { useAuth }  from '../contexts/AuthContext'
 import * as XLSX    from 'xlsx'
+import { CRITICALITY, LEAVE_STATUS, ROLES } from '../utils/constants'
 
 // ─── CONSTANTES ───────────────────────────────────────────────
 
@@ -217,7 +218,7 @@ export function useSubmitTimeSheet() {
     mutationFn: async (id) => {
       const { data, error } = await supabase
         .from('time_sheets')
-        .update({ status: 'submitted', submitted_at: new Date().toISOString() })
+        .update({ status: LEAVE_STATUS.SUBMITTED, submitted_at: new Date().toISOString() })
         .eq('id', id)
         .select()
         .single()
@@ -231,14 +232,14 @@ export function useSubmitTimeSheet() {
 export function useApproveTimeSheet() {
   const { profile } = useAuth()
   const qc = useQueryClient()
-  const isAdmin = ['administrateur','directeur','direction'].includes(profile?.role)
-  const isManager = ['chef_division','chef_service'].includes(profile?.role)
+  const isAdmin = [ROLES.ADMINISTRATEUR,ROLES.DIRECTEUR,'direction'].includes(profile?.role)
+  const isManager = [ROLES.CHEF_DIVISION,ROLES.CHEF_SERVICE].includes(profile?.role)
 
   return useMutation({
     mutationFn: async ({ id, asManager }) => {
       const update = asManager || isManager
-        ? { status: 'manager_approved', manager_approved_by: profile.id, manager_approved_at: new Date().toISOString() }
-        : { status: 'hr_approved', hr_approved_by: profile.id, hr_approved_at: new Date().toISOString() }
+        ? { status: LEAVE_STATUS.MANAGER_APPROVED, manager_approved_by: profile.id, manager_approved_at: new Date().toISOString() }
+        : { status: LEAVE_STATUS.HR_APPROVED, hr_approved_by: profile.id, hr_approved_at: new Date().toISOString() }
 
       const { data, error } = await supabase
         .from('time_sheets')
@@ -519,8 +520,8 @@ export function useTimeStats({ userId, period = 'month' } = {}) {
 
       const totalHours    = sheets.reduce((s, r) => s + Number(r.total_hours), 0)
       const overtimeHours = sheets.reduce((s, r) => s + Number(r.overtime_hours), 0)
-      const approved      = sheets.filter(r => r.status === 'hr_approved').length
-      const pending       = sheets.filter(r => ['submitted','manager_approved'].includes(r.status)).length
+      const approved      = sheets.filter(r => r.status === LEAVE_STATUS.HR_APPROVED).length
+      const pending       = sheets.filter(r => [LEAVE_STATUS.SUBMITTED,LEAVE_STATUS.MANAGER_APPROVED].includes(r.status)).length
 
       return { sheets, totalHours, overtimeHours, approved, pending, period }
     },
@@ -930,7 +931,7 @@ export function useOvertimeAlerts() {
           alerts.push({
             id:       `late_${sheet.id}`,
             type:     'late_submission',
-            severity: daysSinceEnd > 7 ? 'critical' : 'warning',
+            severity: daysSinceEnd > 7 ? CRITICALITY.CRITICAL : 'warning',
             userId:   sheet.user_id,
             userName: name,
             weekStart: sheet.week_start,
@@ -940,11 +941,11 @@ export function useOvertimeAlerts() {
         }
 
         // Alerte : HS en attente de validation
-        if (sheet.overtime_hours > 0 && !sheet.overtime_approved && sheet.status === 'submitted') {
+        if (sheet.overtime_hours > 0 && !sheet.overtime_approved && sheet.status === LEAVE_STATUS.SUBMITTED) {
           alerts.push({
             id:       `ot_pending_${sheet.id}`,
             type:     'overtime_pending',
-            severity: sheet.overtime_hours > 8 ? 'critical' : 'warning',
+            severity: sheet.overtime_hours > 8 ? CRITICALITY.CRITICAL : 'warning',
             userId:   sheet.user_id,
             userName: name,
             weekStart: sheet.week_start,
@@ -1121,7 +1122,7 @@ export function usePendingOvertimeSheets() {
           users!time_sheets_user_id_fkey(id, first_name, last_name, role, service_id)
         `)
         .eq('organization_id', orgId)
-        .eq('status', 'submitted')
+        .eq('status', LEAVE_STATUS.SUBMITTED)
         .gt('overtime_hours', 0)
         .eq('overtime_approved', false)
         .order('week_start', { ascending: false })

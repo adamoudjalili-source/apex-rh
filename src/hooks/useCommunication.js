@@ -3,10 +3,11 @@
 // Session S65 — Communication Interne
 // Gestion des canaux + compteur non-lus global (badge Sidebar)
 // ============================================================
-import { useEffect, useCallback } from 'react'
+import { useEffect } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
+import { ROLES } from '../utils/constants'
 
 // ─── CANAUX ──────────────────────────────────────────────────
 
@@ -352,7 +353,7 @@ export function useMarkAnnouncementRead() {
 
 export function useReadReceipts(announcementId) {
   const { profile } = useAuth()
-  const isAdmin = ['administrateur', 'directeur'].includes(profile?.role)
+  const isAdmin = [ROLES.ADMINISTRATEUR, ROLES.DIRECTEUR].includes(profile?.role)
 
   return useQuery({
     queryKey: ['announcement-receipts', announcementId],

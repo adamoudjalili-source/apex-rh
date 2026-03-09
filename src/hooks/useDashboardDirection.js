@@ -7,6 +7,7 @@
 import { useQuery } from '@tanstack/react-query'
 import { supabase }  from '../lib/supabase'
 import { getLastNMonthKeys } from './useAnalytics'
+import { ROLES } from '../utils/constants'
 
 // ─── HOOK 1 : Scorecard stratégique (KPIs RAG) ───────────────
 
@@ -78,7 +79,7 @@ export function useDirectionROI() {
         .select('id, role, is_active, division_id')
         .eq('is_active', true)
 
-      const totalAgents = (usersData || []).filter(u => u.role === 'collaborateur').length
+      const totalAgents = (usersData || []).filter(u => u.role === ROLES.COLLABORATEUR).length
 
       // Agents avec score PULSE ce mois
       const { data: pulseActive } = await supabase

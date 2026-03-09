@@ -18,14 +18,14 @@ function applyScope(query, profile, table = '') {
   const prefix = table ? `${table}.` : ''
   const role = profile?.role
 
-  if (role === 'administrateur') return query // Tout voir
-  if (role === 'directeur' && profile.direction_id) {
+  if (role === ROLES.ADMINISTRATEUR) return query // Tout voir
+  if (role === ROLES.DIRECTEUR && profile.direction_id) {
     return query.eq(`${prefix}direction_id`, profile.direction_id)
   }
-  if (role === 'chef_division' && profile.division_id) {
+  if (role === ROLES.CHEF_DIVISION && profile.division_id) {
     return query.eq(`${prefix}division_id`, profile.division_id)
   }
-  if (role === 'chef_service' && profile.service_id) {
+  if (role === ROLES.CHEF_SERVICE && profile.service_id) {
     return query.eq(`${prefix}service_id`, profile.service_id)
   }
   // collaborateur → seulement ses données (géré par RLS)
@@ -52,7 +52,7 @@ export function useTaskStats() {
       let tasks = data || []
 
       // ── Filtrage côté client aligné sur useTasks.js ──
-      if (profile && profile.role !== 'administrateur') {
+      if (profile && profile.role !== ROLES.ADMINISTRATEUR) {
         const userId = profile.id
 
         let myProjectTaskIds = new Set()
@@ -85,9 +85,9 @@ export function useTaskStats() {
           if (myProjectTaskIds.has(task.id)) return true
 
           if (task.status === 'en_revue') {
-            if (profile.role === 'chef_service' && task.service_id === profile.service_id) return true
-            if (profile.role === 'chef_division' && task.division_id === profile.division_id) return true
-            if (profile.role === 'directeur' && task.direction_id === profile.direction_id) return true
+            if (profile.role === ROLES.CHEF_SERVICE && task.service_id === profile.service_id) return true
+            if (profile.role === ROLES.CHEF_DIVISION && task.division_id === profile.division_id) return true
+            if (profile.role === ROLES.DIRECTEUR && task.direction_id === profile.direction_id) return true
           }
 
           return false
@@ -119,7 +119,7 @@ export function useTaskStats() {
 
       const total = tasks.length
       const completed = byStatus['terminee'] || 0
-      const inProgress = byStatus['en_cours'] || 0
+      const inProgress = byStatus[TASK_STATUS.EN_COURS] || 0
       const active = total - completed - (byStatus['bloquee'] || 0)
 
       return {
@@ -224,7 +224,7 @@ export function useProjectStats() {
       let projects = data || []
 
       // ── Ajouter les projets par membership (aligné sur RLS) ──
-      if (profile && profile.role !== 'administrateur') {
+      if (profile && profile.role !== ROLES.ADMINISTRATEUR) {
         try {
           const { data: memberProjects } = await supabase
             .from('project_members')
@@ -265,13 +265,13 @@ export function useProjectStats() {
         totalProgress += p.progress || 0
       })
 
-      const activeCount = (byStatus['en_cours'] || 0) + (byStatus['planifie'] || 0)
+      const activeCount = (byStatus[TASK_STATUS.EN_COURS] || 0) + (byStatus['planifie'] || 0)
       const avgProgress = projects.length > 0 ? Math.round(totalProgress / projects.length) : 0
 
       return {
         total: projects.length,
         active: activeCount,
-        completed: byStatus['termine'] || 0,
+        completed: byStatus[TASK_STATUS.TERMINE] || 0,
         byStatus,
         avgProgress,
         totalBudget,
@@ -306,7 +306,7 @@ export function useRecentActivity() {
       let recentTasks = rawTasks || []
 
       // Filtrage côté client (même logique que useTaskStats)
-      if (profile && profile.role !== 'administrateur') {
+      if (profile && profile.role !== ROLES.ADMINISTRATEUR) {
         const userId = profile.id
 
         let myProjectTaskIds = new Set()
@@ -336,9 +336,9 @@ export function useRecentActivity() {
           if (isCreator || isAssignee) return true
           if (myProjectTaskIds.has(task.id)) return true
           if (task.status === 'en_revue') {
-            if (profile.role === 'chef_service' && task.service_id === profile.service_id) return true
-            if (profile.role === 'chef_division' && task.division_id === profile.division_id) return true
-            if (profile.role === 'directeur' && task.direction_id === profile.direction_id) return true
+            if (profile.role === ROLES.CHEF_SERVICE && task.service_id === profile.service_id) return true
+            if (profile.role === ROLES.CHEF_DIVISION && task.division_id === profile.division_id) return true
+            if (profile.role === ROLES.DIRECTEUR && task.direction_id === profile.direction_id) return true
           }
           return false
         })
@@ -371,7 +371,7 @@ export function useRecentActivity() {
       let recentProjects = rawProjects || []
 
       // Ajouter les projets par membership (même logique que useProjectStats)
-      if (profile && profile.role !== 'administrateur') {
+      if (profile && profile.role !== ROLES.ADMINISTRATEUR) {
         try {
           const { data: memberProjects } = await supabase
             .from('project_members')
@@ -428,7 +428,7 @@ export function useTeamStats() {
     queryKey: ['dashboard', 'team-stats', profile?.id, profile?.role],
     queryFn: async () => {
       const role = profile?.role
-      if (role === 'collaborateur') return { total: 0, active: 0, byRole: {} }
+      if (role === ROLES.COLLABORATEUR) return { total: 0, active: 0, byRole: {} }
 
       // Session 19 : on récupère TOUS les utilisateurs (actifs + inactifs)
       // pour que total et active soient des métriques distinctes
@@ -436,11 +436,11 @@ export function useTeamStats() {
         .from('users')
         .select('id, role, is_active')
 
-      if (role === 'directeur' && profile.direction_id) {
+      if (role === ROLES.DIRECTEUR && profile.direction_id) {
         query = query.eq('direction_id', profile.direction_id)
-      } else if (role === 'chef_division' && profile.division_id) {
+      } else if (role === ROLES.CHEF_DIVISION && profile.division_id) {
         query = query.eq('division_id', profile.division_id)
-      } else if (role === 'chef_service' && profile.service_id) {
+      } else if (role === ROLES.CHEF_SERVICE && profile.service_id) {
         query = query.eq('service_id', profile.service_id)
       }
       // admin voit tout
@@ -460,7 +460,7 @@ export function useTeamStats() {
         byRole,
       }
     },
-    enabled: !!profile?.id && profile?.role !== 'collaborateur',
+    enabled: !!profile?.id && profile?.role !== ROLES.COLLABORATEUR,
     staleTime: 120000,
   })
 }
@@ -470,6 +470,7 @@ export function useTeamStats() {
 // Ce hook est fourni pour usage éventuel dans d'autres composants.
 // ✅ Session 24 — usePulseSnapshot()
 import { useTodayMorningPlan, useTodayLog, useTodayScore } from './usePulse'
+import { ROLES, TASK_STATUS } from '../utils/constants'
 
 /**
  * Expose un snapshot rapide PULSE pour le Dashboard.

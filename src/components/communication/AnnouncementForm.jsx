@@ -5,17 +5,17 @@
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { X, Pin, Send, Loader2, Image, CalendarClock, AlertCircle, Users, UserCheck, Globe } from 'lucide-react'
-import { useUpdateAnnonce } from '../../hooks/useAnnonces'
 import { useCreateTargetedAnnouncement, useUpdateTargetedAnnouncement } from '../../hooks/useCommunication'
 import { useUsersList } from '../../hooks/useSettings'
 import { useAuth } from '../../contexts/AuthContext'
+import { ROLES } from '../../utils/constants'
 
 const ROLES = [
-  { value: 'collaborateur',  label: 'Collaborateurs' },
-  { value: 'chef_service',   label: 'Chefs de service' },
-  { value: 'chef_division',  label: 'Chefs de division' },
-  { value: 'directeur',      label: 'Directeurs' },
-  { value: 'administrateur', label: 'Administrateurs' },
+  { value: ROLES.COLLABORATEUR,  label: 'Collaborateurs' },
+  { value: ROLES.CHEF_SERVICE,   label: 'Chefs de service' },
+  { value: ROLES.CHEF_DIVISION,  label: 'Chefs de division' },
+  { value: ROLES.DIRECTEUR,      label: 'Directeurs' },
+  { value: ROLES.ADMINISTRATEUR, label: 'Administrateurs' },
 ]
 
 const TARGETING_TYPES = [

@@ -6,7 +6,7 @@
 import { useState, useMemo } from 'react'
 import { usePermission } from '../../hooks/usePermission'
 import { motion, AnimatePresence } from 'framer-motion'
-import { User, TrendingDown, TrendingUp, Minus, ChevronDown, Plus, X } from 'lucide-react'
+import { User, TrendingDown, TrendingUp, Minus, Plus } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
 import {
   useUserAssessments,

@@ -5,6 +5,7 @@
 // ============================================================
 import { useState, useMemo } from 'react'
 import { useGanttData } from '../../hooks/useTasks'
+import { TASK_STATUS } from '../../utils/constants'
 
 const STATUS_COLOR = {
   a_faire:  '#6B7280',
@@ -121,7 +122,7 @@ export default function GanttMini() {
           </button>
         </div>
         <div className="flex items-center gap-1.5">
-          {['all', 'en_cours', 'a_faire', 'en_revue', 'bloquee'].map(s => (
+          {['all', TASK_STATUS.EN_COURS, TASK_STATUS.A_FAIRE, 'en_revue', 'bloquee'].map(s => (
             <button
               key={s}
               onClick={() => setFilter(s)}

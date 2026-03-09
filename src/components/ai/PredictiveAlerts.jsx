@@ -7,6 +7,7 @@ import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { AlertTriangle, TrendingDown, Flame, Star, ChevronDown, RefreshCw } from 'lucide-react'
 import { usePredictiveAlerts } from '../../hooks/useGenerativeAI'
+import { CRITICALITY } from '../../utils/constants'
 
 const SEVERITY_CONFIG = {
   critical : { color: '#EF4444', bg: 'rgba(239,68,68,0.08)',  border: 'rgba(239,68,68,0.2)',  badge: 'CRITIQUE' },
@@ -58,7 +59,7 @@ export default function PredictiveAlerts({ serviceId }) {
   const [expanded, setExpanded] = useState(true)
   const { data: alerts = [], isLoading, refetch, isFetching } = usePredictiveAlerts(serviceId)
 
-  const critical    = alerts.filter(a => a.severity === 'critical')
+  const critical    = alerts.filter(a => a.severity === CRITICALITY.CRITICAL)
   const high        = alerts.filter(a => a.severity === 'high')
   const actionable  = alerts.filter(a => a.type !== 'high_performer')
   const positive    = alerts.filter(a => a.type === 'high_performer')

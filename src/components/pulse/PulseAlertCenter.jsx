@@ -7,6 +7,7 @@
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { usePermission } from '../../hooks/usePermission'
+import { CRITICALITY } from '../../utils/constants'
 import {
   useTeamPulseAlerts,
   usePulseAlerts,
@@ -427,7 +428,7 @@ export default function PulseAlertCenter() {
                             style={{ color: statusInfo.color, background: `${statusInfo.color}15` }}>
                             {statusInfo.label}
                           </span>
-                          {alert.severity === 'critical' && (
+                          {alert.severity === CRITICALITY.CRITICAL && (
                             <span className="text-xs px-2 py-0.5 rounded-full font-medium bg-red-500/20 text-red-400">
                               Critique
                             </span>

@@ -21,7 +21,7 @@ export const AWARD_TYPES = {
  * @param {number} month — 1–12
  */
 export function useMonthlyAwards(year, month) {
-  const { profile } = useAuth()
+  const { profile, organization_id } = useAuth()
 
   return useQuery({
     queryKey: ['pulse', 'awards', year, month],
@@ -37,6 +37,7 @@ export function useMonthlyAwards(year, month) {
             services(id, name)
           )
         `)
+        .eq('organization_id', organization_id)
         .eq('award_year',  year)
         .eq('award_month', month)
         .order('award_type', { ascending: true })
@@ -55,7 +56,7 @@ export function useMonthlyAwards(year, month) {
  * Retourne un tableau trié du plus récent au plus ancien.
  */
 export function useHallOfFame(limit = 12) {
-  const { profile } = useAuth()
+  const { profile, organization_id } = useAuth()
 
   return useQuery({
     queryKey: ['pulse', 'hall-of-fame', limit],
@@ -69,6 +70,7 @@ export function useHallOfFame(limit = 12) {
             services(id, name)
           )
         `)
+        .eq('organization_id', organization_id)
         .order('award_year',  { ascending: false })
         .order('award_month', { ascending: false })
         .limit(limit * 4) // 4 awards par mois max
@@ -183,6 +185,7 @@ export function computeAwardCandidates(leaderboard, teamScores = [], prevLeaderb
  */
 export function useGrantAward() {
   const queryClient = useQueryClient()
+  const { organization_id } = useAuth()
 
   return useMutation({
     mutationFn: async ({ userId, awardType, awardYear, awardMonth, notes, scoreSnapshot }) => {
@@ -195,6 +198,7 @@ export function useGrantAward() {
           award_month:    awardMonth,
           notes:          notes || null,
           score_snapshot: scoreSnapshot || null,
+          organization_id,
         }, { onConflict: 'award_type,award_year,award_month' })
         .select()
         .single()

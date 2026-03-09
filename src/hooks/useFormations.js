@@ -6,6 +6,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '../lib/supabase'
 import { useAuth }  from '../contexts/AuthContext'
+import { TASK_STATUS } from '../utils/constants'
 
 // ─── CONSTANTES PUBLIQUES ─────────────────────────────────────
 
@@ -274,10 +275,10 @@ export function useUpdateEnrollment() {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: async ({ id, ...payload }) => {
-      if (payload.status === 'en_cours' && !payload.started_at) {
+      if (payload.status === TASK_STATUS.EN_COURS && !payload.started_at) {
         payload.started_at = new Date().toISOString()
       }
-      if (payload.status === 'termine' && !payload.completed_at) {
+      if (payload.status === TASK_STATUS.TERMINE && !payload.completed_at) {
         payload.completed_at = new Date().toISOString()
         payload.progress_pct = 100
       }
@@ -428,12 +429,12 @@ export function useOrgTrainingStats() {
       const enrollments = enrollRes.data || []
       return {
         total_enrollments: enrollments.length,
-        completed: enrollments.filter(e => e.status === 'termine').length,
-        in_progress: enrollments.filter(e => e.status === 'en_cours').length,
+        completed: enrollments.filter(e => e.status === TASK_STATUS.TERMINE).length,
+        in_progress: enrollments.filter(e => e.status === TASK_STATUS.EN_COURS).length,
         total_certifications: certRes.count || 0,
         active_formations: catRes.count || 0,
         hours_total: enrollments
-          .filter(e => e.status === 'termine')
+          .filter(e => e.status === TASK_STATUS.TERMINE)
           .reduce((sum, e) => sum + (e.training_catalog?.duration_hours || 0), 0),
       }
     },
@@ -703,7 +704,7 @@ export function useBudgetConsumed(year = new Date().getFullYear()) {
           status, enrolled_at,
           training_catalog!training_id(budget_cost, organization_id)
         `)
-        .in('status', ['inscrit', 'en_cours', 'termine'])
+        .in('status', ['inscrit', TASK_STATUS.EN_COURS, TASK_STATUS.TERMINE])
       if (error) throw error
       const rows = (data || []).filter(e => {
         if (!e.enrolled_at) return false
@@ -822,7 +823,7 @@ export function useMyMandatoryStatus() {
         .select('training_id, status, completed_at')
         .eq('user_id', profile.id)
         .in('training_id', trainingIds)
-        .eq('status', 'termine')
+        .eq('status', TASK_STATUS.TERMINE)
 
       if (cErr) throw cErr
 
@@ -910,7 +911,7 @@ export function useMyPendingEvaluations() {
           training_catalog!training_id(id, title, type, duration_hours)
         `)
         .eq('user_id', profile.id)
-        .eq('status', 'termine')
+        .eq('status', TASK_STATUS.TERMINE)
         .order('completed_at', { ascending: false })
       if (error) throw error
 
@@ -951,7 +952,7 @@ export function useGlobalEvaluationStats() {
       const { data, error } = await supabase
         .from('training_enrollments')
         .select('training_id, satisfaction_score, effectiveness_score, completed_at')
-        .eq('status', 'termine')
+        .eq('status', TASK_STATUS.TERMINE)
       if (error) throw error
       const rows = data || []
       const withSat = rows.filter(r => r.satisfaction_score)

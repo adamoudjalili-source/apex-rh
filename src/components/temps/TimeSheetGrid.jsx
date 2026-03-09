@@ -3,7 +3,7 @@
 // Session 66 — Grille de saisie hebdomadaire
 // ============================================================
 import { useState } from 'react'
-import { Plus, Trash2, ChevronLeft, ChevronRight, Send, X, AlertCircle, CheckCircle } from 'lucide-react'
+import { Plus, ChevronLeft, ChevronRight, Send, X, AlertCircle, CheckCircle } from 'lucide-react'
 import {
   useMyCurrentTimeSheet, useCreateTimeSheet, useTimeEntries,
   useDeleteTimeEntry, useSubmitTimeSheet, useRejectTimeSheet,
@@ -11,6 +11,7 @@ import {
   TIMESHEET_STATUS_LABELS, TIMESHEET_STATUS_COLORS, ENTRY_TYPE_LABELS,
 } from '../../hooks/useTemps'
 import TimeEntryForm from './TimeEntryForm'
+import { LEAVE_STATUS } from '../../utils/constants'
 
 const DAY_LABELS = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim']
 
@@ -233,7 +234,7 @@ export default function TimeSheetGrid({ weekStart: externalWeekStart, userId: ex
         </div>
       )}
 
-      {sheetForWeek?.status === 'submitted' && (
+      {sheetForWeek?.status === LEAVE_STATUS.SUBMITTED && (
         <div className="flex items-center gap-2 p-3 rounded-xl text-sm"
           style={{ background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.2)' }}>
           <CheckCircle size={14} className="text-amber-400"/>
@@ -241,7 +242,7 @@ export default function TimeSheetGrid({ weekStart: externalWeekStart, userId: ex
         </div>
       )}
 
-      {sheetForWeek?.status === 'manager_approved' && (
+      {sheetForWeek?.status === LEAVE_STATUS.MANAGER_APPROVED && (
         <div className="flex items-center gap-2 p-3 rounded-xl text-sm"
           style={{ background: 'rgba(59,130,246,0.08)', border: '1px solid rgba(59,130,246,0.2)' }}>
           <CheckCircle size={14} className="text-blue-400"/>
@@ -249,7 +250,7 @@ export default function TimeSheetGrid({ weekStart: externalWeekStart, userId: ex
         </div>
       )}
 
-      {sheetForWeek?.status === 'hr_approved' && (
+      {sheetForWeek?.status === LEAVE_STATUS.HR_APPROVED && (
         <div className="flex items-center gap-2 p-3 rounded-xl text-sm"
           style={{ background: 'rgba(16,185,129,0.08)', border: '1px solid rgba(16,185,129,0.2)' }}>
           <CheckCircle size={14} className="text-emerald-400"/>

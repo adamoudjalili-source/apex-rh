@@ -6,6 +6,7 @@ import { useState, useEffect, useMemo } from 'react'
 import Modal from '../ui/Modal'
 import { useAuth } from '../../contexts/AuthContext'
 import { useCreateProject, useUpdateProject, useOrgStructure } from '../../hooks/useProjects'
+import { TASK_STATUS } from '../../utils/constants'
 
 const INITIAL = {
   name: '',
@@ -153,9 +154,9 @@ export default function ProjectForm({ isOpen, onClose, project = null }) {
               className="w-full px-3 py-2.5 rounded-xl bg-white/5 border border-white/10 text-sm text-white focus:outline-none focus:border-indigo-500/50 appearance-none cursor-pointer"
             >
               <option value="planifie" className="bg-[#1a1a35]">Planifié</option>
-              <option value="en_cours" className="bg-[#1a1a35]">En cours</option>
+              <option value=TASK_STATUS.EN_COURS className="bg-[#1a1a35]">En cours</option>
               <option value="en_pause" className="bg-[#1a1a35]">En pause</option>
-              <option value="termine" className="bg-[#1a1a35]">Terminé</option>
+              <option value=TASK_STATUS.TERMINE className="bg-[#1a1a35]">Terminé</option>
               <option value="annule" className="bg-[#1a1a35]">Annulé</option>
             </select>
           </div>

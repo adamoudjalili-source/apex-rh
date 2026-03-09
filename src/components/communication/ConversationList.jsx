@@ -9,6 +9,7 @@ import {
   MessageCircle, Search, X,
 } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
+import { ROLES } from '../../utils/constants'
 
 const TYPE_ICONS = {
   general:   Hash,
@@ -76,7 +77,7 @@ export default function ConversationList({
 
   const canaux = filtered.filter(c => !['direct'].includes(c.type))
   const directs = filtered.filter(c => c.type === 'direct')
-  const isAdmin = ['administrateur', 'directeur'].includes(profile?.role)
+  const isAdmin = [ROLES.ADMINISTRATEUR, ROLES.DIRECTEUR].includes(profile?.role)
 
   const totalUnread = Object.values(unreadCounts).reduce((a, b) => a + b, 0)
 

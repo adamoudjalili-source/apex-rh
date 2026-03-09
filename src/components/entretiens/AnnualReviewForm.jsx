@@ -12,6 +12,7 @@ import {
   BarChart2, Loader2, Edit3, Lock,
 } from 'lucide-react'
 import { useAuth }           from '../../contexts/AuthContext'
+import { REVIEW_STATUS } from '../../utils/constants'
 import {
   useSaveAutoEval, useSubmitAutoEval, useSaveManagerEval, useSubmitManagerEval,
   useScheduleMeeting, useSignReview, useManagerSignReview,
@@ -338,9 +339,9 @@ export default function AnnualReviewForm({ review, mode = 'self', onClose }) {
     }
   }, [review?.id])
 
-  const isDisabled = mode === 'view' || (mode === 'self' && ['self_submitted','meeting_scheduled','manager_in_progress','completed','signed','archived'].includes(review?.status))
+  const isDisabled = mode === 'view' || (mode === 'self' && [REVIEW_STATUS.SELF_SUBMITTED,REVIEW_STATUS.MEETING_SCHEDULED,REVIEW_STATUS.MANAGER_IN_PROGRESS,'completed','signed','archived'].includes(review?.status))
   const canSubmitSelf = mode === 'self' && !isDisabled
-  const canSubmitManager = mode === 'manager' && ['self_submitted','meeting_scheduled','manager_in_progress'].includes(review?.status)
+  const canSubmitManager = mode === 'manager' && [REVIEW_STATUS.SELF_SUBMITTED,REVIEW_STATUS.MEETING_SCHEDULED,REVIEW_STATUS.MANAGER_IN_PROGRESS].includes(review?.status)
   const canSign = mode === 'self' && review?.status === 'completed' && !review?.employee_signed_at
 
   const getSectionData = (sId) => {
@@ -624,7 +625,7 @@ export default function AnnualReviewForm({ review, mode = 'self', onClose }) {
         )}
 
         {/* Planning réunion */}
-        {mode === 'manager' && review?.status === 'self_submitted' && (
+        {mode === 'manager' && review?.status === REVIEW_STATUS.SELF_SUBMITTED && (
           <div className="mt-4">
             {!showMeetingForm ? (
               <button onClick={() => setShowMeetingForm(true)}

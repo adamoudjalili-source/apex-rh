@@ -5,6 +5,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
+import { ROLES } from '../utils/constants'
 
 // ─── LISTE DES ORGANISATIONS (super-admin seulement) ─────────
 export function useOrganizations() {
@@ -162,7 +163,7 @@ export function useAssignAdminToOrg() {
         .from('users')
         .update({
           organization_id: organizationId,
-          role: 'administrateur',
+          role: ROLES.ADMINISTRATEUR,
         })
         .eq('id', userId)
         .select()

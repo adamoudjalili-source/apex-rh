@@ -17,6 +17,7 @@ import UserForm from '../../components/users/UserForm'
 import ExportButton from '../../components/ui/ExportButton'
 import { exportUsers } from '../../lib/exportExcel'
 import { usePermission } from '../../hooks/usePermission'
+import { ROLES } from '../../utils/constants'
 
 const ROLE_LABELS = {
   administrateur: 'Administrateur',
@@ -113,12 +114,12 @@ export default function UsersPage() {
 
   const getOrgLabel = (user) => {
     switch (user.role) {
-      case 'directeur':
+      case ROLES.DIRECTEUR:
         return { label: user.directions?.name || '—', color: 'text-purple-400/70' }
-      case 'chef_division':
+      case ROLES.CHEF_DIVISION:
         return { label: user.divisions?.name || '—', color: 'text-blue-400/70' }
-      case 'chef_service':
-      case 'collaborateur':
+      case ROLES.CHEF_SERVICE:
+      case ROLES.COLLABORATEUR:
         return { label: user.services?.name || '—', color: 'text-cyan-400/70' }
       default:
         return { label: '—', color: 'text-white/30' }
@@ -262,9 +263,9 @@ export default function UsersPage() {
                       </td>
 
                       <td className="px-5 py-4 hidden md:table-cell">
-                        {user.role === 'directeur' ? (
+                        {user.role === ROLES.DIRECTEUR ? (
                           <span className="text-sm text-purple-400/80">{user.directions?.name || '—'}</span>
-                        ) : user.role === 'chef_division' ? (
+                        ) : user.role === ROLES.CHEF_DIVISION ? (
                           <span className="text-sm text-blue-400/80">{user.divisions?.name || '—'}</span>
                         ) : (
                           <span className="text-sm text-white/30">—</span>
@@ -272,7 +273,7 @@ export default function UsersPage() {
                       </td>
 
                       <td className="px-5 py-4 hidden lg:table-cell">
-                        {['chef_service', 'collaborateur'].includes(user.role) ? (
+                        {[ROLES.CHEF_SERVICE, ROLES.COLLABORATEUR].includes(user.role) ? (
                           <div>
                             {user.divisions?.name && (
                               <p className="text-xs text-white/40 mb-0.5">{user.divisions.name}</p>

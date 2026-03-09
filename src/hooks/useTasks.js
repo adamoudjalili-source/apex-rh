@@ -7,6 +7,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
 import { logAudit } from '../lib/auditLog'
+import { ROLES, TASK_STATUS } from '../utils/constants'
 
 const TASK_SELECT = `
   *,
@@ -69,7 +70,7 @@ export function useTasks(filters = {}) {
       }
 
       // Filtrage par rôle : chaque utilisateur voit ses tâches + celles à valider + celles de ses projets
-      if (profile && profile.role !== 'administrateur') {
+      if (profile && profile.role !== ROLES.ADMINISTRATEUR) {
         const userId = profile.id
 
         // Récupérer les IDs de tâches liées aux projets où l'utilisateur est membre
@@ -109,9 +110,9 @@ export function useTasks(filters = {}) {
 
           // Tâches du périmètre en attente de validation → visibles pour les chefs
           if (task.status === 'en_revue') {
-            if (profile.role === 'chef_service' && task.service_id === profile.service_id) return true
-            if (profile.role === 'chef_division' && task.division_id === profile.division_id) return true
-            if (profile.role === 'directeur' && task.direction_id === profile.direction_id) return true
+            if (profile.role === ROLES.CHEF_SERVICE && task.service_id === profile.service_id) return true
+            if (profile.role === ROLES.CHEF_DIVISION && task.division_id === profile.division_id) return true
+            if (profile.role === ROLES.DIRECTEUR && task.direction_id === profile.direction_id) return true
           }
 
           // Les autres tâches (terminées, etc.) des collaborateurs → pas visibles
@@ -360,7 +361,7 @@ export function useUpdateTaskStatus() {
   return useMutation({
     mutationFn: async ({ taskId, newStatus, oldStatus, rejectionReason }) => {
       // Si c'est une approbation/refus, utiliser la RPC dédiée
-      if (oldStatus === 'en_revue' && (newStatus === 'terminee' || newStatus === 'en_cours')) {
+      if (oldStatus === 'en_revue' && (newStatus === 'terminee' || newStatus === TASK_STATUS.EN_COURS)) {
         const { error } = await supabase.rpc('approve_or_reject_task', {
           target_task_id: taskId,
           new_status: newStatus,

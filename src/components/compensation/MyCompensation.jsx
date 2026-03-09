@@ -2,7 +2,6 @@
 // APEX RH — components/compensation/MyCompensation.jsx
 // Session 58 — Ma rémunération (vue collaborateur)
 // ============================================================
-import { useState } from 'react'
 import { motion } from 'framer-motion'
 import {
   Wallet, TrendingUp, Award, BarChart3, Loader2,

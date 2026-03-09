@@ -8,6 +8,7 @@ import { MANAGER_ROLES } from '../lib/roles'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
+import { ROLES, STATUS } from '../utils/constants'
 
 // ─── CONSTANTES ──────────────────────────────────────────────
 
@@ -307,7 +308,7 @@ export function useCreateCampaign() {
           })
 
           // Feedback manager → collaborateur
-          if (profile.role !== 'collaborateur') {
+          if (profile.role !== ROLES.COLLABORATEUR) {
             requests.push({
               campaign_id: campaign.id,
               evaluator_id: profile.id,
@@ -373,7 +374,7 @@ export function useSubmitFeedback() {
       // 2. Marquer la demande comme soumise
       const { error: reqErr } = await supabase
         .from('feedback_requests')
-        .update({ status: 'submitted', submitted_at: new Date().toISOString() })
+        .update({ status: STATUS.SUBMITTED, submitted_at: new Date().toISOString() })
         .eq('id', requestId)
 
       if (reqErr) throw reqErr
@@ -398,7 +399,7 @@ export function useValidateFeedback() {
         .from('feedback_requests')
         .update({ status: 'validated' })
         .eq('id', requestId)
-        .eq('status', 'submitted')
+        .eq('status', STATUS.SUBMITTED)
 
       if (error) throw error
     },
@@ -610,7 +611,7 @@ export function useSubmitFeedback360Advanced() {
     mutationFn: async ({ requestId, answers }) => {
       const { error } = await supabase
         .from('feedback360_requests')
-        .update({ answers, status: 'submitted', submitted_at: new Date().toISOString() })
+        .update({ answers, status: STATUS.SUBMITTED, submitted_at: new Date().toISOString() })
         .eq('id', requestId)
       if (error) throw error
     },
@@ -671,7 +672,7 @@ export function useFeedback360CycleStats(cycleId) {
         .eq('cycle_id', cycleId)
       if (error) throw error
       const total     = data.length
-      const submitted = data.filter(r => r.status === 'submitted').length
+      const submitted = data.filter(r => r.status === STATUS.SUBMITTED).length
       const pending   = data.filter(r => r.status === 'pending').length
       const declined  = data.filter(r => r.status === 'declined').length
       return {
@@ -731,7 +732,7 @@ export function useFeedback360Verbatims(evaluateeId, cycleId) {
         .select('answers, relationship, submitted_at')
         .eq('evaluatee_id', evaluateeId)
         .eq('cycle_id', cycleId)
-        .eq('status', 'submitted')
+        .eq('status', STATUS.SUBMITTED)
         .eq('is_anonymous', true)
       if (error) throw error
       return (data ?? [])

@@ -8,6 +8,7 @@ import {
   Diamond, Circle, RefreshCw, Filter,
 } from 'lucide-react'
 import { useProjectsGantt } from '../../hooks/useProjects'
+import { TASK_STATUS } from '../../utils/constants'
 
 // ─── Helpers ───────────────────────────────────────────────
 function addMonths(date, n) {
@@ -66,8 +67,8 @@ function TaskBar({ x, y, w, task, color, dayW }) {
         fill={color}
         opacity={task.status === 'annule' ? 0.35 : 0.85}
       />
-      {/* Stripe pour "termine" */}
-      {task.status === 'termine' && (
+      {/* Stripe pour TASK_STATUS.TERMINE */}
+      {task.status === TASK_STATUS.TERMINE && (
         <rect
           x={x} y={y + 4} width={w} height={ROW_H - 10}
           rx={radius} ry={radius}
@@ -200,10 +201,10 @@ export default function ProjectGanttAdvanced() {
             className="px-2 py-1.5 rounded-lg bg-white/5 border border-white/10 text-xs text-white focus:outline-none"
           >
             <option value="">Tous les statuts</option>
-            <option value="en_cours">En cours</option>
+            <option value=TASK_STATUS.EN_COURS>En cours</option>
             <option value="planifie">Planifié</option>
             <option value="en_attente">En attente</option>
-            <option value="termine">Terminé</option>
+            <option value=TASK_STATUS.TERMINE>Terminé</option>
           </select>
 
           <button

@@ -4,7 +4,7 @@
 // ============================================================
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { GitBranch, ArrowLeft, Loader2, MessageSquare, Filter } from 'lucide-react'
+import { GitBranch, ArrowLeft, Loader2, MessageSquare } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { useFils, ENTITY_TYPE_LABELS, ENTITY_TYPE_COLORS } from '../../hooks/useFils'
 import ThreadPanel from '../../components/communication/ThreadPanel'

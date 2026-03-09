@@ -3,14 +3,14 @@
 // Session 11 — Gantt interactif (drag to move/resize)
 // ============================================================
 import { useState, useRef, useMemo, useCallback, useEffect } from 'react'
-import { motion } from 'framer-motion'
 import { ZoomIn, ZoomOut, Calendar, Diamond, Link2, Unlink } from 'lucide-react'
 import {
   useProjectTasks, useUnlinkedTasks,
   useLinkTaskToProject, useUnlinkTaskFromProject,
   useUpdateTaskDates, useUpdateMilestone,
 } from '../../hooks/useProjects'
-import { getMilestoneStatusInfo, formatDateShort, getUserFullName } from '../../lib/projectHelpers'
+import { getMilestoneStatusInfo, formatDateShort } from '../../lib/projectHelpers'
+import { TASK_STATUS } from '../../utils/constants'
 
 const TASK_STATUS_COLORS = {
   a_faire: '#6B7280',
@@ -395,7 +395,7 @@ export default function GanttChart({ project, milestones = [], canEdit }) {
                     <div
                       className="absolute inset-y-0 left-0 rounded-lg opacity-30"
                       style={{
-                        width: t.status === 'termine' ? '100%' : '0%',
+                        width: t.status === TASK_STATUS.TERMINE ? '100%' : '0%',
                         background: color,
                       }}
                     />

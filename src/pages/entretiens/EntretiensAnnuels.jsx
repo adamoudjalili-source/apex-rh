@@ -35,6 +35,7 @@ import AnnualReviewEnrichedDashboard from '../../components/entretiens/AnnualRev
 import ReviewSelfAssessmentForm from '../../components/entretiens/ReviewSelfAssessmentForm'
 import ReviewManagerDashboard   from '../../components/entretiens/ReviewManagerDashboard'
 import MidYearCampaignPanel     from '../../components/entretiens/MidYearCampaignPanel'
+import { REVIEW_STATUS, STATUS, TASK_STATUS } from '../../utils/constants'
 
 const CalibrationPage = lazy(() => import('../intelligence/CalibrationPage'))
 
@@ -140,8 +141,8 @@ function Feedback360Tab() {
   }
 
   // Liste principale
-  const pending   = toComplete.filter(r => r.status !== 'submitted')
-  const submitted = toComplete.filter(r => r.status === 'submitted')
+  const pending   = toComplete.filter(r => r.status !== STATUS.SUBMITTED)
+  const submitted = toComplete.filter(r => r.status === STATUS.SUBMITTED)
 
   return (
     <div className="flex flex-col gap-4">
@@ -288,7 +289,7 @@ function MyReviewTab() {
   }
 
   if (formOpen) {
-    const canEdit = ['pending', 'self_in_progress'].includes(review.status)
+    const canEdit = ['pending', REVIEW_STATUS.SELF_IN_PROGRESS].includes(review.status)
     const canSign = review.status === 'completed' && !review.employee_signed_at
     return (
       <div className="flex flex-col h-full min-h-0">
@@ -304,9 +305,9 @@ function MyReviewTab() {
 
   const progress = getReviewProgress(review)
   const deadline = activeCampaign.self_eval_deadline
-  const urgency = isDeadlineOverdue(deadline) && !review.self_submitted_at ? 'overdue' : isDeadlineSoon(deadline) ? 'soon' : null
-  const canOpen = ['pending', 'self_in_progress'].includes(review.status)
-  const canView = ['self_submitted', 'meeting_scheduled', 'completed', 'signed', 'archived'].includes(review.status)
+  const urgency = isDeadlineOverdue(deadline) && !review.self_submitted_at ? TASK_STATUS.OVERDUE : isDeadlineSoon(deadline) ? 'soon' : null
+  const canOpen = ['pending', REVIEW_STATUS.SELF_IN_PROGRESS].includes(review.status)
+  const canView = [REVIEW_STATUS.SELF_SUBMITTED, REVIEW_STATUS.MEETING_SCHEDULED, 'completed', 'signed', 'archived'].includes(review.status)
   const canSign = review.status === 'completed' && !review.employee_signed_at
 
   return (
@@ -314,10 +315,10 @@ function MyReviewTab() {
       {/* Alerte deadline */}
       {urgency && (
         <div className="flex items-center gap-2 rounded-xl px-4 py-3"
-          style={{ background: urgency === 'overdue' ? 'rgba(239,68,68,0.08)' : 'rgba(245,158,11,0.08)', border: `1px solid ${urgency === 'overdue' ? 'rgba(239,68,68,0.25)' : 'rgba(245,158,11,0.25)'}` }}>
-          <AlertCircle size={16} style={{ color: urgency === 'overdue' ? '#EF4444' : '#F59E0B' }}/>
-          <p className="text-sm" style={{ color: urgency === 'overdue' ? '#EF4444' : '#F59E0B' }}>
-            {urgency === 'overdue'
+          style={{ background: urgency === TASK_STATUS.OVERDUE ? 'rgba(239,68,68,0.08)' : 'rgba(245,158,11,0.08)', border: `1px solid ${urgency === TASK_STATUS.OVERDUE ? 'rgba(239,68,68,0.25)' : 'rgba(245,158,11,0.25)'}` }}>
+          <AlertCircle size={16} style={{ color: urgency === TASK_STATUS.OVERDUE ? '#EF4444' : '#F59E0B' }}/>
+          <p className="text-sm" style={{ color: urgency === TASK_STATUS.OVERDUE ? '#EF4444' : '#F59E0B' }}>
+            {urgency === TASK_STATUS.OVERDUE
               ? 'La date limite d\'auto-évaluation est dépassée.'
               : `Il vous reste peu de temps pour compléter votre auto-évaluation (${new Date(deadline).toLocaleDateString('fr-FR')}).`}
           </p>
@@ -360,7 +361,7 @@ function MyReviewTab() {
           {[
             { label: 'En attente', done: true },
             { label: 'Auto-évaluation', done: !!review.self_submitted_at },
-            { label: 'Entretien', done: review.status === 'meeting_scheduled' || !!review.completed_at },
+            { label: 'Entretien', done: review.status === REVIEW_STATUS.MEETING_SCHEDULED || !!review.completed_at },
             { label: 'Éval manager', done: !!review.completed_at },
             { label: 'Signature', done: !!review.employee_signed_at },
           ].map((step, i, arr) => (
@@ -479,7 +480,7 @@ function AutoEvalTab() {
       </div>
     )
   }
-  const canEdit = ['pending','self_in_progress','self_submitted'].includes(review.status)
+  const canEdit = ['pending',REVIEW_STATUS.SELF_IN_PROGRESS,REVIEW_STATUS.SELF_SUBMITTED].includes(review.status)
   return (
     <ReviewSelfAssessmentForm
       review={review}
@@ -495,7 +496,7 @@ function QuickStatsEntretiens() {
   const { data: pending = [] } = useManagerPendingReviews(activeCampaign?.id)
   const stats = [
     { label: 'Campagne active',  value: activeCampaign ? 1 : 0, color: '#4F46E5' },
-    { label: 'En attente',       value: pending.filter(r => ['pending','self_in_progress'].includes(r.status)).length, color: '#F59E0B' },
+    { label: 'En attente',       value: pending.filter(r => ['pending',REVIEW_STATUS.SELF_IN_PROGRESS].includes(r.status)).length, color: '#F59E0B' },
     { label: 'Complétés',        value: pending.filter(r => r.status === 'completed').length, color: '#10B981' },
     { label: 'Signés',           value: pending.filter(r => r.employee_signed_at && r.manager_signed_at).length, color: '#8B5CF6' },
   ]
@@ -528,7 +529,7 @@ export default function EntretiensAnnuels() {
   // S81 — badge 360° à compléter
   const { data: activeCycle360 } = useActiveFeedback360Cycle()
   const { data: toComplete360 = [] } = useMyFeedback360ToComplete(activeCycle360?.id)
-  const feedback360Pending = toComplete360.filter(r => r.status !== 'submitted').length
+  const feedback360Pending = toComplete360.filter(r => r.status !== STATUS.SUBMITTED).length
 
   if (!moduleEnabled) {
     return (

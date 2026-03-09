@@ -4,7 +4,7 @@
 // Demande (manager) + Validation (manager → RH) + Application
 // ============================================================
 import { useState } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion } from 'framer-motion'
 import {
   CheckCircle, XCircle, Clock, AlertCircle, ChevronRight,
   Plus, DollarSign, User, MessageSquare, TrendingUp, RefreshCw

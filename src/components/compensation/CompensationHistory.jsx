@@ -3,7 +3,7 @@
 // Session 58 — Historique révisions + bonus
 // ============================================================
 import { motion } from 'framer-motion'
-import { TrendingUp, TrendingDown, Award, Loader2, Clock, CheckCircle2, XCircle, AlertCircle } from 'lucide-react'
+import { TrendingUp, TrendingDown, Award, Loader2, Clock, CheckCircle2 } from 'lucide-react'
 import {
   useMyReviews, useMyBonuses,
   REVIEW_REASON_LABELS, REVIEW_REASON_COLORS,

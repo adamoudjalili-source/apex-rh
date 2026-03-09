@@ -13,6 +13,7 @@ import {
   CheckCircle, XCircle, AlertCircle, Layers,
 } from 'lucide-react'
 import { usePermission }           from '../../hooks/usePermission'
+import { ROLES } from '../../utils/constants'
 import {
   useEmployeeList, useEmployee, useUpdateEmployee,
   useCareerEvents, useAddCareerEvent,
@@ -43,7 +44,7 @@ const ROLE_COLORS = {
   chef_service:  '#06B6D4',
   collaborateur: '#10B981',
 }
-const ROLE_ORDER = ['collaborateur','chef_service','chef_division','directeur','administrateur','super_admin']
+const ROLE_ORDER = [ROLES.COLLABORATEUR,ROLES.CHEF_SERVICE,ROLES.CHEF_DIVISION,ROLES.DIRECTEUR,ROLES.ADMINISTRATEUR,ROLES.SUPER_ADMIN]
 
 const EVENT_LABELS = {
   promotion:        'Promotion',
@@ -472,8 +473,8 @@ function OrgchartPanel() {
         {/* Par division */}
         {Object.entries(byDivision).map(([divName, emps]) => {
           const isExpanded = expandedDivision === divName || Object.keys(byDivision).length <= 3
-          const chiefs     = emps.filter(e => e.role === 'chef_division')
-          const others     = emps.filter(e => e.role !== 'chef_division')
+          const chiefs     = emps.filter(e => e.role === ROLES.CHEF_DIVISION)
+          const others     = emps.filter(e => e.role !== ROLES.CHEF_DIVISION)
 
           return (
             <div key={divName} className="rounded-xl overflow-hidden" style={{ border: '1px solid rgba(255,255,255,0.06)' }}>

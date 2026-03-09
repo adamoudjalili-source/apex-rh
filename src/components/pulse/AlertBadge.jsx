@@ -3,6 +3,7 @@
 // ✅ Session 22 — Badge d'alerte PULSE (Phase B)
 // ============================================================
 import { motion, AnimatePresence } from 'framer-motion'
+import { CRITICALITY } from '../../utils/constants'
 
 /**
  * Badge affichant le nombre d'alertes PULSE non résolues.
@@ -10,7 +11,7 @@ import { motion, AnimatePresence } from 'framer-motion'
  *
  * Props :
  *   count       {number}  — nombre d'alertes à afficher
- *   severity    {string}  — 'warning' | 'critical' | 'info' (détermine la couleur)
+ *   severity    {string}  — 'warning' | CRITICALITY.CRITICAL | 'info' (détermine la couleur)
  *   max         {number}  — valeur max avant affichage "99+" (default: 99)
  *   size        {string}  — 'sm' | 'md' (default: 'sm')
  */

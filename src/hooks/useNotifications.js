@@ -3,7 +3,7 @@
 // ✅ Session 12 — Notifications in-app + temps réel
 // ============================================================
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { useEffect, useCallback } from 'react'
+import { useEffect } from 'react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
 

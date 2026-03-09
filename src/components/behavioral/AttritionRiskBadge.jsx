@@ -2,7 +2,8 @@
 // APEX RH — src/components/behavioral/AttritionRiskBadge.jsx
 // Session 54 — Badge niveau de risque d'attrition
 // ============================================================
-import { getRiskConfig, RISK_CONFIG } from '../../hooks/useBehavioralIntelligence'
+import { getRiskConfig } from '../../hooks/useBehavioralIntelligence'
+import { CRITICALITY } from '../../utils/constants'
 
 export default function AttritionRiskBadge({ level = 'low', score, size = 'sm', showScore = false }) {
   const cfg = getRiskConfig(level)
@@ -29,7 +30,7 @@ export default function AttritionRiskBadge({ level = 'low', score, size = 'sm', 
 
 // Mini jauge de risque horizontale
 export function AttritionRiskBar({ score = 0, height = 4 }) {
-  const level = score >= 75 ? 'critical' : score >= 55 ? 'high' : score >= 30 ? 'medium' : 'low'
+  const level = score >= 75 ? CRITICALITY.CRITICAL : score >= 55 ? 'high' : score >= 30 ? 'medium' : 'low'
   const cfg = getRiskConfig(level)
 
   return (
@@ -47,7 +48,7 @@ export function AttritionRiskBar({ score = 0, height = 4 }) {
 
 // Cercle de score
 export function AttritionRiskCircle({ score = 0, size = 56 }) {
-  const level = score >= 75 ? 'critical' : score >= 55 ? 'high' : score >= 30 ? 'medium' : 'low'
+  const level = score >= 75 ? CRITICALITY.CRITICAL : score >= 55 ? 'high' : score >= 30 ? 'medium' : 'low'
   const cfg = getRiskConfig(level)
   const r = (size / 2) - 4
   const circ = 2 * Math.PI * r

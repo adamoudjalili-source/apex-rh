@@ -24,6 +24,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
+import { CRITICALITY } from '../utils/constants'
 
 // ─── CONSTANTES ──────────────────────────────────────────────
 
@@ -203,7 +204,7 @@ export function useAttritionStats() {
     low:      all.filter(u => u.risk_level === 'low').length,
     medium:   all.filter(u => u.risk_level === 'medium').length,
     high:     all.filter(u => u.risk_level === 'high').length,
-    critical: all.filter(u => u.risk_level === 'critical').length,
+    critical: all.filter(u => u.risk_level === CRITICALITY.CRITICAL).length,
     avgScore: all.length
       ? Math.round(all.reduce((s, u) => s + (u.risk_score || 0), 0) / all.length)
       : 0,

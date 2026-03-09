@@ -8,6 +8,7 @@
 import { useQuery } from '@tanstack/react-query'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
+import { ROLES } from '../utils/constants'
 
 // ─── HELPERS ─────────────────────────────────────────────────
 
@@ -159,9 +160,9 @@ export function useHeatmapData(months = 6) {
         .order('first_name')
 
       // Scope : managers voient leur service, directeurs voient plus
-      if (profile.role === 'chef_service') {
+      if (profile.role === ROLES.CHEF_SERVICE) {
         usersQuery = usersQuery.eq('service_id', profile.service_id)
-      } else if (profile.role === 'chef_division') {
+      } else if (profile.role === ROLES.CHEF_DIVISION) {
         // Récupère tous les services de la division
         const { data: divServices } = await supabase
           .from('services')
@@ -229,7 +230,7 @@ export function usePulseOkrCorrelation() {
         .select('id, first_name, last_name, role, service_id, services(id, name)')
         .eq('is_active', true)
 
-      if (profile.role === 'chef_service') {
+      if (profile.role === ROLES.CHEF_SERVICE) {
         usersQuery = usersQuery.eq('service_id', profile.service_id)
       }
 
@@ -383,9 +384,9 @@ export function useDepartureRisk() {
         .eq('is_active', true)
         .not('role', 'in', '(administrateur,directeur)')  // évalue seulement collaborateurs + chefs
 
-      if (profile.role === 'chef_service') {
+      if (profile.role === ROLES.CHEF_SERVICE) {
         usersQuery = usersQuery.eq('service_id', profile.service_id)
-      } else if (profile.role === 'chef_division') {
+      } else if (profile.role === ROLES.CHEF_DIVISION) {
         const { data: divServices } = await supabase
           .from('services')
           .select('id')

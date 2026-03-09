@@ -29,7 +29,7 @@ import {
 // 7. Composants enfants
 import TeamDayView from '../../components/pulse/TeamDayView'
 import ManagerReviewPanel from '../../components/pulse/ManagerReviewPanel'
-import AlertBadge from '../../components/pulse/AlertBadge'
+import { CRITICALITY } from '../../utils/constants'
 
 // S69 — guards via AuthContext helpers
 
@@ -53,7 +53,7 @@ export default function Team() {
 
   const today = getTodayString()
   const isToday = selectedDate === today
-  const criticalAlerts = alerts.filter(a => a.severity === 'critical' && !a.isResolved)
+  const criticalAlerts = alerts.filter(a => a.severity === CRITICALITY.CRITICAL && !a.isResolved)
   const warningAlerts  = alerts.filter(a => a.severity === 'warning' && !a.isResolved)
   const pendingAlerts  = alerts.filter(a => a.type === 'review_pending' && !a.isResolved)
 

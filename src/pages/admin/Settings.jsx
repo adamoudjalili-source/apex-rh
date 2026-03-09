@@ -30,7 +30,6 @@ import {
   useLogAudit,
   useUsersList,
 } from '../../hooks/useSettings'
-import { logAudit } from '../../lib/auditLog'
 import {
   useNotificationPreferences,
   useUpdateNotificationPreferences,

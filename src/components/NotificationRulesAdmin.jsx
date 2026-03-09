@@ -13,6 +13,7 @@ import {
   useDeleteRule,
 } from '../hooks/useNotifications'
 import { usePermission } from '../hooks/usePermission'
+import { ROLES } from '../utils/constants'
 
 // ─── Options prédéfinies ──────────────────────────────────────
 const TRIGGER_EVENTS = [
@@ -27,11 +28,11 @@ const TRIGGER_EVENTS = [
 ]
 
 const ROLE_OPTIONS = [
-  { value: 'collaborateur',  label: 'Collaborateur' },
-  { value: 'chef_service',   label: 'Chef de service' },
-  { value: 'chef_division',  label: 'Chef de division' },
-  { value: 'administrateur', label: 'Administrateur RH' },
-  { value: 'directeur',      label: 'Directeur' },
+  { value: ROLES.COLLABORATEUR,  label: 'Collaborateur' },
+  { value: ROLES.CHEF_SERVICE,   label: 'Chef de service' },
+  { value: ROLES.CHEF_DIVISION,  label: 'Chef de division' },
+  { value: ROLES.ADMINISTRATEUR, label: 'Administrateur RH' },
+  { value: ROLES.DIRECTEUR,      label: 'Directeur' },
 ]
 
 const EMPTY_RULE = {

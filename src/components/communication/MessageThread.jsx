@@ -285,7 +285,7 @@ export default function MessageThread({ channel }) {
     if (channel?.id) {
       markAsRead.mutate(channel.id)
     }
-  }, [channel?.id])
+  }, [channel?.id, markAsRead])
 
   // Scroll handler
   const handleScroll = useCallback((e) => {

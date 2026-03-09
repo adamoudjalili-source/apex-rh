@@ -8,9 +8,9 @@
 // ============================================================
 import { useQuery }  from '@tanstack/react-query'
 import { supabase }  from '../lib/supabase'
-import { useAuth }   from '../contexts/AuthContext'
 import { getLastNMonthKeys } from './useAnalytics'
 import { detectPatterns }    from './usePredictiveAnalytics'
+import { CRITICALITY } from '../utils/constants'
 
 // ─── HOOK 1 : KPIs globaux ───────────────────────────────────
 
@@ -196,7 +196,7 @@ export function useDivisionMatrix(months = 3) {
         // F360 faible
         if (d.f360_rate !== null && d.f360_rate < 40) { riskScore += 1; flags.push({ type: 'f360', label: `F360 ${d.f360_rate}%`, severity: 'medium' }) }
 
-        const riskLevel = riskScore >= 5 ? 'critical'
+        const riskLevel = riskScore >= 5 ? CRITICALITY.CRITICAL
                         : riskScore >= 3 ? 'high'
                         : riskScore >= 1 ? 'medium'
                         : 'ok'

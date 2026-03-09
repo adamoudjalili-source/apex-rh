@@ -7,7 +7,7 @@
 // Graphiques : SVG pur (cohérence avec S46)
 // ============================================================
 import { useState, useRef } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion } from 'framer-motion'
 import {
   TrendingUp, TrendingDown, Minus, AlertTriangle,
   BarChart2, Activity, Users, Shield, Download,

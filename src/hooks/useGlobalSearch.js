@@ -6,6 +6,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
+import { ROLES } from '../utils/constants'
 
 const MIN_QUERY_LENGTH = 2
 const DEBOUNCE_MS = 300
@@ -65,7 +66,7 @@ export function useGlobalSearch() {
           .limit(MAX_RESULTS_PER_TYPE),
 
         // ─── UTILISATEURS ──────────────────────────────
-        profile.role === 'administrateur' || profile.role === 'directeur'
+        profile.role === ROLES.ADMINISTRATEUR || profile.role === ROLES.DIRECTEUR
           ? supabase
               .from('users')
               .select('id, first_name, last_name, email, role, is_active')

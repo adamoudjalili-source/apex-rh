@@ -3,7 +3,7 @@
 // Session 78 — Tableau de bord cycle OKR : stats + KR at-risk + tendances
 // ============================================================
 import { useMemo } from 'react'
-import { Target, TrendingUp, AlertTriangle, CheckCircle, Clock, BarChart3, Users } from 'lucide-react'
+import { Target, TrendingUp, AlertTriangle, CheckCircle, BarChart3 } from 'lucide-react'
 import { useOKRCycleStats, useCurrentCycle, useOKRAlignmentTree } from '../../hooks/useObjectives'
 
 function StatCard({ icon: Icon, label, value, sub, color = 'text-indigo-400', bg = 'bg-indigo-900/20' }) {

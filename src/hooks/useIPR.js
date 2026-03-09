@@ -17,6 +17,7 @@
 import { useQuery } from '@tanstack/react-query'
 import { supabase }  from '../lib/supabase'
 import { useAuth }   from '../contexts/AuthContext'
+import { ROLES } from '../utils/constants'
 
 const today      = () => new Date()
 const isoDate    = d => d.toISOString().split('T')[0]
@@ -236,11 +237,11 @@ export function useTeamIPR(options = {}) {
         .eq('is_active', true)
         .neq('id', profile.id)
 
-      if (profile.role === 'chef_service'  && profile.service_id)
+      if (profile.role === ROLES.CHEF_SERVICE  && profile.service_id)
         q = q.eq('service_id', profile.service_id)
-      else if (profile.role === 'chef_division' && profile.division_id)
+      else if (profile.role === ROLES.CHEF_DIVISION && profile.division_id)
         q = q.eq('division_id', profile.division_id)
-      else if (profile.role === 'directeur' && profile.direction_id)
+      else if (profile.role === ROLES.DIRECTEUR && profile.direction_id)
         q = q.eq('direction_id', profile.direction_id)
 
       const { data: users } = await q

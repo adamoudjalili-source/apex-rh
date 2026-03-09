@@ -9,9 +9,10 @@
 // ============================================================
 import { useAuth } from '../contexts/AuthContext'
 import { useMyOverrides } from './useUserPermissionOverrides'
+import { ROLES } from '../utils/constants'
 
 // Ordre hiérarchique des rôles (index = niveau, plus haut = plus de droits)
-const ROLE_ORDER = ['collaborateur', 'chef_service', 'chef_division', 'directeur', 'administrateur', 'super_admin']
+const ROLE_ORDER = [ROLES.COLLABORATEUR, ROLES.CHEF_SERVICE, ROLES.CHEF_DIVISION, ROLES.DIRECTEUR, ROLES.ADMINISTRATEUR, ROLES.SUPER_ADMIN]
 
 // ============================================================
 // MATRICE des permissions — module × resource × action → fn(helpers) → boolean
@@ -517,7 +518,7 @@ export function usePermission() {
 
   /**
    * Vérifie si l'utilisateur a au moins le rôle donné (inclut héritage vers le haut).
-   * @param {string} targetRole — ex: 'chef_service', 'administrateur'
+   * @param {string} targetRole — ex: ROLES.CHEF_SERVICE, ROLES.ADMINISTRATEUR
    * @returns {boolean}
    */
   function hasRole(targetRole) {

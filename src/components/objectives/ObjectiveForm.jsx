@@ -8,6 +8,7 @@ import Modal from '../ui/Modal'
 import { useAuth } from '../../contexts/AuthContext'
 import { useCreateObjective, useUpdateObjective, useAllUsersForOkr } from '../../hooks/useObjectives'
 import { OBJECTIVE_LEVELS, getAllowedLevels, OBJECTIVE_STATUS, LEVEL_ORDER } from '../../lib/objectiveHelpers'
+import { ROLES } from '../../utils/constants'
 
 export default function ObjectiveForm({ isOpen, onClose, periodId, objective, parentObjectives = [] }) {
   const { profile } = useAuth()
@@ -104,9 +105,9 @@ export default function ObjectiveForm({ isOpen, onClose, periodId, objective, pa
 
   // Filtrer les propriétaires selon le niveau
   const filteredOwners = users.filter((u) => {
-    if (form.level === 'strategique') return u.role === 'directeur'
-    if (form.level === 'division') return u.role === 'chef_division'
-    if (form.level === 'service') return u.role === 'chef_service'
+    if (form.level === 'strategique') return u.role === ROLES.DIRECTEUR
+    if (form.level === 'division') return u.role === ROLES.CHEF_DIVISION
+    if (form.level === 'service') return u.role === ROLES.CHEF_SERVICE
     if (form.level === 'individuel') return true
     return true
   })

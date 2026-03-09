@@ -3,7 +3,8 @@
 // Session 67 — Card demande de congé avec statut + actions
 // ============================================================
 import { useState } from 'react'
-import { Calendar, Trash2, Send, ChevronDown, ChevronUp, FileText } from 'lucide-react'
+import { Calendar, Send, ChevronDown, ChevronUp, FileText } from 'lucide-react'
+import { LEAVE_STATUS } from '../../utils/constants'
 import {
   LEAVE_STATUS_LABELS, LEAVE_STATUS_COLORS, LEAVE_STATUS_BG,
   useSubmitLeaveRequest, formatDate,
@@ -116,10 +117,10 @@ export default function LeaveRequestCard({ request, onDeleted, showUser = false 
 
           {/* Workflow */}
           <div className="flex items-center gap-3 text-[10px] text-white/30">
-            {['draft','submitted','manager_approved','hr_approved'].map((s, i) => {
+            {['draft',LEAVE_STATUS.SUBMITTED,LEAVE_STATUS.MANAGER_APPROVED,LEAVE_STATUS.HR_APPROVED].map((s, i) => {
               const active  = status === s
-              const passed  = ['draft','submitted','manager_approved','hr_approved'].indexOf(status)
-                            > ['draft','submitted','manager_approved','hr_approved'].indexOf(s)
+              const passed  = ['draft',LEAVE_STATUS.SUBMITTED,LEAVE_STATUS.MANAGER_APPROVED,LEAVE_STATUS.HR_APPROVED].indexOf(status)
+                            > ['draft',LEAVE_STATUS.SUBMITTED,LEAVE_STATUS.MANAGER_APPROVED,LEAVE_STATUS.HR_APPROVED].indexOf(s)
               const isFinal = status === 'rejected'
               const dotColor = passed || active ? statusCol : 'rgba(255,255,255,0.12)'
               return (

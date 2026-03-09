@@ -5,7 +5,7 @@
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { MapPin, Target, Briefcase, Star, ChevronDown, ChevronRight, AlertCircle, CheckCircle, Zap } from 'lucide-react'
-import { useCareerPredictions, getTrajectoryConfig, TRAJECTORY_CONFIG } from '../../hooks/useBehavioralIntelligence'
+import { useCareerPredictions, getTrajectoryConfig } from '../../hooks/useBehavioralIntelligence'
 import { CRITICALITY_CONFIG } from '../../hooks/useSuccessionPlanning'
 
 function TrajectoryBadge({ label, score }) {

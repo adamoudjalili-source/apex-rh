@@ -207,7 +207,8 @@ function computeMaxStreak(sortedDates) {
   return Math.max(max, streak)
 }
 
-import { MANAGER_ROLES, isManagerRole as _isManagerRole } from '../lib/roles'
+import { isManagerRole as _isManagerRole } from '../lib/roles'
+import { ROLES } from '../utils/constants'
 export const isManagerRole = _isManagerRole  // re-export pour compatibilité Gamification.jsx
 
 // ─── MON STREAK (calculé live depuis pulse_daily_logs) ───────
@@ -420,7 +421,7 @@ export function useTeamGamifStats(serviceId) {
         .from('users')
         .select('id')
         .eq('service_id', serviceId)
-        .eq('role', 'collaborateur')
+        .eq('role', ROLES.COLLABORATEUR)
 
       const memberIds = (members || []).map(m => m.id)
       if (memberIds.length === 0) return { totalBadges: 0, totalPoints: 0, avgPoints: 0, topBadge: null }

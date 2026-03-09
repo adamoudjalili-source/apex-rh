@@ -5,7 +5,6 @@
 // Couleur : niveau 1–5 → rouge→vert ; gris = non évalué
 // ============================================================
 import { useState, useMemo } from 'react'
-import { motion } from 'framer-motion'
 import { AlertCircle, RefreshCw, Filter } from 'lucide-react'
 import { usePermission } from '../../hooks/usePermission'
 import { useOrgAssessments, useCompetenciesList, useCompetencyCategories, useRefreshCompetencyCoverage } from '../../hooks/useCompetencyFramework'

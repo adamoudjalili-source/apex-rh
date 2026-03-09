@@ -7,6 +7,7 @@ import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { AlertTriangle, TrendingDown, CheckCircle, Target } from 'lucide-react'
 import { useTalentGapAnalysis, PRIORITY_CONFIG } from '../../hooks/useSuccessionVivier'
+import { CRITICALITY } from '../../utils/constants'
 
 // ─── Helpers ─────────────────────────────────────────────────
 function polarToCartesian(cx, cy, r, angleDeg) {
@@ -203,14 +204,14 @@ export default function GapAnalysisChart() {
   const [selected, setSelected]        = useState(null)
   const [filter, setFilter]            = useState('all')
 
-  const priorities = ['critical', 'high', 'medium', 'low']
+  const priorities = [CRITICALITY.CRITICAL, 'high', 'medium', 'low']
 
   const filtered = filter === 'all'
     ? gaps
     : gaps.filter(g => g.priority === filter)
 
   // Stats globales
-  const criticalCount = gaps.filter(g => g.priority === 'critical').length
+  const criticalCount = gaps.filter(g => g.priority === CRITICALITY.CRITICAL).length
   const highCount     = gaps.filter(g => g.priority === 'high').length
   const avgGap        = gaps.length
     ? (gaps.reduce((s, g) => s + Number(g.avg_gap), 0) / gaps.length).toFixed(1)

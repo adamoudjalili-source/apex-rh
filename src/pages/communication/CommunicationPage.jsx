@@ -8,6 +8,7 @@ import { MessageCircle, Megaphone, GitBranch, ArrowRight, Search } from 'lucide-
 import { useUnreadCount, useSearch, useChannelsRealtime } from '../../hooks/useCommunication'
 import { useAuth } from '../../contexts/AuthContext'
 import { useState } from 'react'
+import { ROLES } from '../../utils/constants'
 
 const CARDS = [
   {
@@ -97,7 +98,7 @@ export default function CommunicationPage() {
 
   useChannelsRealtime()
 
-  const isAdmin = ['administrateur', 'directeur'].includes(profile?.role)
+  const isAdmin = [ROLES.ADMINISTRATEUR, ROLES.DIRECTEUR].includes(profile?.role)
 
   return (
     <div className="flex flex-col h-full overflow-y-auto">

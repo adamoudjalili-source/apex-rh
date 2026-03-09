@@ -4,8 +4,9 @@
 // Dépassement seuil · Feuille non soumise · HS en attente
 // ============================================================
 import { useState } from 'react'
-import { AlertTriangle, Clock, TrendingUp, CheckCircle, RefreshCw, BellOff, Filter } from 'lucide-react'
+import { AlertTriangle, Clock, TrendingUp, CheckCircle, RefreshCw, BellOff } from 'lucide-react'
 import { useOvertimeAlerts } from '../../hooks/useTemps'
+import { CRITICALITY } from '../../utils/constants'
 
 // ─── Config alertes ───────────────────────────────────────────
 const ALERT_CONFIG = {
@@ -74,7 +75,7 @@ export default function OvertimeAlerts() {
     return true
   })
 
-  const criticalCount = alerts.filter(a => a.severity === 'critical').length
+  const criticalCount = alerts.filter(a => a.severity === CRITICALITY.CRITICAL).length
   const warningCount  = alerts.filter(a => a.severity === 'warning').length
 
   return (
@@ -121,7 +122,7 @@ export default function OvertimeAlerts() {
       <div className="flex gap-3 flex-wrap">
         <div className="flex gap-1 p-1 rounded-xl border border-white/[0.06]"
           style={{ background: 'rgba(255,255,255,0.02)' }}>
-          {['all', 'critical', 'warning', 'info'].map(sev => (
+          {['all', CRITICALITY.CRITICAL, 'warning', 'info'].map(sev => (
             <button key={sev} onClick={() => setSeverityFilter(sev)}
               className="px-3 py-1 rounded-lg text-xs font-medium transition-all"
               style={severityFilter === sev ? {

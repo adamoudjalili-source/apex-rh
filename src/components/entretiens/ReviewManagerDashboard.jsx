@@ -19,6 +19,7 @@ import {
   getDaysUntilDeadline,
 } from '../../hooks/useAnnualReviews'
 import { useAuth } from '../../contexts/AuthContext'
+import { REVIEW_STATUS, TASK_STATUS } from '../../utils/constants'
 
 // ─── Stat card ───────────────────────────────────────────────
 
@@ -177,16 +178,16 @@ export default function ReviewManagerDashboard() {
   const { data: reviews = [], isLoading: reviewsLoading } = useTeamReviews(activeCampaign?.id)
 
   const filtered = reviews.filter(r => {
-    if (filter === 'pending') return ['pending','self_in_progress'].includes(r.status)
-    if (filter === 'overdue') return isDeadlineOverdue(activeCampaign?.manager_eval_deadline)
+    if (filter === 'pending') return ['pending',REVIEW_STATUS.SELF_IN_PROGRESS].includes(r.status)
+    if (filter === TASK_STATUS.OVERDUE) return isDeadlineOverdue(activeCampaign?.manager_eval_deadline)
       && !['completed','signed','archived'].includes(r.status)
     if (filter === 'done') return ['completed','signed'].includes(r.status)
     return true
   })
 
   const totalReviews   = reviews.length
-  const pending        = reviews.filter(r => ['pending','self_in_progress'].includes(r.status)).length
-  const selfSubmitted  = reviews.filter(r => r.status === 'self_submitted').length
+  const pending        = reviews.filter(r => ['pending',REVIEW_STATUS.SELF_IN_PROGRESS].includes(r.status)).length
+  const selfSubmitted  = reviews.filter(r => r.status === REVIEW_STATUS.SELF_SUBMITTED).length
   const completed      = reviews.filter(r => ['completed','signed'].includes(r.status)).length
   const overdue        = reviews.filter(r =>
     isDeadlineOverdue(activeCampaign?.manager_eval_deadline)
@@ -237,7 +238,7 @@ export default function ReviewManagerDashboard() {
               { id: 'all',     label: 'Tous',           count: totalReviews },
               { id: 'pending', label: 'En attente',      count: pending },
               { id: 'done',    label: 'Complétés',       count: completed },
-              { id: 'overdue', label: 'En retard',       count: overdue },
+              { id: TASK_STATUS.OVERDUE, label: 'En retard',       count: overdue },
             ].map(f => (
               <button
                 key={f.id}

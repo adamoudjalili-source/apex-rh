@@ -1,4 +1,5 @@
 // APEX RH — taskHelpers.js
+import { ROLES, TASK_STATUS } from '../utils/constants'
 // Session 19 — Fix isOverdue() : exclut les tâches terminées
 // Session 19 bis — Fix isDueSoon() : même logique, exclut les tâches terminées
 // ============================================================
@@ -19,12 +20,12 @@ export const TASK_PRIORITY = {
   urgente:  { label: 'Urgente',  color: '#EF4444', icon: '⚡', textClass: 'text-red-400' },
 }
 
-export const STATUS_ORDER = ['backlog', 'a_faire', 'en_cours', 'en_revue', 'terminee', 'bloquee']
+export const STATUS_ORDER = ['backlog', TASK_STATUS.A_FAIRE, TASK_STATUS.EN_COURS, 'en_revue', 'terminee', 'bloquee']
 
 export const KANBAN_COLUMNS = [
   { id: 'backlog',  label: 'Backlog',   icon: '○' },
-  { id: 'a_faire',  label: 'À faire',   icon: '◎' },
-  { id: 'en_cours', label: 'En cours',  icon: '◉' },
+  { id: TASK_STATUS.A_FAIRE,  label: 'À faire',   icon: '◎' },
+  { id: TASK_STATUS.EN_COURS, label: 'En cours',  icon: '◉' },
   { id: 'en_revue', label: 'En revue',  icon: '◈' },
   { id: 'terminee', label: 'Terminée',  icon: '✓' },
   { id: 'bloquee',  label: 'Bloquée',   icon: '✕' },
@@ -90,31 +91,31 @@ export function getUserInitials(user) {
 
 export function canValidateTask(task, currentUser) {
   if (!task || !currentUser) return false
-  if (currentUser.role === 'administrateur') return true
+  if (currentUser.role === ROLES.ADMINISTRATEUR) return true
   if (task.status !== 'en_revue') return false
   // Chef de service valide les tâches de son service
-  if (currentUser.role === 'chef_service' && task.service_id === currentUser.service_id) return true
+  if (currentUser.role === ROLES.CHEF_SERVICE && task.service_id === currentUser.service_id) return true
   // Chef de division valide les tâches de sa division
-  if (currentUser.role === 'chef_division' && task.division_id === currentUser.division_id) return true
+  if (currentUser.role === ROLES.CHEF_DIVISION && task.division_id === currentUser.division_id) return true
   // Directeur valide les tâches de sa direction
-  if (currentUser.role === 'directeur' && task.direction_id === currentUser.direction_id) return true
+  if (currentUser.role === ROLES.DIRECTEUR && task.direction_id === currentUser.direction_id) return true
   return false
 }
 
 export function canEditTask(task, currentUser) {
   if (!task || !currentUser) return false
-  if (currentUser.role === 'administrateur') return true
+  if (currentUser.role === ROLES.ADMINISTRATEUR) return true
   if (task.created_by === currentUser.id) return true
   if (task.task_assignees?.some(a => a.user_id === currentUser.id)) return true
-  if (currentUser.role === 'chef_service' && task.service_id === currentUser.service_id) return true
-  if (currentUser.role === 'chef_division' && task.division_id === currentUser.division_id) return true
-  if (currentUser.role === 'directeur' && task.direction_id === currentUser.direction_id) return true
+  if (currentUser.role === ROLES.CHEF_SERVICE && task.service_id === currentUser.service_id) return true
+  if (currentUser.role === ROLES.CHEF_DIVISION && task.division_id === currentUser.division_id) return true
+  if (currentUser.role === ROLES.DIRECTEUR && task.direction_id === currentUser.direction_id) return true
   return false
 }
 
 export function canDeleteTask(task, currentUser) {
   if (!task || !currentUser) return false
-  if (currentUser.role === 'administrateur') return true
+  if (currentUser.role === ROLES.ADMINISTRATEUR) return true
   return task.created_by === currentUser.id
 }
 
@@ -141,35 +142,35 @@ export function getAllowedStatuses(task, currentUser) {
   const allStatuses = Object.keys(TASK_STATUS)
 
   // Admin → tout est permis
-  if (role === 'administrateur') return allStatuses.filter(s => s !== current)
+  if (role === ROLES.ADMINISTRATEUR) return allStatuses.filter(s => s !== current)
 
   const isValidator = canValidateTask(task, currentUser)
 
   // Transitions selon le statut actuel
   switch (current) {
     case 'backlog':
-      return ['a_faire', 'en_cours', 'bloquee']
+      return [TASK_STATUS.A_FAIRE, TASK_STATUS.EN_COURS, 'bloquee']
 
-    case 'a_faire':
-      return ['backlog', 'en_cours', 'bloquee']
+    case TASK_STATUS.A_FAIRE:
+      return ['backlog', TASK_STATUS.EN_COURS, 'bloquee']
 
-    case 'en_cours':
+    case TASK_STATUS.EN_COURS:
       // Tout le monde peut soumettre pour validation ou bloquer
-      return ['backlog', 'a_faire', 'en_revue', 'bloquee']
+      return ['backlog', TASK_STATUS.A_FAIRE, 'en_revue', 'bloquee']
 
     case 'en_revue':
       // Seul un validateur (chef) peut approuver ou rejeter
-      if (isValidator) return ['en_cours', 'terminee']
+      if (isValidator) return [TASK_STATUS.EN_COURS, 'terminee']
       // Le collaborateur ne peut rien faire une fois soumis
       return []
 
     case 'terminee':
       // Seul un validateur ou admin peut réouvrir
-      if (isValidator) return ['en_cours']
+      if (isValidator) return [TASK_STATUS.EN_COURS]
       return []
 
     case 'bloquee':
-      return ['backlog', 'a_faire', 'en_cours']
+      return ['backlog', TASK_STATUS.A_FAIRE, TASK_STATUS.EN_COURS]
 
     default:
       return []

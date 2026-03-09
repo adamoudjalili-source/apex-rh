@@ -5,7 +5,6 @@
 // ============================================================
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '../lib/supabase'
-import { useAuth } from '../contexts/AuthContext'
 
 // Critères de pondération
 export const WEIGHT_CRITERIA = [

@@ -8,6 +8,7 @@ import { useAuth } from '../contexts/AuthContext'
 import { getTodayString } from '../lib/pulseHelpers'
 
 import { MANAGER_ROLES } from '../lib/roles'
+import { ROLES, STATUS } from '../utils/constants'
 
 // ─── LOGS DE L'ÉQUIPE POUR UNE DATE ──────────────────────────
 /**
@@ -99,7 +100,7 @@ export function useTeamMembers() {
           divisions(id, name)
         `)
         .eq('is_active', true)
-        .not('role', 'eq', 'administrateur')
+        .not('role', 'eq', ROLES.ADMINISTRATEUR)
         .order('first_name')
 
       if (error) throw error
@@ -201,7 +202,7 @@ export function useTeamDayStats(date) {
         .from('users')
         .select('id')
         .eq('is_active', true)
-        .not('role', 'eq', 'administrateur')
+        .not('role', 'eq', ROLES.ADMINISTRATEUR)
 
       const memberCount = members?.length || 0
 
@@ -209,13 +210,13 @@ export function useTeamDayStats(date) {
         .from('morning_plans')
         .select('user_id, status')
         .eq('plan_date', targetDate)
-        .eq('status', 'submitted')
+        .eq('status', STATUS.SUBMITTED)
 
       const { data: logs } = await supabase
         .from('daily_logs')
         .select('user_id, status')
         .eq('log_date', targetDate)
-        .in('status', ['submitted', 'validated', 'rejected'])
+        .in('status', [STATUS.SUBMITTED, 'validated', 'rejected'])
 
       return {
         total: memberCount,

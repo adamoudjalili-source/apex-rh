@@ -4,9 +4,10 @@
 // ============================================================
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Eye, EyeOff, Loader2, X, Users, CheckCircle2, Clock, Download } from 'lucide-react'
+import { Eye, EyeOff, Loader2, X, Users, CheckCircle2, Download } from 'lucide-react'
 import { useReadReceipts } from '../../hooks/useCommunication'
 import { useAuth } from '../../contexts/AuthContext'
+import { ROLES } from '../../utils/constants'
 
 const ROLE_LABELS = {
   collaborateur:  'Collaborateur',
@@ -54,7 +55,7 @@ function exportCsv(receipts, title) {
 
 export default function MessageReadReceipts({ announcementId, announcementTitle, onClose }) {
   const { profile } = useAuth()
-  const isAdmin = ['administrateur', 'directeur'].includes(profile?.role)
+  const isAdmin = [ROLES.ADMINISTRATEUR, ROLES.DIRECTEUR].includes(profile?.role)
   const [filter, setFilter] = useState('all') // all | read | unread
 
   const { data: receipts = [], isLoading, error } = useReadReceipts(announcementId)

@@ -3,7 +3,6 @@
 // Session 60 — Historique des entretiens annuels
 // ============================================================
 import { useState } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
 import {
   Clock, Star, CheckCircle, ChevronRight, Calendar,
   TrendingUp, Award, FileText, Loader2, Lock,

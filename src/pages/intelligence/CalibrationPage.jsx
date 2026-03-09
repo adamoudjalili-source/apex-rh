@@ -23,6 +23,7 @@ import {
 import CalibrationMatrix from '../../components/calibration/CalibrationMatrix'
 import CalibrationHistory from '../../components/calibration/CalibrationHistory'
 import { useAllCycles } from '../../hooks/useReviewCycles'
+import { ROLES } from '../../utils/constants'
 
 // ─── HELPERS ─────────────────────────────────────────────────
 
@@ -278,8 +279,8 @@ export default function CalibrationPage() {
   const { can, hasRole } = usePermission()
   const isAdmin = can('intelligence', 'succession', 'admin')
   const isDirecteur = can('intelligence', 'overview', 'read')
-  const isChefDivision = hasRole('chef_division') && !isAdmin
-  const isChefService = hasRole('chef_service') && !isDirecteur && !isChefDivision && !isAdmin
+  const isChefDivision = hasRole(ROLES.CHEF_DIVISION) && !isAdmin
+  const isChefService = hasRole(ROLES.CHEF_SERVICE) && !isDirecteur && !isChefDivision && !isAdmin
   const isManager = isAdmin || isDirecteur || isChefDivision || isChefService
   const isN2      = isAdmin || isDirecteur
 

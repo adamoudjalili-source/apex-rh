@@ -13,6 +13,7 @@ import { useFeedbackToGive } from '../../hooks/useFeedback360'
 import { useTasks } from '../../hooks/useTasks'
 import { isPulseEnabled, getScoreColor, getScoreLabel, getDayStatus } from '../../lib/pulseHelpers'
 import MobileBriefForm from './MobileBriefForm'
+import { TASK_STATUS } from '../../utils/constants'
 
 export default function MobileHome() {
   const { profile } = useAuth()
@@ -21,7 +22,7 @@ export default function MobileHome() {
   const { data: dailyLog } = useTodayLog()
   const { data: todayScore } = useTodayScore()
   const { data: pendingFeedbacks = [] } = useFeedbackToGive?.() || { data: [] }
-  const { data: tasks = [] } = useTasks({ status: 'en_cours' })
+  const { data: tasks = [] } = useTasks({ status: TASK_STATUS.EN_COURS })
 
   const pulseOn = isPulseEnabled(settings)
   const dayStatus = getDayStatus(morningPlan, dailyLog)
@@ -39,7 +40,7 @@ export default function MobileHome() {
   const scoreColor = getScoreColor(score)
 
   const urgentTasks = tasks.filter(t => t.priority === 'urgente').slice(0, 3)
-  const inProgressTasks = tasks.filter(t => t.status === 'en_cours').slice(0, 3)
+  const inProgressTasks = tasks.filter(t => t.status === TASK_STATUS.EN_COURS).slice(0, 3)
 
   return (
     <div className="px-4 py-5 space-y-5 pb-24 md:hidden">

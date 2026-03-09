@@ -4,6 +4,7 @@
 // ============================================================
 import { Activity, MessageSquare, Target, Clock, Wifi } from 'lucide-react'
 import { RISK_CONFIG } from '../../hooks/useBehavioralIntelligence'
+import { CRITICALITY } from '../../utils/constants'
 
 const FACTORS = [
   {
@@ -102,7 +103,7 @@ export default function RiskFactorBreakdown({ risk, compact = false }) {
       {FACTORS.map(f => {
         const Icon = f.icon
         const val = risk[f.key] || 0
-        const riskLevel = val >= 75 ? 'critical' : val >= 55 ? 'high' : val >= 30 ? 'medium' : 'low'
+        const riskLevel = val >= 75 ? CRITICALITY.CRITICAL : val >= 55 ? 'high' : val >= 30 ? 'medium' : 'low'
         const cfg = RISK_CONFIG[riskLevel]
 
         return (

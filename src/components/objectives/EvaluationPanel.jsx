@@ -4,7 +4,7 @@
 // ============================================================
 import { useState } from 'react'
 import { motion } from 'framer-motion'
-import { CheckCircle2, Clock, Shield, Star } from 'lucide-react'
+import { CheckCircle2, Shield, Star } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
 import { useSelfEvaluate, useValidateN1, useCalibrateRH } from '../../hooks/useObjectives'
 import {

@@ -8,6 +8,7 @@ import { useState, useCallback, useRef } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
+import { CRITICALITY, ROLES } from '../utils/constants'
 
 // ─── CONSTANTES ──────────────────────────────────────────────
 
@@ -213,7 +214,7 @@ export function usePredictiveAlerts(serviceId) {
         .select('id, first_name, last_name, role')
         .eq('service_id', serviceId)
         .eq('is_active', true)
-        .neq('role', 'administrateur')
+        .neq('role', ROLES.ADMINISTRATEUR)
       if (mErr) throw mErr
       if (!members?.length) return []
 
@@ -248,7 +249,7 @@ export function usePredictiveAlerts(serviceId) {
       const today  = new Date()
 
       for (const member of members) {
-        if (member.role !== 'collaborateur') continue
+        if (member.role !== ROLES.COLLABORATEUR) continue
 
         // PULSE moyen
         const memberPulse = (pulseData ?? []).filter(p => p.user_id === member.id)
@@ -293,7 +294,7 @@ export function usePredictiveAlerts(serviceId) {
               userId   : member.id,
               name     : `${member.first_name} ${member.last_name}`,
               type     : 'overload',
-              severity : endurance >= 90 ? 'critical' : 'high',
+              severity : endurance >= 90 ? CRITICALITY.CRITICAL : 'high',
               message  : `Charge de travail élevée — endurance NITA ${endurance}/100`,
               icon     : '🔥',
               color    : '#EF4444',
@@ -311,7 +312,7 @@ export function usePredictiveAlerts(serviceId) {
               userId   : member.id,
               name     : `${member.first_name} ${member.last_name}`,
               type     : 'departure_risk',
-              severity : lowCount >= 12 ? 'critical' : 'high',
+              severity : lowCount >= 12 ? CRITICALITY.CRITICAL : 'high',
               message  : `Performance chroniquement faible — ${lowCount} jours sous 40/100`,
               icon     : '🚨',
               color    : '#EF4444',

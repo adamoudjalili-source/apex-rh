@@ -4,6 +4,7 @@
 // ============================================================
 import { Clock, TrendingUp, CheckCircle, AlertCircle } from 'lucide-react'
 import { useTimeStats, formatHours } from '../../hooks/useTemps'
+import { LEAVE_STATUS } from '../../utils/constants'
 
 export default function TimeStatsCard({ userId, period = 'month' }) {
   const { data: stats, isLoading } = useTimeStats({ userId, period })
@@ -79,7 +80,7 @@ export default function TimeStatsCard({ userId, period = 'month' }) {
                   <div className="w-full rounded-sm transition-all"
                     style={{
                       height: `${Math.max(pct, 4)}%`,
-                      background: s.status === 'hr_approved' ? '#10B981' : s.status === 'rejected' ? '#EF4444' : '#6366F1',
+                      background: s.status === LEAVE_STATUS.HR_APPROVED ? '#10B981' : s.status === 'rejected' ? '#EF4444' : '#6366F1',
                       opacity: 0.6,
                     }}/>
                 </div>

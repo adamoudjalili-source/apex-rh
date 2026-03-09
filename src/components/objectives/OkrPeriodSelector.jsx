@@ -6,10 +6,11 @@
 import { useState } from 'react'
 import { usePermission } from '../../hooks/usePermission'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Calendar, Plus, X, Check, Trash2 } from 'lucide-react'
+import { Calendar, Plus, X, Check } from 'lucide-react'
 import { useOkrPeriods, useCreatePeriod, useDeletePeriod } from '../../hooks/useOkrPeriods'
 import { useAuth } from '../../contexts/AuthContext'
 import { formatDateFr } from '../../lib/objectiveHelpers'
+import { ROLES } from '../../utils/constants'
 
 export default function OkrPeriodSelector({ selectedPeriodId, onSelect }) {
   const { profile } = useAuth()
@@ -70,7 +71,7 @@ export default function OkrPeriodSelector({ selectedPeriodId, onSelect }) {
             {isActive(p) && (
               <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
             )}
-            {canManage && profile?.role === 'administrateur' && (
+            {canManage && profile?.role === ROLES.ADMINISTRATEUR && (
               <span
                 onClick={(e) => handleDelete(p.id, e)}
                 className="opacity-0 group-hover:opacity-100 ml-1 p-0.5 rounded hover:bg-red-500/20 text-white/30 hover:text-red-400 transition-all"

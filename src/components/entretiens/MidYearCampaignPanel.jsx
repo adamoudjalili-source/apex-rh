@@ -19,6 +19,7 @@ import {
 } from '../../hooks/useAnnualReviews'
 import { useUsersList } from '../../hooks/useSettings'
 import { useAuth } from '../../contexts/AuthContext'
+import { REVIEW_STATUS } from '../../utils/constants'
 
 // ─── Mid-year review card ─────────────────────────────────────
 
@@ -181,8 +182,8 @@ export default function MidYearCampaignPanel() {
 
   const stats = {
     total:     midYearReviews.length,
-    pending:   midYearReviews.filter(r => ['pending','self_in_progress'].includes(r.status)).length,
-    submitted: midYearReviews.filter(r => r.status === 'self_submitted').length,
+    pending:   midYearReviews.filter(r => ['pending',REVIEW_STATUS.SELF_IN_PROGRESS].includes(r.status)).length,
+    submitted: midYearReviews.filter(r => r.status === REVIEW_STATUS.SELF_SUBMITTED).length,
     completed: midYearReviews.filter(r => ['completed','signed'].includes(r.status)).length,
   }
 

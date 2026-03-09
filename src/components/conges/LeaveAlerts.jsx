@@ -6,7 +6,6 @@
 import { useState } from 'react'
 import { AlertTriangle, Clock, TrendingDown, CalendarX, Bell, RefreshCw } from 'lucide-react'
 import { useLeaveAlerts } from '../../hooks/useConges'
-import { useQueryClient } from '@tanstack/react-query'
 import { useAuth } from '../../contexts/AuthContext'
 
 const ALERT_ICONS = {

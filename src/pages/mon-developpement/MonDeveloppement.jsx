@@ -26,6 +26,7 @@ import {
 } from '../../hooks/useGenerativeAI'
 import AIAssistant from '../../components/ai/AIAssistant'
 import { lazy, Suspense } from 'react'
+import { REVIEW_STATUS } from '../../utils/constants'
 const FormationPage = lazy(() => import('../formation/Formation'))
 import {
   BookOpen, Target, MessageSquare, CheckCircle2, Circle,
@@ -490,7 +491,7 @@ function TabBoucle({ profile }) {
                         <p className="text-sm font-semibold text-white/75 truncate">{ev.cycle?.title||'Évaluation'}</p>
                         <span className="text-[10px] px-1.5 py-0.5 rounded-full"
                           style={{background:ev.status==='validated'?`${ACCENT}18`:'rgba(107,114,128,0.15)',color:ev.status==='validated'?ACCENT:'#9CA3AF'}}>
-                          {ev.status==='validated'?'✓ Validée':ev.status==='manager_submitted'?'En attente':ev.status==='self_submitted'?'Auto soumise':'En cours'}
+                          {ev.status==='validated'?'✓ Validée':ev.status==='manager_submitted'?'En attente':ev.status===REVIEW_STATUS.SELF_SUBMITTED?'Auto soumise':'En cours'}
                         </span>
                       </div>
                       <p className="text-[11px] text-white/30 mt-0.5">

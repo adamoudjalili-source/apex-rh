@@ -47,7 +47,7 @@ export default function Journal() {
   const statusCfg  = DAY_STATUS_CONFIG[dayStatus]
 
   // Passer automatiquement sur l'onglet journal si le brief est soumis et la fenêtre journal est ouverte
-  const briefSubmitted  = morningPlan?.status === 'submitted' || morningPlan?.status === 'acknowledged'
+  const briefSubmitted  = morningPlan?.status === STATUS.SUBMITTED || morningPlan?.status === 'acknowledged'
   const journalOpen     = (() => {
     const start = settings?.pulse_journal_start || '16:00'
     const now   = `${String(new Date().getHours()).padStart(2,'0')}:${String(new Date().getMinutes()).padStart(2,'0')}`
@@ -125,7 +125,7 @@ export default function Journal() {
               onClick={() => setActiveTab('journal')}
               icon={<Moon size={15} />}
               label="Journal du soir"
-              done={dailyLog?.status === 'submitted' || dailyLog?.status === 'validated'}
+              done={dailyLog?.status === STATUS.SUBMITTED || dailyLog?.status === 'validated'}
               locked={!journalOpen}
             />
           </div>

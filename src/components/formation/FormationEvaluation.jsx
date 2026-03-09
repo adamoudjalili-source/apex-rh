@@ -4,7 +4,7 @@
 // ============================================================
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Star, CheckCircle2, Clock, TrendingUp, MessageSquare, Award, BarChart2 } from 'lucide-react'
+import { Star, CheckCircle2, TrendingUp, BarChart2 } from 'lucide-react'
 import {
   useMyPendingEvaluations, useMyEnrollments,
   useSubmitSatisfaction, useSubmitEffectiveness,

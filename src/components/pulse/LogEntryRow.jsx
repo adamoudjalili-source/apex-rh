@@ -13,6 +13,7 @@ import {
   timeStringToMinutes,
 } from '../../lib/pulseHelpers'
 import { useUpdateLogEntry, useDeleteLogEntry } from '../../hooks/usePulse'
+import { TASK_STATUS } from '../../utils/constants'
 
 export default function LogEntryRow({ entry, readOnly = false }) {
   const updateEntry = useUpdateLogEntry()
@@ -22,7 +23,7 @@ export default function LogEntryRow({ entry, readOnly = false }) {
     time_spent_min: entry.time_spent_min || 0,
     progress_before: entry.progress_before || 0,
     progress_after: entry.progress_after || 0,
-    task_status: entry.task_status || 'en_cours',
+    task_status: entry.task_status || TASK_STATUS.EN_COURS,
     note: entry.note || '',
     is_blocked: entry.is_blocked || false,
     block_reason: entry.block_reason || '',
@@ -38,7 +39,7 @@ export default function LogEntryRow({ entry, readOnly = false }) {
       time_spent_min: entry.time_spent_min || 0,
       progress_before: entry.progress_before || 0,
       progress_after: entry.progress_after || 0,
-      task_status: entry.task_status || 'en_cours',
+      task_status: entry.task_status || TASK_STATUS.EN_COURS,
       note: entry.note || '',
       is_blocked: entry.is_blocked || false,
       block_reason: entry.block_reason || '',

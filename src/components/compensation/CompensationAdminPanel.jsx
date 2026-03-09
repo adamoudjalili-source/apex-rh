@@ -3,7 +3,7 @@
 // Session 58 — Administration RH : grilles + révisions + benchmarks
 // ============================================================
 import { useState } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion } from 'framer-motion'
 import {
   Plus, Edit2, Trash2, CheckCircle2, XCircle,
   Loader2, BarChart3, Users, TrendingUp, Award,

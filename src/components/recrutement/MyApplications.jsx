@@ -2,9 +2,8 @@
 // APEX RH — components/recrutement/MyApplications.jsx
 // Session 59 — Mes candidatures (vue collaborateur)
 // ============================================================
-import { useState } from 'react'
 import { motion } from 'framer-motion'
-import { Send, Calendar, Building2, Clock, CheckCircle, XCircle, AlertCircle, ChevronRight } from 'lucide-react'
+import { Send, Clock, CheckCircle, XCircle } from 'lucide-react'
 import {
   useMyApplications,
   APPLICATION_STATUS_LABELS, APPLICATION_STATUS_COLORS,

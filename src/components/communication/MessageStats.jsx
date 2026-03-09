@@ -8,6 +8,7 @@ import { Eye, Users, Clock, ChevronRight } from 'lucide-react'
 import { useAnnouncementStats } from '../../hooks/useCommunication'
 import { useAuth } from '../../contexts/AuthContext'
 import MessageReadReceipts from './MessageReadReceipts'
+import { ROLES } from '../../utils/constants'
 
 function formatRelative(iso) {
   if (!iso) return null
@@ -23,7 +24,7 @@ function formatRelative(iso) {
 
 export default function MessageStats({ announcementId, announcementTitle, compact = false }) {
   const { profile } = useAuth()
-  const isAdmin = ['administrateur', 'directeur'].includes(profile?.role)
+  const isAdmin = [ROLES.ADMINISTRATEUR, ROLES.DIRECTEUR].includes(profile?.role)
   const [showReceipts, setShowReceipts] = useState(false)
 
   const { data: stats, isLoading } = useAnnouncementStats(announcementId)

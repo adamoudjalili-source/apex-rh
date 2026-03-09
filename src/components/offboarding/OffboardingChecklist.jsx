@@ -13,7 +13,6 @@ import {
   CHECKLIST_CATEGORY_LABELS, CHECKLIST_CATEGORY_COLORS,
   CHECKLIST_STATUS_LABELS, CHECKLIST_STATUS_COLORS,
 } from '../../hooks/useOffboarding'
-import { useAuth } from '../../contexts/AuthContext'
 
 const STATUS_ICONS = {
   pending:     Circle,

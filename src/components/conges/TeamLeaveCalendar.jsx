@@ -4,7 +4,7 @@
 // ============================================================
 import { useState } from 'react'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
-import { useTeamCalendar, LEAVE_STATUS_COLORS } from '../../hooks/useConges'
+import { useTeamCalendar } from '../../hooks/useConges'
 
 const DAYS_FR = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim']
 const MONTHS_FR = ['Janvier','Février','Mars','Avril','Mai','Juin',

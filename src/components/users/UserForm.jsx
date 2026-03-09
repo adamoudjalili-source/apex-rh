@@ -1,13 +1,14 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../../lib/supabase'
+import { ROLES } from '../../utils/constants'
 
 const ROLES = [
-  { value: 'administrateur', label: 'Administrateur' },
-  { value: 'directeur', label: 'Directeur' },
+  { value: ROLES.ADMINISTRATEUR, label: 'Administrateur' },
+  { value: ROLES.DIRECTEUR, label: 'Directeur' },
   // { value: 'direction', label: 'Direction Générale' },  // supprimé — décision B-1
-  { value: 'chef_division', label: 'Chef de Division' },
-  { value: 'chef_service', label: 'Chef de Service' },
-  { value: 'collaborateur', label: 'Collaborateur' },
+  { value: ROLES.CHEF_DIVISION, label: 'Chef de Division' },
+  { value: ROLES.CHEF_SERVICE, label: 'Chef de Service' },
+  { value: ROLES.COLLABORATEUR, label: 'Collaborateur' },
 ]
 
 // ── Attendre que le trigger Supabase crée la ligne dans users ──
@@ -31,7 +32,7 @@ export default function UserForm({ user, onSuccess, onCancel }) {
     first_name: '',
     last_name: '',
     email: '',
-    role: 'collaborateur',
+    role: ROLES.COLLABORATEUR,
     direction_id: '',
     division_id: '',
     service_id: '',
@@ -50,7 +51,7 @@ export default function UserForm({ user, onSuccess, onCancel }) {
         first_name: user.first_name || '',
         last_name: user.last_name || '',
         email: user.email || '',
-        role: user.role || 'collaborateur',
+        role: user.role || ROLES.COLLABORATEUR,
         direction_id: user.direction_id || '',
         division_id: user.division_id || '',
         service_id: user.service_id || '',
@@ -104,20 +105,20 @@ export default function UserForm({ user, onSuccess, onCancel }) {
   // ── Calcul des FK à sauvegarder selon le rôle ──────────────────
   const buildOrgFields = () => {
     switch (form.role) {
-      case 'directeur':
+      case ROLES.DIRECTEUR:
         return {
           direction_id: form.direction_id || null,
           division_id: null,
           service_id: null,
         }
-      case 'chef_division':
+      case ROLES.CHEF_DIVISION:
         return {
           direction_id: null,
           division_id: form.division_id || null,
           service_id: null,
         }
-      case 'chef_service':
-      case 'collaborateur':
+      case ROLES.CHEF_SERVICE:
+      case ROLES.COLLABORATEUR:
         return {
           direction_id: null,
           division_id: form.division_id || null,
@@ -194,9 +195,9 @@ export default function UserForm({ user, onSuccess, onCancel }) {
   const labelClass = 'block text-xs font-medium text-white/60 mb-1.5'
 
   // ── Raccourcis booléens pour l'affichage conditionnel ──────────
-  const showDirection = form.role === 'directeur'  // 'direction' supprimé B-1
-  const showDivision = ['chef_division', 'chef_service', 'collaborateur'].includes(form.role)
-  const showService = ['chef_service', 'collaborateur'].includes(form.role)
+  const showDirection = form.role === ROLES.DIRECTEUR  // 'direction' supprimé B-1
+  const showDivision = [ROLES.CHEF_DIVISION, ROLES.CHEF_SERVICE, ROLES.COLLABORATEUR].includes(form.role)
+  const showService = [ROLES.CHEF_SERVICE, ROLES.COLLABORATEUR].includes(form.role)
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4" autoComplete="off">

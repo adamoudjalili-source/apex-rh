@@ -4,9 +4,10 @@
 // Cartographie des charges + corrélations NITA avancées
 // ============================================================
 import { useState } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion } from 'framer-motion'
 import { useAuth }     from '../../contexts/AuthContext'
 import { usePermission } from '../../hooks/usePermission'
+import { TASK_STATUS } from '../../utils/constants'
 import {
   useWorkloadSummary,
   useNitaWorkloadCorrelation,
@@ -61,7 +62,7 @@ export default function CartographieCharges() {
   const sorted = [...workload].sort((a,b) =>
     sortBy === 'load'  ? b.loadScore  - a.loadScore :
     sortBy === 'tasks' ? b.taskCount  - a.taskCount :
-    sortBy === 'overdue' ? b.overdueCount - a.overdueCount : 0
+    sortBy === TASK_STATUS.OVERDUE ? b.overdueCount - a.overdueCount : 0
   )
 
   const overloadCount  = workload.filter(u => u.loadScore > 70).length
@@ -165,7 +166,7 @@ export default function CartographieCharges() {
             Charge par collaborateur ({workload.length})
           </p>
           <div className="flex gap-1">
-            {[{k:'load',l:'Charge'},{k:'tasks',l:'Tâches'},{k:'overdue',l:'En retard'}].map(s=>(
+            {[{k:'load',l:'Charge'},{k:'tasks',l:'Tâches'},{k:TASK_STATUS.OVERDUE,l:'En retard'}].map(s=>(
               <button key={s.k} onClick={()=>setSortBy(s.k)}
                 className={`text-[10px] font-medium px-2 py-1 rounded-lg transition-all ${sortBy===s.k?'text-amber-400 bg-amber-500/10':'text-white/30 hover:text-white/50'}`}>
                 {s.l}

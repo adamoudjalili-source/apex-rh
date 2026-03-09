@@ -5,7 +5,7 @@
 // ============================================================
 import { useState } from 'react'
 import { motion } from 'framer-motion'
-import { TrendingUp, AlertTriangle, BarChart3, PieChart, RefreshCw } from 'lucide-react'
+import { AlertTriangle, BarChart3, RefreshCw } from 'lucide-react'
 import { usePermission } from '../../hooks/usePermission'
 import {
   useCompensationCycles, useRevisionBudgetSimulation,

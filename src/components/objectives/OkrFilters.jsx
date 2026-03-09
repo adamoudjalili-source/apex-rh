@@ -2,7 +2,7 @@
 // APEX RH — OkrFilters.jsx
 // Session 10 — Filtres pour les objectifs
 // ============================================================
-import { Search, Filter, X } from 'lucide-react'
+import { Search, X } from 'lucide-react'
 import { OBJECTIVE_LEVELS, OBJECTIVE_STATUS, LEVEL_ORDER } from '../../lib/objectiveHelpers'
 
 export default function OkrFilters({ filters, onChange }) {

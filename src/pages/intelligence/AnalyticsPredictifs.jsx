@@ -16,6 +16,7 @@ import {
   pearsonCorrelation, correlationLabel, NITA_DIMS, PULSE_DIMS,
 } from '../../hooks/usePredictiveAnalytics'
 import { monthKeyToLabel } from '../../hooks/useAnalytics'
+import { ROLES } from '../../utils/constants'
 
 // ─── Animations ───────────────────────────────────────────────
 const fadeUp = { hidden: { opacity: 0, y: 10 }, visible: { opacity: 1, y: 0, transition: { duration: 0.3 } } }
@@ -456,7 +457,7 @@ const SECTIONS = [
 
 export default function AnalyticsPredictifs() {
   const { profile } = useAuth()
-  const isManager = ['chef_service','chef_division','directeur','administrateur']
+  const isManager = [ROLES.CHEF_SERVICE,ROLES.CHEF_DIVISION,ROLES.DIRECTEUR,ROLES.ADMINISTRATEUR]
     .includes(profile?.role)
 
   const [section, setSection] = useState('correlations')

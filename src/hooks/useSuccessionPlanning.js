@@ -53,12 +53,14 @@ const POSITION_SELECT = `
 
 // ─── HOOK 1 : Liste postes clés ──────────────────────────────
 export function useKeyPositions(filters = {}) {
+  const { organization_id } = useAuth()
   return useQuery({
-    queryKey: ['key_positions', filters],
+    queryKey: ['key_positions', filters, organization_id],
     queryFn: async () => {
       let q = supabase
         .from('key_positions')
         .select(POSITION_SELECT)
+        .eq('organization_id', organization_id)
         .eq('is_active', true)
         .order('criticality_level', { ascending: true }) // critical first
         .order('title')
@@ -130,6 +132,7 @@ export function useCreateKeyPosition() {
           division_id:            payload.division_id || null,
           service_id:             payload.service_id || null,
           current_holder_id:      payload.current_holder_id || null,
+          organization_id:        profile.organization_id,
         })
         .select()
         .single()

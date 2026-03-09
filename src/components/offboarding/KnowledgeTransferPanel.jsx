@@ -4,7 +4,7 @@
 // ============================================================
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { BookOpen, Plus, Check, Clock, AlertCircle, User, Link, X, ChevronDown, ChevronUp } from 'lucide-react'
+import { BookOpen, Plus, Check, Clock, AlertCircle, User, Link, ChevronDown, ChevronUp } from 'lucide-react'
 import {
   useOffboardingKnowledge, useAddKnowledgeItem, useUpdateKnowledgeItem,
   KNOWLEDGE_STATUS_LABELS,

@@ -3,7 +3,7 @@
 // Session 67 — Gestion des types de congés (admin)
 // ============================================================
 import { useState } from 'react'
-import { Plus, Edit2, Check, X, Loader2, ToggleLeft, ToggleRight } from 'lucide-react'
+import { Plus, Edit2, Loader2, ToggleLeft, ToggleRight } from 'lucide-react'
 import { useLeaveTypes, useCreateLeaveType, useUpdateLeaveType } from '../../hooks/useConges'
 
 const COLORS = ['#10B981','#3B82F6','#EF4444','#8B5CF6','#6B7280','#F59E0B','#EC4899','#6366F1']

@@ -23,6 +23,7 @@ import JournalPage          from '../pulse/Journal'
 // ✅ S77
 import WorkloadChart        from '../../components/tasks/WorkloadChart'
 import GanttMini            from '../../components/tasks/GanttMini'
+import { TASK_STATUS } from '../../utils/constants'
 
 const VIEWS = [
   { id:'kanban',   label:'Kanban',      icon:'▦' },
@@ -50,7 +51,7 @@ export default function Tasks() {
 
   const stats = {
     total:    tasks.length,
-    en_cours: tasks.filter(t=>t.status==='en_cours').length,
+    en_cours: tasks.filter(t=>t.status===TASK_STATUS.EN_COURS).length,
     en_revue: tasks.filter(t=>t.status==='en_revue').length,
     urgentes: tasks.filter(t=>t.priority==='urgente'&&t.status!=='terminee').length,
   }

@@ -7,6 +7,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
 import { getTodayString } from '../lib/pulseHelpers'
+import { STATUS, TASK_STATUS } from '../utils/constants'
 
 // ─── TÂCHES ACTIVES DE L'UTILISATEUR (pour le brief) ─────────
 /**
@@ -161,7 +162,7 @@ export function useSaveMorningPlan() {
 }
 
 /**
- * Soumettre le brief matinal (passe en 'submitted')
+ * Soumettre le brief matinal (passe en STATUS.SUBMITTED)
  */
 export function useSubmitMorningPlan() {
   const { profile } = useAuth()
@@ -178,7 +179,7 @@ export function useSubmitMorningPlan() {
           planned_task_ids: plannedTaskIds || [],
           available_hours: availableHours ?? 8.0,
           note: note || null,
-          status: 'submitted',
+          status: STATUS.SUBMITTED,
           submitted_at: new Date().toISOString(),
         }, { onConflict: 'user_id,plan_date' })
         .select()
@@ -272,7 +273,7 @@ export function useSubmitLog() {
       const { data, error } = await supabase
         .from('daily_logs')
         .update({
-          status: 'submitted',
+          status: STATUS.SUBMITTED,
           submitted_at: new Date().toISOString(),
           deadline_missed: deadlineMissed,
           overall_note: overallNote || null,
@@ -311,7 +312,7 @@ export function useAddLogEntry() {
           progress_before: progressBefore,
           progress_after: progressBefore,
           time_spent_min: 0,
-          task_status: 'en_cours',
+          task_status: TASK_STATUS.EN_COURS,
         })
         .select(`
           *,

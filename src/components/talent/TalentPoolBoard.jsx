@@ -7,7 +7,7 @@
 // ============================================================
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Plus, X, User, ChevronRight, Briefcase, Clock, TrendingUp, AlertCircle, Trash2 } from 'lucide-react'
+import { Plus, X, User, ChevronRight, Briefcase, AlertCircle, Trash2 } from 'lucide-react'
 import {
   useTalentPool,
   useRemoveFromTalentPool,
@@ -18,6 +18,7 @@ import {
 import { useUsersList } from '../../hooks/useSettings'
 import { useKeyPositions } from '../../hooks/useSuccessionPlanning'
 import { usePermission } from '../../hooks/usePermission'
+import { CRITICALITY } from '../../utils/constants'
 
 // ─── Helpers ─────────────────────────────────────────────────
 function Avatar({ user, size = 32 }) {
@@ -176,7 +177,7 @@ function AddTalentModal({ positionId, positions, onClose }) {
         required_level: Number(gapInput.required_level),
         current_level:  Number(gapInput.current_level),
         gap,
-        priority:       gap >= 3 ? 'critical' : gap >= 2 ? 'high' : gap >= 1 ? 'medium' : 'low',
+        priority:       gap >= 3 ? CRITICALITY.CRITICAL : gap >= 2 ? 'high' : gap >= 1 ? 'medium' : 'low',
       }],
     }))
     setGapInput({ skill: '', required_level: 3, current_level: 1 })

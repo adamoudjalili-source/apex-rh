@@ -3,7 +3,8 @@
 // Session 66 — Dashboard manager : vue équipe + validations
 // ============================================================
 import { useState } from 'react'
-import { ChevronLeft, ChevronRight, Check, X, Eye, Users, Clock } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Check, X, Users, Clock } from 'lucide-react'
+import { LEAVE_STATUS } from '../../utils/constants'
 import {
   useTeamTimeSheets, useApproveTimeSheet, useRejectTimeSheet,
   getCurrentWeekStart, formatHours,
@@ -39,8 +40,8 @@ export default function TeamTimeSheetDashboard({ orgView = false }) {
   const summary = {
     total:    sheets.length,
     draft:    sheets.filter(s => s.status === 'draft').length,
-    pending:  sheets.filter(s => ['submitted','manager_approved'].includes(s.status)).length,
-    approved: sheets.filter(s => s.status === 'hr_approved').length,
+    pending:  sheets.filter(s => [LEAVE_STATUS.SUBMITTED,LEAVE_STATUS.MANAGER_APPROVED].includes(s.status)).length,
+    approved: sheets.filter(s => s.status === LEAVE_STATUS.HR_APPROVED).length,
   }
 
   return (
@@ -99,8 +100,8 @@ export default function TeamTimeSheetDashboard({ orgView = false }) {
                 const user  = sheet.users || {}
                 const name  = `${user.first_name || ''} ${user.last_name || ''}`.trim()
                 const color = TIMESHEET_STATUS_COLORS[sheet.status]
-                const canManagerApprove = sheet.status === 'submitted'
-                const canHRApprove      = sheet.status === 'manager_approved'
+                const canManagerApprove = sheet.status === LEAVE_STATUS.SUBMITTED
+                const canHRApprove      = sheet.status === LEAVE_STATUS.MANAGER_APPROVED
 
                 return (
                   <tr key={sheet.id} className="hover:bg-white/[0.015] transition-colors">

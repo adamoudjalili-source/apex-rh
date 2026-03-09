@@ -16,13 +16,14 @@ import {
 } from '../../hooks/useFormations'
 import { useTrainingCatalog } from '../../hooks/useFormations'
 import { usePermission } from '../../hooks/usePermission'
+import { ROLES } from '../../utils/constants'
 
 const ROLE_OPTIONS = [
-  { value: 'collaborateur',  label: 'Collaborateur' },
-  { value: 'chef_service',   label: 'Chef de service' },
-  { value: 'chef_division',  label: 'Chef de division' },
-  { value: 'directeur',      label: 'Directeur' },
-  { value: 'administrateur', label: 'Administrateur' },
+  { value: ROLES.COLLABORATEUR,  label: 'Collaborateur' },
+  { value: ROLES.CHEF_SERVICE,   label: 'Chef de service' },
+  { value: ROLES.CHEF_DIVISION,  label: 'Chef de division' },
+  { value: ROLES.DIRECTEUR,      label: 'Directeur' },
+  { value: ROLES.ADMINISTRATEUR, label: 'Administrateur' },
 ]
 
 function ComplianceBadge({ status }) {

@@ -9,7 +9,7 @@ import {
   TrendingUp, ChevronRight, User, Calendar,
 } from 'lucide-react'
 import { useTeamOnboardingProgress } from '../../hooks/useOnboarding'
-import { useUsersList }              from '../../hooks/useSettings'
+import { TASK_STATUS } from '../../utils/constants'
 
 // Calcul du taux de complétion et infos retard
 function computeProgress(assignment) {
@@ -23,7 +23,7 @@ function computeProgress(assignment) {
   const overdue   = completions.filter(c => {
     if (c.status !== 'pending' || !startDate) return false
     // On n'a pas les step details ici, on utilise le status si overdue est déjà calculé
-    return c.status === 'overdue'
+    return c.status === TASK_STATUS.OVERDUE
   }).length
 
   return { total, completed, skipped, pct, overdue }
@@ -110,7 +110,7 @@ export default function TeamOnboardingDashboard() {
   }))
 
   const filtered = enriched.filter(a => {
-    if (filter === 'overdue')    return a._progress.overdue > 0
+    if (filter === TASK_STATUS.OVERDUE)    return a._progress.overdue > 0
     if (filter === 'inprogress') return a._progress.pct > 0 && a._progress.pct < 100 && a._progress.overdue === 0
     if (filter === 'done')       return a._progress.pct === 100
     return true
@@ -181,7 +181,7 @@ export default function TeamOnboardingDashboard() {
       <div className="flex gap-2 flex-wrap">
         {[
           { id: 'all',        label: `Tous (${total})` },
-          { id: 'overdue',    label: `En retard (${withDelay})` },
+          { id: TASK_STATUS.OVERDUE,    label: `En retard (${withDelay})` },
           { id: 'inprogress', label: 'En cours' },
           { id: 'done',       label: `Terminés (${done})` },
         ].map(f => (

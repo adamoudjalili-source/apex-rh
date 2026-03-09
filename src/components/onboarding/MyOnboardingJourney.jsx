@@ -10,6 +10,7 @@ import {
   SkipForward, MessageSquare, Calendar,
 } from 'lucide-react'
 import { useMyOnboardingProgress, useCompleteStep } from '../../hooks/useOnboarding'
+import { TASK_STATUS } from '../../utils/constants'
 
 const CATEGORY_COLORS = {
   administrative: '#6366F1',
@@ -144,10 +145,10 @@ function TimelineStep({ completion, startDate, index, isLast }) {
     dueDate = d
   }
   const isOverdue = dueDate && dueDate < new Date() && status === 'pending'
-  const effectiveStatus = isOverdue ? 'overdue' : status
+  const effectiveStatus = isOverdue ? TASK_STATUS.OVERDUE : status
   const effectiveCfg = STATUS_CONFIG[effectiveStatus] || cfg
 
-  const canComplete = ['pending', 'in_progress', 'overdue'].includes(effectiveStatus)
+  const canComplete = ['pending', 'in_progress', TASK_STATUS.OVERDUE].includes(effectiveStatus)
 
   return (
     <div className="flex gap-3">
@@ -176,12 +177,12 @@ function TimelineStep({ completion, startDate, index, isLast }) {
           style={{
             background: effectiveStatus === 'completed'
               ? 'rgba(16,185,129,0.04)'
-              : effectiveStatus === 'overdue'
+              : effectiveStatus === TASK_STATUS.OVERDUE
               ? 'rgba(239,68,68,0.05)'
               : 'rgba(255,255,255,0.03)',
             border: `1px solid ${
               effectiveStatus === 'completed' ? 'rgba(16,185,129,0.15)'
-              : effectiveStatus === 'overdue' ? 'rgba(239,68,68,0.2)'
+              : effectiveStatus === TASK_STATUS.OVERDUE ? 'rgba(239,68,68,0.2)'
               : 'rgba(255,255,255,0.06)'
             }`,
           }}

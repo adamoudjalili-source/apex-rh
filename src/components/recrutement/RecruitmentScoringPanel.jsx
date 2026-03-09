@@ -14,7 +14,6 @@ import {
   useUpdateApplicationScore, useComputeApplicationScore,
   getScoreInfo, SCORE_LABELS, APPLICATION_SOURCE_LABELS,
 } from '../../hooks/useRecruitment'
-import { useAuth } from '../../contexts/AuthContext'
 
 // ─── Score Gauge SVG ──────────────────────────────────────────
 function ScoreGauge({ score, size = 64 }) {

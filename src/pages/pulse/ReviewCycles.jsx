@@ -764,7 +764,7 @@ function CollaborateurView() {
   const [modalCycle, setModalCycle] = useState(null)
 
   // Évaluations en attente de mon action
-  const pendingSelf = myEvals.filter(e => e.status === 'pending' || e.status === 'self_submitted')
+  const pendingSelf = myEvals.filter(e => e.status === 'pending' || e.status === REVIEW_STATUS.SELF_SUBMITTED)
   const pastEvals   = myEvals.filter(e => ['manager_submitted', 'validated', 'archived'].includes(e.status))
 
   if (isLoading) return (
@@ -785,7 +785,7 @@ function CollaborateurView() {
           <div className="space-y-3">
             {pendingSelf.map(ev => {
               const cycle = ev.cycle
-              const isSelfDone = ev.status === 'self_submitted'
+              const isSelfDone = ev.status === REVIEW_STATUS.SELF_SUBMITTED
               return (
                 <Card key={ev.id}>
                   <div className="flex items-center justify-between gap-3">
@@ -1220,7 +1220,7 @@ function CycleEvalsList({ cycleId, cycle, onManagerEval, onValidate, onArchive }
               </div>
               <div className="flex items-center gap-2">
                 <Badge label={EVAL_STATUS_LABELS[ev.status]} color={EVAL_STATUS_COLORS[ev.status]} />
-                {ev.status === 'self_submitted' && (
+                {ev.status === REVIEW_STATUS.SELF_SUBMITTED && (
                   <button
                     onClick={() => onManagerEval(ev)}
                     className="px-2.5 py-1 rounded-lg text-[11px] font-medium text-white bg-indigo-600/80 hover:bg-indigo-500"
@@ -1256,6 +1256,7 @@ function CycleEvalsList({ cycleId, cycle, onManagerEval, onValidate, onArchive }
 // ─── IMPORT CALIBRATION ──────────────────────────────────────
 // CalibrationPage importé en lazy pour éviter les dépendances circulaires
 import { lazy, Suspense as Sus } from 'react'
+import { REVIEW_STATUS } from '../../utils/constants'
 const CalibrationPage = lazy(() => import('../intelligence/CalibrationPage'))
 
 // ─── PAGE PRINCIPALE ─────────────────────────────────────────

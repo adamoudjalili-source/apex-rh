@@ -15,6 +15,7 @@ import {
 } from '../lib/pulseHelpers'
 
 import { MANAGER_ROLES } from '../lib/roles'
+import { CRITICALITY, ROLES } from '../utils/constants'
 
 // ─── TYPES D'ALERTES ─────────────────────────────────────────
 export const ALERT_TYPES = {
@@ -138,7 +139,7 @@ export function useTeamAlerts(settings) {
           .select('id, first_name, last_name')
           .eq('organization_id', profile.organization_id)
           .eq('is_active', true)
-          .eq('role', 'collaborateur')
+          .eq('role', ROLES.COLLABORATEUR)
 
         const submittedPlanIds = new Set(plans?.map(p => p.user_id) || [])
         const missing = (allUsers || []).filter(u => !submittedPlanIds.has(u.id))
@@ -170,7 +171,7 @@ export function useTeamAlerts(settings) {
           .select('id, first_name, last_name')
           .eq('organization_id', profile.organization_id)
           .eq('is_active', true)
-          .eq('role', 'collaborateur')
+          .eq('role', ROLES.COLLABORATEUR)
 
         const submittedLogIds = new Set(logs?.map(l => l.user_id) || [])
         const missing = (allUsers || []).filter(u => !submittedLogIds.has(u.id))
@@ -179,7 +180,7 @@ export function useTeamAlerts(settings) {
             id: `log-missing-${u.id}`,
             source: 'realtime',
             type: ALERT_TYPES.LOG_MISSING,
-            severity: 'critical',
+            severity: CRITICALITY.CRITICAL,
             userId: u.id,
             userName: `${u.first_name} ${u.last_name}`,
             message: buildAlertMessage('log_missing'),
@@ -590,7 +591,7 @@ export function useGeneratePulseAlerts() {
               user_id: userId,
               alert_type: rule.alert_type,
               status: 'active',
-              severity: contextJson.avg_score < 30 ? 'critical' : 'warning',
+              severity: contextJson.avg_score < 30 ? CRITICALITY.CRITICAL : 'warning',
               triggered_at: new Date().toISOString(),
               context_json: contextJson,
             })

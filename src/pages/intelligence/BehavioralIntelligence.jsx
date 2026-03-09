@@ -32,6 +32,7 @@ import AttritionHeatmap from '../../components/behavioral/AttritionHeatmap'
 import RiskFactorBreakdown from '../../components/behavioral/RiskFactorBreakdown'
 import CareerPathCard from '../../components/behavioral/CareerPathCard'
 import BehavioralAlerts from '../../components/behavioral/BehavioralAlerts'
+import { CRITICALITY } from '../../utils/constants'
 
 // ─── Onglet 1 : Attrition Prédictive ─────────────────────────
 
@@ -81,7 +82,7 @@ function AttritionTab() {
 
         {/* Filtre risque */}
         <div className="flex items-center gap-1">
-          {['all', 'critical', 'high', 'medium', 'low'].map(lvl => (
+          {['all', CRITICALITY.CRITICAL, 'high', 'medium', 'low'].map(lvl => (
             <button
               key={lvl}
               onClick={() => setRisk(lvl)}

@@ -3,7 +3,7 @@
 // Session 53 — Gestionnaire API Ouverte & Connecteurs SIRH
 // Onglets : Clés API | Webhooks | Import SCIM | Mapping | Docs
 // ============================================================
-import { useState, useCallback } from 'react'
+import { useState } from 'react'
 import { useAuth } from '../../contexts/AuthContext'
 import { usePermission } from '../../hooks/usePermission'
 import {

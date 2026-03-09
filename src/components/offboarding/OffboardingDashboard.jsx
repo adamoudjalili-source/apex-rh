@@ -12,7 +12,7 @@ import {
   useOffboardingDashboard,
   useAutoCreateOffboarding,
 } from '../../hooks/useOffboarding'
-import { OFFBOARDING_STATUS_LABELS, EXIT_REASON_LABELS } from '../../hooks/useOffboarding'
+import { EXIT_REASON_LABELS } from '../../hooks/useOffboarding'
 import { usePermission } from '../../hooks/usePermission'
 
 // ─── Helpers ─────────────────────────────────────────────────

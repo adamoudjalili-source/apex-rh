@@ -2,9 +2,7 @@
 // APEX RH — src/components/formation/FormationDashboardEnrichi.jsx
 // Session 73 — Dashboard enrichi : taux complétion + budget + obligatoires + satisfaction
 // ============================================================
-import { useState } from 'react'
-import { motion } from 'framer-motion'
-import { RefreshCw, GraduationCap, AlertTriangle, DollarSign, Star, TrendingUp, CheckCircle2 } from 'lucide-react'
+import { RefreshCw, GraduationCap, DollarSign, Star, TrendingUp, CheckCircle2 } from 'lucide-react'
 import {
   useOrgTrainingStats, useMyTrainingStats, useTrainingBudgets, useBudgetConsumed,
   useMandatoryCompliance, useGlobalEvaluationStats, useRefreshFormationMVs,

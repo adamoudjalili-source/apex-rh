@@ -8,6 +8,7 @@ import { useAuth } from '../../contexts/AuthContext'
 import { useCreateTask, useUpdateTask, useAllUsers } from '../../hooks/useTasks'
 import { TASK_STATUS, TASK_PRIORITY, getUserFullName } from '../../lib/taskHelpers'
 import { supabase } from '../../lib/supabase'
+import { ROLES } from '../../utils/constants'
 
 export default function TaskForm({ task = null, onClose, defaultStatus = 'backlog' }) {
   // ✅ FIX Bug 1 : utiliser profile pour id et infos
@@ -20,8 +21,8 @@ export default function TaskForm({ task = null, onClose, defaultStatus = 'backlo
   const [divisions, setDivisions] = useState([])
 
   // Pré-remplir division/service selon le profil connecté (sauf admin)
-  const isAdmin = profile?.role === 'administrateur'
-  const isDirecteur = profile?.role === 'directeur'
+  const isAdmin = profile?.role === ROLES.ADMINISTRATEUR
+  const isDirecteur = profile?.role === ROLES.DIRECTEUR
 
   const [form, setForm] = useState({
     title: task?.title || '',
