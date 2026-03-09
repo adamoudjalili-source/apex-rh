@@ -251,7 +251,7 @@ export default function OnboardingWizardV2() {
 export function OnboardingChecklist() {
   const { profile } = useAuth?.() || {}
   const navigate = useNavigate()
-  const { enablePush, isSubscribed } = usePushNotifications()
+  const { enablePush, isSubscribed, supported, permission } = usePushNotifications()
   const [collapsed, setCollapsed] = useState(false)
   const [completedLocal, setCompletedLocal] = useState(() => {
     try { return JSON.parse(localStorage.getItem('apex_checklist_done') || '[]') }
@@ -262,7 +262,7 @@ export function OnboardingChecklist() {
   const items = CHECKLIST_ITEMS[roleGroup] || CHECKLIST_ITEMS.collaborateur
 
   const isItemDone = (key) => {
-    if (key === 'enable_push') return isSubscribed
+    if (key === 'enable_push') return isSubscribed || completedLocal.includes(key)
     return completedLocal.includes(key)
   }
 
@@ -281,8 +281,15 @@ export function OnboardingChecklist() {
 
   const handleItemClick = async (item) => {
     if (item.pushAction) {
-      await enablePush()
-      markDone(item.key)
+      const success = await enablePush()
+      if (success) {
+        // Push activé avec succès
+        markDone(item.key)
+      } else if (!supported || permission === 'denied') {
+        // Navigateur incompatible ou utilisateur a refusé → on passe l'étape
+        markDone(item.key)
+      }
+      // Si permission === 'default' et non supporté → on ne marque pas (l'utilisateur peut réessayer)
       return
     }
     if (item.link) {
@@ -389,6 +396,17 @@ export function OnboardingChecklist() {
                     </span>
 
                     {!done && item.link && <ExternalLink size={9} className="text-white/20 flex-shrink-0" />}
+                    {/* Bouton "Ignorer" sur push si non supporté ou refusé */}
+                    {!done && item.pushAction && (!supported || permission === 'denied') && (
+                      <span
+                        onClick={(e) => { e.stopPropagation(); markDone(item.key) }}
+                        className="text-[9px] px-1.5 py-0.5 rounded-full flex-shrink-0 cursor-pointer hover:bg-white/10 transition-colors"
+                        style={{ color: 'rgba(255,255,255,0.3)', border: '1px solid rgba(255,255,255,0.1)' }}
+                        title="Passer cette étape"
+                      >
+                        Ignorer
+                      </span>
+                    )}
                   </motion.button>
                 )
               })}
