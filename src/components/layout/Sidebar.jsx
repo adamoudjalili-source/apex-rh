@@ -1,34 +1,47 @@
 // ============================================================
-// APEX RH — Sidebar.jsx · S99 — 3 vues × 9 modules
-// Architecture V2 — Sidebar finale
+// APEX RH — Sidebar.jsx · S110 — 6 profils × architecture cible
 //
-// super_admin   : Tableau de Bord · Mon Espace · Organisations
-//                 Intelligence RH · Communication · Administration
+// collaborateur  : Mon Tableau de Bord
+//                  MON ESPACE (7) : Mon Travail · Mon Timesheet · Mes Congés
+//                                   Mon Développement · Mes Entretiens
+//                                   Mon Suivi RH · Ma Rémunération
+//                  Communication · Paramètres
 //
-// administrateur: Tableau de Bord
-//                 Performance · Évaluations · Formation & Dév
-//                 Gestion des Employés · Temps & Absences · Cycle RH
-//                 Intelligence RH · Communication · Administration
+// chef_service   : Mon Tableau de Bord
+//                  MON ESPACE (7)
+//                  MON SERVICE (6) : Mon Équipe · Performance équipe
+//                                    Évaluations équipe · Formation équipe
+//                                    Temps & Congés · Validations
+//                  Communication · Paramètres
 //
-// directeur     : Tableau de Bord
-//                 Performance · Évaluations · Formation & Dév
-//                 Gestion des Employés · Temps & Absences · Cycle RH
-//                 Intelligence RH · Communication
+// chef_division  : Mon Tableau de Bord
+//                  MON ESPACE (7)
+//                  MA DIVISION (7) : Mon Équipe · Performance division
+//                                    Évaluations division · Formation division
+//                                    Temps & Congés · Validations · Intelligence RH
+//                  Communication · Paramètres
 //
-// chef_division : Mon Tableau de Bord · Ma Division
-//                 Performance · Évaluations · Formation & Dév
-//                 Gestion des Employés · Temps & Absences · Cycle RH
-//                 Intelligence RH · Communication
+// directeur      : Tableau de Bord
+//                  MON ESPACE (7)
+//                  PILOTAGE (4) : Performance org · Évaluations
+//                                 Formation & Dév · Intelligence RH
+//                  Communication · Paramètres
 //
-// chef_service  : Mon Tableau de Bord · Mon Service
-//                 Performance · Évaluations · Formation & Dév
-//                 Gestion des Employés · Temps & Absences · Cycle RH
-//                 Communication
+// administrateur : Tableau de Bord
+//                  MON ESPACE (7)
+//                  MODULES RH (7) : Gestion Employés · Performance · Évaluations
+//                                   Formation & Dév · Temps & Absences
+//                                   Cycle RH · Intelligence RH
+//                  ADMINISTRATION (5) : Organisation · Accès & RBAC · Paramètres
+//                                       Notifications · API & Intégrations
+//                  Communication
 //
-// collaborateur : Mon Tableau de Bord · Mon Espace
-//                 Mon RH ▾ (Performance · Évaluations · Formation & Dév
-//                           Temps & Absences · Entretiens · Cycle RH)
-//                 Communication · Paramètres
+// super_admin    : Tableau de Bord
+//                  MON ESPACE (7)
+//                  MODULES RH (7)
+//                  ADMINISTRATION (5)
+//                  MULTI-TENANT : Organisations
+//                  Communication
 // ============================================================
 import { useState } from 'react'
 import { NavLink, useNavigate, useLocation } from 'react-router-dom'
@@ -37,9 +50,11 @@ import {
   LayoutDashboard, Users, BarChart3, TrendingUp,
   ChevronLeft, ChevronRight, LogOut, ChevronDown,
   ClipboardList, ClipboardCheck, Settings,
-  Home, ShieldCheck, MessageCircle, Clock,
+  ShieldCheck, MessageCircle, Clock,
   Globe, UserSquare2, GraduationCap, RefreshCw,
-  Briefcase,
+  Briefcase, CalendarDays, Wallet,
+  Activity, Building2, Bell, Zap,
+  CheckSquare,
 } from 'lucide-react'
 import { useAuth }        from '../../contexts/AuthContext'
 import { useAppSettings } from '../../hooks/useSettings'
@@ -100,60 +115,26 @@ function NavItem({ icon: Icon, label, path, collapsed, color, badge, indent = fa
   )
 }
 
-// ─── NavGroup (collapsible) ──────────────────────────────────
-function NavGroup({ icon: Icon, label, children, collapsed, color, childPaths = [] }) {
-  const location = useLocation()
-  const isChildActive = childPaths.some(p => location.pathname === p || location.pathname.startsWith(p + '/'))
-  const [open, setOpen] = useState(isChildActive)
-
-  // En mode collapsed, afficher les items directement
-  if (collapsed) {
-    return <div className="space-y-0.5">{children}</div>
-  }
-
-  return (
-    <div>
-      <button
-        onClick={() => setOpen(o => !o)}
-        className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 relative overflow-hidden group ${
-          isChildActive ? 'text-white' : 'text-white/35 hover:text-white/75 hover:bg-white/[0.03]'
-        }`}>
-        {isChildActive && (
-          <motion.div
-            className="absolute inset-0 rounded-xl pointer-events-none"
-            style={{ background: color ? `${color}12` : 'rgba(99,102,241,0.1)' }}/>
-        )}
-        {isChildActive && (
-          <motion.div
-            className="absolute left-0 top-2 bottom-2 w-[3px] rounded-r"
-            style={{ background: color || '#6366F1' }}/>
-        )}
-        <Icon size={17} className="flex-shrink-0 relative z-10" style={isChildActive && color ? { color } : undefined}/>
-        <span className="text-sm font-medium truncate flex-1 relative z-10 text-left">{label}</span>
-        <ChevronDown
-          size={13}
-          className={`flex-shrink-0 relative z-10 transition-transform duration-200 ${open ? 'rotate-180' : ''}`}/>
-      </button>
-      <AnimatePresence initial={false}>
-        {open && (
-          <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: 'auto', opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.2, ease: [0.4, 0, 0.2, 1] }}
-            className="overflow-hidden pl-1 space-y-0.5 mt-0.5">
-            {children}
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </div>
-  )
-}
-
 // ─── Section label ────────────────────────────────────────────
 function Section({ label, collapsed }) {
   if (collapsed) return <div className="h-px bg-white/[0.05] mx-3 my-2"/>
   return <p className="text-[9px] text-white/15 uppercase tracking-[0.15em] px-3 pt-3 pb-1 font-semibold">{label}</p>
+}
+
+// ─── MonEspace — bloc identique pour tous les profils ────────
+function MonEspace({ collapsed }) {
+  return (
+    <>
+      <Section label="Mon Espace" collapsed={collapsed}/>
+      <NavItem icon={Briefcase}     label="Mon Travail"        path="/mon-travail"       color="#4F46E5" collapsed={collapsed}/>
+      <NavItem icon={Clock}         label="Mon Timesheet"      path="/mon-timesheet"     color="#34D399" collapsed={collapsed}/>
+      <NavItem icon={CalendarDays}  label="Mes Congés"         path="/mes-conges"        color="#10B981" collapsed={collapsed}/>
+      <NavItem icon={GraduationCap} label="Mon Développement"  path="/mon-developpement" color="#8B5CF6" collapsed={collapsed}/>
+      <NavItem icon={ClipboardList} label="Mes Entretiens"     path="/mes-entretiens"    color="#A78BFA" collapsed={collapsed}/>
+      <NavItem icon={RefreshCw}     label="Mon Suivi RH"       path="/mon-suivi-rh"      color="#C9A227" collapsed={collapsed}/>
+      <NavItem icon={Wallet}        label="Ma Rémunération"    path="/ma-remuneration"   color="#F59E0B" collapsed={collapsed}/>
+    </>
+  )
 }
 
 // ─── Sidebar ──────────────────────────────────────────────────
@@ -161,9 +142,9 @@ export default function Sidebar() {
   const [collapsed, setCollapsed] = useState(false)
 
   const { profile, signOut, isSuperAdmin, isAdmin, isDirecteur, isChefDivision, isChefService, isCollab } = useAuth()
-  const navigate               = useNavigate()
-  const { data: settings }     = useAppSettings()
-  const { data: todayScore }   = useTodayScore()
+  const navigate                  = useNavigate()
+  const { data: settings }        = useAppSettings()
+  const { data: todayScore }      = useTodayScore()
   const { data: unreadCount = 0 } = useUnreadCount()
 
   const pulseOn  = isPulseEnabled(settings)
@@ -204,119 +185,141 @@ export default function Sidebar() {
         {/* ═══ SUPER ADMINISTRATEUR ═══ */}
         {isSuperAdmin && (
           <>
-            <NavItem icon={LayoutDashboard} label="Tableau de Bord"    path="/dashboard"      color="#C9A227" collapsed={collapsed}/>
-            <Section label="Personnel" collapsed={collapsed}/>
-            <NavItem icon={Home}             label="Mon Espace"         path="/mon-espace"     color="#4F46E5" collapsed={collapsed}/>
-            <Section label="Multi-tenant" collapsed={collapsed}/>
-            <NavItem icon={Globe}            label="Organisations"      path="/super-admin"    color="#C9A227" collapsed={collapsed}/>
-            <Section label="Analyse" collapsed={collapsed}/>
-            <NavItem icon={BarChart3}        label="Intelligence RH"    path="/intelligence"   color="#8B5CF6" collapsed={collapsed}/>
+            <NavItem icon={LayoutDashboard} label="Tableau de Bord"     path="/dashboard"            color="#C9A227" collapsed={collapsed}/>
+
+            <MonEspace collapsed={collapsed}/>
+
+            <Section label="Modules RH" collapsed={collapsed}/>
+            <NavItem icon={UserSquare2}    label="Gestion Employés"      path="/employes"             color="#3B82F6" collapsed={collapsed}/>
+            <NavItem icon={TrendingUp}     label="Performance"           path="/performance"          color="#818CF8" collapsed={collapsed}/>
+            <NavItem icon={ClipboardCheck} label="Évaluations"           path="/evaluations"          color="#A78BFA" collapsed={collapsed}/>
+            <NavItem icon={GraduationCap}  label="Formation & Dév"       path="/developpement"        color="#10B981" collapsed={collapsed}/>
+            <NavItem icon={Clock}          label="Temps & Absences"      path="/temps-absences"       color="#34D399" collapsed={collapsed}/>
+            <NavItem icon={RefreshCw}      label="Cycle RH"              path="/cycle-rh"             color="#C9A227" collapsed={collapsed}/>
+            <NavItem icon={BarChart3}      label="Intelligence RH"       path="/intelligence"         color="#8B5CF6" collapsed={collapsed}/>
+
+            <Section label="Administration" collapsed={collapsed}/>
+            <NavItem icon={Building2}      label="Organisation"          path="/admin/organisation"   color="#6B7280" collapsed={collapsed}/>
+            <NavItem icon={ShieldCheck}    label="Accès & RBAC"          path="/admin/access-control" color="#EF4444" collapsed={collapsed}/>
+            <NavItem icon={Settings}       label="Paramètres"            path="/admin/settings"       color="#6B7280" collapsed={collapsed}/>
+            <NavItem icon={Bell}           label="Notifications"         path="/admin/notifications"  color="#F59E0B" collapsed={collapsed}/>
+            <NavItem icon={Zap}            label="API & Intégrations"    path="/admin/api-manager"    color="#06B6D4" collapsed={collapsed}/>
+
+            <Section label="Multi-Tenant" collapsed={collapsed}/>
+            <NavItem icon={Globe}          label="Organisations"         path="/super-admin"          color="#C9A227" collapsed={collapsed}/>
+
             <Section label="Communication" collapsed={collapsed}/>
-            <NavItem icon={MessageCircle}    label="Communication"      path="/communication"  color="#06B6D4" badge={unreadCount || null} collapsed={collapsed}/>
-            <Section label="Admin" collapsed={collapsed}/>
-            <NavItem icon={ShieldCheck}      label="Administration"     path="/administration" color="#EF4444" collapsed={collapsed}/>
+            <NavItem icon={MessageCircle}  label="Communication"         path="/communication"        color="#06B6D4" badge={unreadCount || null} collapsed={collapsed}/>
           </>
         )}
 
-        {/* ═══ ADMINISTRATEUR — 9 modules + Administration ═══ */}
+        {/* ═══ ADMINISTRATEUR ═══ */}
         {isAdmin && (
           <>
-            <NavItem icon={LayoutDashboard} label="Tableau de Bord"       path="/dashboard"      color="#C9A227" collapsed={collapsed}/>
+            <NavItem icon={LayoutDashboard} label="Tableau de Bord"     path="/dashboard"            color="#C9A227" collapsed={collapsed}/>
+
+            <MonEspace collapsed={collapsed}/>
+
             <Section label="Modules RH" collapsed={collapsed}/>
-            <NavItem icon={TrendingUp}      label="Performance"           path="/performance"    color="#818CF8" collapsed={collapsed}/>
-            <NavItem icon={ClipboardCheck}  label="Évaluations"           path="/evaluations"    color="#A78BFA" collapsed={collapsed}/>
-            <NavItem icon={GraduationCap}   label="Formation & Dév"       path="/developpement"  color="#10B981" collapsed={collapsed}/>
-            <NavItem icon={UserSquare2}     label="Gestion des Employés"  path="/employes"       color="#3B82F6" collapsed={collapsed}/>
-            <NavItem icon={Clock}           label="Temps & Absences"      path="/temps-absences" color="#34D399" collapsed={collapsed}/>
-            <NavItem icon={RefreshCw}       label="Cycle RH"              path="/cycle-rh"       color="#C9A227" collapsed={collapsed}/>
-            <NavItem icon={BarChart3}       label="Intelligence RH"       path="/intelligence"   color="#8B5CF6" collapsed={collapsed}/>
+            <NavItem icon={UserSquare2}    label="Gestion Employés"      path="/employes"             color="#3B82F6" collapsed={collapsed}/>
+            <NavItem icon={TrendingUp}     label="Performance"           path="/performance"          color="#818CF8" collapsed={collapsed}/>
+            <NavItem icon={ClipboardCheck} label="Évaluations"           path="/evaluations"          color="#A78BFA" collapsed={collapsed}/>
+            <NavItem icon={GraduationCap}  label="Formation & Dév"       path="/developpement"        color="#10B981" collapsed={collapsed}/>
+            <NavItem icon={Clock}          label="Temps & Absences"      path="/temps-absences"       color="#34D399" collapsed={collapsed}/>
+            <NavItem icon={RefreshCw}      label="Cycle RH"              path="/cycle-rh"             color="#C9A227" collapsed={collapsed}/>
+            <NavItem icon={BarChart3}      label="Intelligence RH"       path="/intelligence"         color="#8B5CF6" collapsed={collapsed}/>
+
+            <Section label="Administration" collapsed={collapsed}/>
+            <NavItem icon={Building2}      label="Organisation"          path="/admin/organisation"   color="#6B7280" collapsed={collapsed}/>
+            <NavItem icon={ShieldCheck}    label="Accès & RBAC"          path="/admin/access-control" color="#EF4444" collapsed={collapsed}/>
+            <NavItem icon={Settings}       label="Paramètres"            path="/admin/settings"       color="#6B7280" collapsed={collapsed}/>
+            <NavItem icon={Bell}           label="Notifications"         path="/admin/notifications"  color="#F59E0B" collapsed={collapsed}/>
+            <NavItem icon={Zap}            label="API & Intégrations"    path="/admin/api-manager"    color="#06B6D4" collapsed={collapsed}/>
+
             <Section label="Communication" collapsed={collapsed}/>
-            <NavItem icon={MessageCircle}   label="Communication"         path="/communication"  color="#06B6D4" badge={unreadCount || null} collapsed={collapsed}/>
-            <Section label="Admin" collapsed={collapsed}/>
-            <NavItem icon={ShieldCheck}     label="Administration"        path="/administration" color="#EF4444" collapsed={collapsed}/>
+            <NavItem icon={MessageCircle}  label="Communication"         path="/communication"        color="#06B6D4" badge={unreadCount || null} collapsed={collapsed}/>
           </>
         )}
 
-        {/* ═══ DIRECTEUR — 9 modules, pas Administration ═══ */}
+        {/* ═══ DIRECTEUR ═══ */}
         {isDirecteur && (
           <>
-            <NavItem icon={LayoutDashboard} label="Tableau de Bord"       path="/dashboard"      color="#C9A227" collapsed={collapsed}/>
-            <Section label="Modules RH" collapsed={collapsed}/>
-            <NavItem icon={TrendingUp}      label="Performance"           path="/performance"    color="#818CF8" collapsed={collapsed}/>
-            <NavItem icon={ClipboardCheck}  label="Évaluations"           path="/evaluations"    color="#A78BFA" collapsed={collapsed}/>
-            <NavItem icon={GraduationCap}   label="Formation & Dév"       path="/developpement"  color="#10B981" collapsed={collapsed}/>
-            <NavItem icon={UserSquare2}     label="Gestion des Employés"  path="/employes"       color="#3B82F6" collapsed={collapsed}/>
-            <NavItem icon={Clock}           label="Temps & Absences"      path="/temps-absences" color="#34D399" collapsed={collapsed}/>
-            <NavItem icon={RefreshCw}       label="Cycle RH"              path="/cycle-rh"       color="#C9A227" collapsed={collapsed}/>
-            <NavItem icon={BarChart3}       label="Intelligence RH"       path="/intelligence"   color="#8B5CF6" collapsed={collapsed}/>
+            <NavItem icon={LayoutDashboard} label="Tableau de Bord"     path="/dashboard"     color="#C9A227" collapsed={collapsed}/>
+
+            <MonEspace collapsed={collapsed}/>
+
+            <Section label="Pilotage" collapsed={collapsed}/>
+            <NavItem icon={Activity}       label="Performance org"       path="/performance"   color="#818CF8" collapsed={collapsed}/>
+            <NavItem icon={ClipboardCheck} label="Évaluations"           path="/evaluations"   color="#A78BFA" collapsed={collapsed}/>
+            <NavItem icon={GraduationCap}  label="Formation & Dév"       path="/developpement" color="#10B981" collapsed={collapsed}/>
+            <NavItem icon={BarChart3}      label="Intelligence RH"       path="/intelligence"  color="#8B5CF6" collapsed={collapsed}/>
+
             <Section label="Communication" collapsed={collapsed}/>
-            <NavItem icon={MessageCircle}   label="Communication"         path="/communication"  color="#06B6D4" badge={unreadCount || null} collapsed={collapsed}/>
+            <NavItem icon={MessageCircle}  label="Communication"         path="/communication" color="#06B6D4" badge={unreadCount || null} collapsed={collapsed}/>
+            <Section label="Préférences" collapsed={collapsed}/>
+            <NavItem icon={Settings}       label="Paramètres"            path="/admin/settings" color="#6B7280" collapsed={collapsed}/>
           </>
         )}
 
-        {/* ═══ CHEF DE DIVISION — + Intelligence RH ═══ */}
+        {/* ═══ CHEF DE DIVISION ═══ */}
         {isChefDivision && (
           <>
-            <NavItem icon={LayoutDashboard} label="Mon Tableau de Bord"   path="/mon-tableau-de-bord" color="#C9A227" collapsed={collapsed}/>
+            <NavItem icon={LayoutDashboard} label="Mon Tableau de Bord"  path="/mon-tableau-de-bord" color="#C9A227" collapsed={collapsed}/>
+
+            <MonEspace collapsed={collapsed}/>
+
             <Section label="Ma Division" collapsed={collapsed}/>
-            <NavItem icon={Users}           label="Ma Division"           path="/management"     color="#3B82F6" collapsed={collapsed}/>
-            <Section label="Modules RH" collapsed={collapsed}/>
-            <NavItem icon={TrendingUp}      label="Performance"           path="/performance"    color="#818CF8" collapsed={collapsed}/>
-            <NavItem icon={ClipboardCheck}  label="Évaluations"           path="/evaluations"    color="#A78BFA" collapsed={collapsed}/>
-            <NavItem icon={GraduationCap}   label="Formation & Dév"       path="/developpement"  color="#10B981" collapsed={collapsed}/>
-            <NavItem icon={UserSquare2}     label="Gestion des Employés"  path="/employes"       color="#3B82F6" collapsed={collapsed}/>
-            <NavItem icon={Clock}           label="Temps & Absences"      path="/temps-absences" color="#34D399" collapsed={collapsed}/>
-            <NavItem icon={RefreshCw}       label="Cycle RH"              path="/cycle-rh"       color="#C9A227" collapsed={collapsed}/>
-            <NavItem icon={BarChart3}       label="Intelligence RH"       path="/intelligence"   color="#8B5CF6" collapsed={collapsed}/>
+            <NavItem icon={Users}          label="Mon Équipe"            path="/mon-equipe"     color="#3B82F6" collapsed={collapsed}/>
+            <NavItem icon={TrendingUp}     label="Performance division"  path="/performance"    color="#818CF8" collapsed={collapsed}/>
+            <NavItem icon={ClipboardCheck} label="Évaluations division"  path="/evaluations"    color="#A78BFA" collapsed={collapsed}/>
+            <NavItem icon={GraduationCap}  label="Formation division"    path="/developpement"  color="#10B981" collapsed={collapsed}/>
+            <NavItem icon={Clock}          label="Temps & Congés"        path="/temps-absences" color="#34D399" collapsed={collapsed}/>
+            <NavItem icon={CheckSquare}    label="Validations"           path="/temps-absences" color="#10B981" collapsed={collapsed}/>
+            <NavItem icon={BarChart3}      label="Intelligence RH"       path="/intelligence"   color="#8B5CF6" collapsed={collapsed}/>
+
             <Section label="Communication" collapsed={collapsed}/>
-            <NavItem icon={MessageCircle}   label="Communication"         path="/communication"  color="#06B6D4" badge={unreadCount || null} collapsed={collapsed}/>
+            <NavItem icon={MessageCircle}  label="Communication"         path="/communication"  color="#06B6D4" badge={unreadCount || null} collapsed={collapsed}/>
+            <Section label="Préférences" collapsed={collapsed}/>
+            <NavItem icon={Settings}       label="Paramètres"            path="/admin/settings" color="#6B7280" collapsed={collapsed}/>
           </>
         )}
 
-        {/* ═══ CHEF DE SERVICE — sans Intelligence RH ═══ */}
+        {/* ═══ CHEF DE SERVICE ═══ */}
         {isChefService && (
           <>
-            <NavItem icon={LayoutDashboard} label="Mon Tableau de Bord"   path="/mon-tableau-de-bord" color="#C9A227" collapsed={collapsed}/>
+            <NavItem icon={LayoutDashboard} label="Mon Tableau de Bord"  path="/mon-tableau-de-bord" color="#C9A227" collapsed={collapsed}/>
+
+            <MonEspace collapsed={collapsed}/>
+
             <Section label="Mon Service" collapsed={collapsed}/>
-            <NavItem icon={Users}           label="Mon Service"           path="/management"     color="#3B82F6" collapsed={collapsed}/>
-            <Section label="Modules RH" collapsed={collapsed}/>
-            <NavItem icon={TrendingUp}      label="Performance"           path="/performance"    color="#818CF8" collapsed={collapsed}/>
-            <NavItem icon={ClipboardCheck}  label="Évaluations"           path="/evaluations"    color="#A78BFA" collapsed={collapsed}/>
-            <NavItem icon={GraduationCap}   label="Formation & Dév"       path="/developpement"  color="#10B981" collapsed={collapsed}/>
-            <NavItem icon={UserSquare2}     label="Gestion des Employés"  path="/employes"       color="#3B82F6" collapsed={collapsed}/>
-            <NavItem icon={Clock}           label="Temps & Absences"      path="/temps-absences" color="#34D399" collapsed={collapsed}/>
-            <NavItem icon={RefreshCw}       label="Cycle RH"              path="/cycle-rh"       color="#C9A227" collapsed={collapsed}/>
+            <NavItem icon={Users}          label="Mon Équipe"            path="/mon-equipe"     color="#3B82F6" collapsed={collapsed}/>
+            <NavItem icon={TrendingUp}     label="Performance équipe"    path="/performance"    color="#818CF8" collapsed={collapsed}/>
+            <NavItem icon={ClipboardCheck} label="Évaluations équipe"    path="/evaluations"    color="#A78BFA" collapsed={collapsed}/>
+            <NavItem icon={GraduationCap}  label="Formation équipe"      path="/developpement"  color="#10B981" collapsed={collapsed}/>
+            <NavItem icon={Clock}          label="Temps & Congés"        path="/temps-absences" color="#34D399" collapsed={collapsed}/>
+            <NavItem icon={CheckSquare}    label="Validations"           path="/temps-absences" color="#10B981" collapsed={collapsed}/>
+
             <Section label="Communication" collapsed={collapsed}/>
-            <NavItem icon={MessageCircle}   label="Communication"         path="/communication"  color="#06B6D4" badge={unreadCount || null} collapsed={collapsed}/>
+            <NavItem icon={MessageCircle}  label="Communication"         path="/communication"  color="#06B6D4" badge={unreadCount || null} collapsed={collapsed}/>
+            <Section label="Préférences" collapsed={collapsed}/>
+            <NavItem icon={Settings}       label="Paramètres"            path="/admin/settings" color="#6B7280" collapsed={collapsed}/>
           </>
         )}
 
-        {/* ═══ COLLABORATEUR — vue personnelle + Mon RH ▾ ═══ */}
+        {/* ═══ COLLABORATEUR ═══ */}
         {isCollab && (
           <>
             <NavItem icon={LayoutDashboard} label="Mon Tableau de Bord"  path="/mon-tableau-de-bord" color="#C9A227" collapsed={collapsed}/>
-            <Section label="Mon espace" collapsed={collapsed}/>
-            <NavItem icon={Home}            label="Mon Espace"           path="/mon-espace"           color="#4F46E5" collapsed={collapsed}/>
-            <Section label="Mon RH" collapsed={collapsed}/>
-            <NavGroup
-              icon={Briefcase}
-              label="Mon RH"
-              collapsed={collapsed}
-              color="#818CF8"
-              childPaths={['/performance','/evaluations','/developpement','/temps-absences','/entretiens','/cycle-rh']}>
-              <NavItem icon={TrendingUp}      label="Performance"        path="/performance"    color="#818CF8" collapsed={collapsed} indent/>
-              <NavItem icon={ClipboardCheck}  label="Évaluations"        path="/evaluations"    color="#A78BFA" collapsed={collapsed} indent/>
-              <NavItem icon={GraduationCap}   label="Formation & Dév"    path="/developpement"  color="#10B981" collapsed={collapsed} indent/>
-              <NavItem icon={Clock}           label="Temps & Absences"   path="/temps-absences" color="#34D399" collapsed={collapsed} indent/>
-              <NavItem icon={ClipboardList}   label="Entretiens"         path="/entretiens"     color="#A78BFA" collapsed={collapsed} indent/>
-              <NavItem icon={RefreshCw}       label="Cycle RH"           path="/cycle-rh"       color="#C9A227" collapsed={collapsed} indent/>
-            </NavGroup>
+
+            <MonEspace collapsed={collapsed}/>
+
             <Section label="Communication" collapsed={collapsed}/>
-            <NavItem icon={MessageCircle}   label="Communication"        path="/communication"  color="#06B6D4" badge={unreadCount || null} collapsed={collapsed}/>
+            <NavItem icon={MessageCircle}  label="Communication"         path="/communication"  color="#06B6D4" badge={unreadCount || null} collapsed={collapsed}/>
             <Section label="Préférences" collapsed={collapsed}/>
-            <NavItem icon={Settings}        label="Paramètres"           path="/admin/settings" color="#6B7280" collapsed={collapsed}/>
+            <NavItem icon={Settings}       label="Paramètres"            path="/admin/settings" color="#6B7280" collapsed={collapsed}/>
           </>
         )}
+
       </nav>
 
       {/* Profil utilisateur */}

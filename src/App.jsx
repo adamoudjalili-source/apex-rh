@@ -27,6 +27,7 @@ const AccessControl  = lazy(() => import('./pages/admin/AccessControl'))
 const SettingsPage   = lazy(() => import('./pages/admin/Settings'))
 const SuperAdmin     = lazy(() => import('./pages/admin/SuperAdmin'))
 const ApiManager     = lazy(() => import('./pages/admin/ApiManager'))
+const Notifications  = lazy(() => import('./pages/admin/Notifications'))
 
 const Dashboard      = lazy(() => import('./pages/dashboard/Dashboard'))
 const MonEspace      = lazy(() => import('./pages/mon-espace/MonEspace'))
@@ -157,6 +158,7 @@ export default function App() {
           <Route path="/admin/settings"     element={<S><SettingsPage /></S>} />
           <Route path="/admin/super-admin"  element={<S><SuperAdmin /></S>} />
           <Route path="/admin/api-manager"  element={<S><ApiManager /></S>} />
+          <Route path="/admin/notifications" element={<S><Notifications /></S>} />
 
           {/* ── Rétrocompatibilité ── */}
           <Route path="/tasks"      element={<Navigate to="/travail/taches"    replace />} />
@@ -164,6 +166,21 @@ export default function App() {
           <Route path="/projects"   element={<Navigate to="/travail/projets"   replace />} />
           <Route path="/pulse/*"    element={<Navigate to="/intelligence"       replace />} />
           <Route path="/mon-espace-legacy" element={<S><MonEspace /></S>} />  {/* ancien /mon-espace si besoin */}
+
+          {/* ── S110 — Nouvelles routes Mon Espace ──────────────── */}
+          <Route path="/mon-travail"       element={<S><MonEspaceHub /></S>} />   {/* unifie tâches + projets + OKR */}
+          <Route path="/mon-timesheet"     element={<Navigate to="/temps-absences" replace />} />
+          <Route path="/mes-conges"        element={<Navigate to="/temps-absences" replace />} />
+          <Route path="/mes-entretiens"    element={<Navigate to="/entretiens" replace />} />
+          <Route path="/ma-remuneration"   element={<Navigate to="/compensation" replace />} />
+          <Route path="/mon-suivi-rh"      element={<Navigate to="/cycle-rh" replace />} />
+          <Route path="/mon-cycle-rh"      element={<Navigate to="/mon-suivi-rh" replace />} />  {/* rétrocompat */}
+
+          {/* ── S110 — Nouveaux hubs (redirections temporaires jusqu'aux Batches 2-3) */}
+          <Route path="/mon-service"       element={<Navigate to="/management" replace />} />
+          <Route path="/ma-division"       element={<Navigate to="/management" replace />} />
+          <Route path="/pilotage"          element={<Navigate to="/dashboard" replace />} />
+          <Route path="/super-admin"       element={<Navigate to="/admin/super-admin" replace />} />
 
           <Route path="*" element={<Navigate to="/dashboard" replace />} />
         </Route>
