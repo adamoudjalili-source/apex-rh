@@ -30,7 +30,6 @@ export function useMyOverrides() {
       if (err) throw err
       setOverrides(data || [])
     } catch (e) {
-      console.error('useMyOverrides error:', e)
       setError(e?.message || 'Erreur chargement surcharges')
       setOverrides([])
     } finally {
@@ -68,7 +67,6 @@ export function useUserOverrides(userId) {
       if (err) throw err
       setOverrides(data || [])
     } catch (e) {
-      console.error('useUserOverrides error:', e)
       setError(e?.message || 'Erreur chargement surcharges utilisateur')
       setOverrides([])
     } finally {
@@ -129,7 +127,6 @@ export function useSetOverride() {
       )
       return { success: true }
     } catch (e) {
-      console.error('useSetOverride error:', e)
       setError(e?.message || 'Erreur sauvegarde')
       return { success: false, error: e?.message }
     } finally {
@@ -165,7 +162,6 @@ export function useDeleteOverride() {
       )
       return { success: true }
     } catch (e) {
-      console.error('useDeleteOverride error:', e)
       setError(e?.message || 'Erreur suppression')
       return { success: false, error: e?.message }
     } finally {

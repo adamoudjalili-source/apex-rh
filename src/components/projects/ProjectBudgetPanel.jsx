@@ -121,12 +121,12 @@ export default function ProjectBudgetPanel({ projectId, canEdit = false }) {
         note: form.note,
       })
       resetForm()
-    } catch (err) { console.error(err) }
+    } catch (err) { }
   }
 
   const handleDelete = async (id) => {
     if (!confirm('Supprimer cette ligne budget ?')) return
-    try { await deleteLine.mutateAsync({ id, projectId }) } catch (err) { console.error(err) }
+    try { await deleteLine.mutateAsync({ id, projectId }) } catch (err) { }
   }
 
   // Groupement par catégorie

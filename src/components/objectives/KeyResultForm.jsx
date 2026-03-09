@@ -70,7 +70,6 @@ export default function KeyResultForm({ isOpen, onClose, objectiveId, keyResult 
       }
       onClose()
     } catch (err) {
-      console.error('Erreur KR:', err)
     }
   }
 

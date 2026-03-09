@@ -58,7 +58,7 @@ export default function ProjectDetailPanel({ projectId, onClose, onEdit }) {
     try {
       await deleteProject.mutateAsync(project.id)
       onClose()
-    } catch (err) { console.error(err) }
+    } catch (err) { }
   }
 
   const members = project?.project_members || []

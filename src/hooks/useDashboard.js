@@ -74,7 +74,6 @@ export function useTaskStats() {
             }
           }
         } catch (e) {
-          console.error('Erreur récupération tâches projets (dashboard):', e)
         }
 
         tasks = tasks.filter(task => {
@@ -250,7 +249,6 @@ export function useProjectStats() {
             }
           }
         } catch (e) {
-          console.error('Erreur récupération projets membership (dashboard):', e)
         }
       }
 
@@ -330,7 +328,6 @@ export function useRecentActivity() {
             }
           }
         } catch (e) {
-          console.error('Erreur récupération tâches projets (recent activity):', e)
         }
 
         recentTasks = recentTasks.filter(task => {
@@ -401,7 +398,6 @@ export function useRecentActivity() {
             }
           }
         } catch (e) {
-          console.error('Erreur récupération projets membership (recent activity):', e)
         }
       }
 

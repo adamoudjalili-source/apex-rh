@@ -92,7 +92,6 @@ export default function MessageInput({
       )
       setAttachments(prev => [...prev, ...uploaded])
     } catch (err) {
-      console.error('Upload error:', err)
     } finally {
       setUploading(false)
       e.target.value = ''

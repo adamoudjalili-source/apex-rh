@@ -185,7 +185,7 @@ export default function GanttChart({ project, milestones = [], canEdit }) {
               projectId: project.id,
             })
           }
-        } catch (err) { console.error('Gantt drag error:', err) }
+        } catch (err) { }
       }
       setDrag(null)
     }
@@ -202,13 +202,13 @@ export default function GanttChart({ project, milestones = [], canEdit }) {
   const handleLink = async (taskId) => {
     try {
       await linkTask.mutateAsync({ taskId, projectId: project.id })
-    } catch (err) { console.error(err) }
+    } catch (err) { }
   }
 
   const handleUnlink = async (taskId) => {
     try {
       await unlinkTask.mutateAsync({ taskId, projectId: project.id })
-    } catch (err) { console.error(err) }
+    } catch (err) { }
   }
 
   const timelineWidth = totalDays * dayWidth

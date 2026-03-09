@@ -183,7 +183,6 @@ function CurrentAwards({ year, month, onPrev, onNext, isManager, currentUserId }
       setGrantSuccess(awardType)
       setTimeout(() => setGrantSuccess(null), 2500)
     } catch (e) {
-      console.error('Erreur attribution award:', e)
     } finally {
       setGrantingType(null)
     }
@@ -194,7 +193,6 @@ function CurrentAwards({ year, month, onPrev, onNext, isManager, currentUserId }
     try {
       await revokeAward.mutateAsync({ awardId: award.id, awardYear: year, awardMonth: month })
     } catch (e) {
-      console.error('Erreur révocation award:', e)
     }
   }
 

@@ -8,7 +8,7 @@ import { useState, useMemo } from 'react'
 import { motion } from 'framer-motion'
 import { AlertCircle, RefreshCw, Filter } from 'lucide-react'
 import { usePermission } from '../../hooks/usePermission'
-import { useOrgAssessments, useCompetenciesList, useCompetencyCategories, useRefreshCompetencyCoverage } from '../../hooks/useCompetencyS84'
+import { useOrgAssessments, useCompetenciesList, useCompetencyCategories, useRefreshCompetencyCoverage } from '../../hooks/useCompetencyFramework'
 import { useUsersList } from '../../hooks/useSettings'
 
 // ─── Couleur niveau ───────────────────────────────────────────

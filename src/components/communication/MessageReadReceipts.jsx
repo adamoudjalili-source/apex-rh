@@ -5,7 +5,7 @@
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Eye, EyeOff, Loader2, X, Users, CheckCircle2, Clock, Download } from 'lucide-react'
-import { useReadReceipts } from '../../hooks/useCommunicationS87'
+import { useReadReceipts } from '../../hooks/useCommunication'
 import { useAuth } from '../../contexts/AuthContext'
 
 const ROLE_LABELS = {

@@ -160,7 +160,6 @@ function FeedbackForm({ request, onClose }) {
       setSuccess(true)
       setTimeout(() => onClose(), 1200)
     } catch (err) {
-      console.error('[Feedback360] Erreur soumission:', err)
     } finally {
       setSaving(false)
     }
@@ -512,7 +511,6 @@ function CreateCampaignForm({ onClose, onCreate }) {
       setSuccess(true)
       setTimeout(() => { setSuccess(false); onClose() }, 1200)
     } catch (err) {
-      console.error('[CreateCampaign] Erreur:', err)
     } finally {
       setSaving(false)
     }

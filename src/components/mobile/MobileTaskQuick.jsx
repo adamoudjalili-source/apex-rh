@@ -41,7 +41,6 @@ export default function MobileTaskQuick({ onClose }) {
       setDone(true)
       setTimeout(() => onClose?.(), 1000)
     } catch(e) {
-      console.error(e)
     } finally {
       setLoading(false)
     }

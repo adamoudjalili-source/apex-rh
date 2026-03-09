@@ -52,7 +52,6 @@ export default function EvaluationPanel({ objective }) {
       setScore('')
       setComment('')
     } catch (err) {
-      console.error('Erreur évaluation:', err)
     }
   }
 

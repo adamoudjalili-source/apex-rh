@@ -6,6 +6,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '../lib/supabase'
 import { useAuth }  from '../contexts/AuthContext'
+import { usePermission } from './usePermission'
 
 // ─── CONSTANTES PUBLIQUES ─────────────────────────────────────
 
@@ -749,7 +750,10 @@ export function useCyclesProgress() {
 
 /** Révisions en attente de ma validation (manager ou RH) */
 export function usePendingReviews() {
-  const { profile, canValidate, canAdmin } = useAuth()
+  const { profile } = useAuth()
+  const { can } = usePermission()
+  const canAdmin   = can('compensation', 'cycles', 'admin')
+  const canValidate = can('compensation', 'revisions', 'read')
   return useQuery({
     queryKey: ['pending_reviews', profile?.id],
     queryFn: async () => {
@@ -859,7 +863,9 @@ export function useCreateRevision() {
 /** Valider (manager ou RH) */
 export function useApproveRevision() {
   const qc = useQueryClient()
-  const { profile, canAdmin } = useAuth()
+  const { profile } = useAuth()
+  const { can } = usePermission()
+  const canAdmin = can('compensation', 'cycles', 'admin')
   return useMutation({
     mutationFn: async ({ id, comment }) => {
       const now = new Date().toISOString()

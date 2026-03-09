@@ -47,7 +47,7 @@ export default function RiskRegister({ risks = [], members = [], projectId, canE
         owner_id: form.owner_id || null,
       })
       resetForm()
-    } catch (err) { console.error(err) }
+    } catch (err) { }
   }
 
   const handleEdit = (r) => {
@@ -80,12 +80,12 @@ export default function RiskRegister({ risks = [], members = [], projectId, canE
         projectId,
       })
       resetForm()
-    } catch (err) { console.error(err) }
+    } catch (err) { }
   }
 
   const handleDelete = async (r) => {
     if (!confirm(`Supprimer le risque "${r.title}" ?`)) return
-    try { await deleteRisk.mutateAsync({ id: r.id, projectId }) } catch (err) { console.error(err) }
+    try { await deleteRisk.mutateAsync({ id: r.id, projectId }) } catch (err) { }
   }
 
   // Trier par score décroissant

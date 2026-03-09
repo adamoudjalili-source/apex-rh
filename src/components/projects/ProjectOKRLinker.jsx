@@ -156,7 +156,6 @@ export default function ProjectOKRLinker({ projectId, canEdit = false }) {
       setShowPicker(false)
       setSearch('')
     } catch (err) {
-      console.error(err)
     }
   }
 
@@ -165,7 +164,6 @@ export default function ProjectOKRLinker({ projectId, canEdit = false }) {
     try {
       await unlinkOKR.mutateAsync({ linkId, projectId })
     } catch (err) {
-      console.error(err)
     }
   }
 

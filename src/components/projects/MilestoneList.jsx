@@ -37,7 +37,7 @@ export default function MilestoneList({ milestones = [], projectId, canEdit }) {
         position: milestones.length + 1,
       })
       resetForm()
-    } catch (err) { console.error(err) }
+    } catch (err) { }
   }
 
   const handleEdit = (ms) => {
@@ -64,14 +64,14 @@ export default function MilestoneList({ milestones = [], projectId, canEdit }) {
 
       await updateMs.mutateAsync({ id: editingId, updates, projectId })
       resetForm()
-    } catch (err) { console.error(err) }
+    } catch (err) { }
   }
 
   const handleDelete = async (ms) => {
     if (!confirm(`Supprimer le jalon "${ms.title}" ?`)) return
     try {
       await deleteMs.mutateAsync({ id: ms.id, projectId })
-    } catch (err) { console.error(err) }
+    } catch (err) { }
   }
 
   const toggleComplete = async (ms) => {
@@ -81,7 +81,7 @@ export default function MilestoneList({ milestones = [], projectId, canEdit }) {
     else updates.completed_at = null
     try {
       await updateMs.mutateAsync({ id: ms.id, updates, projectId })
-    } catch (err) { console.error(err) }
+    } catch (err) { }
   }
 
   return (

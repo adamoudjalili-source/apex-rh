@@ -37,7 +37,6 @@ function RefreshButton() {
       setDone(true)
       setTimeout(() => setDone(false), 2000)
     } catch (e) {
-      console.error(e)
     } finally {
       setLoading(false)
     }

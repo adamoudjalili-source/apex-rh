@@ -24,7 +24,7 @@ import {
   OFFBOARDING_STATUS_COLORS,
   EXIT_REASON_LABELS,
 } from '../../hooks/useOffboarding'
-import { useOffboardingAlerts }    from '../../hooks/useOffboardingS85'
+import { useOffboardingAlerts }    from '../../hooks/useOffboarding'
 import OffboardingProcessCard      from '../../components/offboarding/OffboardingProcessCard'
 import OffboardingChecklist        from '../../components/offboarding/OffboardingChecklist'
 import ExitInterviewForm           from '../../components/offboarding/ExitInterviewForm'

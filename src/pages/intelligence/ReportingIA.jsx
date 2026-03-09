@@ -284,7 +284,6 @@ function ReportGenerator({ serviceId, isManager }) {
         week      : isWeekly ? ww : undefined,
       })
     } catch (err) {
-      console.error('[ReportGenerator]', err)
     }
   }
 

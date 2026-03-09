@@ -97,7 +97,6 @@ export default function DailyLogForm({ settings }) {
         satisfactionLevel,
       })
     } catch (err) {
-      console.error('Erreur soumission journal:', err)
     } finally {
       setSubmitting(false)
     }

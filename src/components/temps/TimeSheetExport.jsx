@@ -22,7 +22,6 @@ export default function TimeSheetExport({ showUserFilter = false }) {
     try {
       await exportTimeSheets({ from, to, format })
     } catch (e) {
-      console.error('Export error', e)
     } finally {
       setLoading(false)
     }

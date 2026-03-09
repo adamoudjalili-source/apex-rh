@@ -7,7 +7,6 @@ import { useState } from 'react'
 import { NavLink } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { LayoutDashboard, CheckSquare, Activity, Trophy, Plus } from 'lucide-react'
-import { useAuth } from '../../contexts/AuthContext'
 import { useAppSettings } from '../../hooks/useSettings'
 import { isPulseEnabled } from '../../lib/pulseHelpers'
 import MobileTaskQuick from './MobileTaskQuick'
@@ -16,7 +15,6 @@ import MobileHome from './MobileHome'
 // S69 — guards via AuthContext helpers
 
 export default function MobileNav() {
-  const { profile, canManageTeam } = useAuth()
   const { data: settings } = useAppSettings()
   const pulseOn = isPulseEnabled(settings)
 

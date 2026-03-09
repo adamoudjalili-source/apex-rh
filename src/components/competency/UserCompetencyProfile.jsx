@@ -15,7 +15,7 @@ import {
   useRoleRequirements,
   COMPETENCY_LEVEL_LABELS,
   SOURCE_LABELS,
-} from '../../hooks/useCompetencyS84'
+} from '../../hooks/useCompetencyFramework'
 import { useUsersList } from '../../hooks/useSettings'
 
 // ─── Radar SVG ───────────────────────────────────────────────

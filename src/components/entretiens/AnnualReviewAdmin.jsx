@@ -159,15 +159,13 @@ export default function AnnualReviewAdmin() {
 
   const handleCreate = async (form) => {
     setSaving(true)
-    try { await createCampaign.mutateAsync(form); setView('list') }
-    catch (e) { console.error(e) }
+    try { await createCampaign.mutateAsync(form); setView('list') } catch (e) { }
     setSaving(false)
   }
 
   const handleUpdate = async (form) => {
     setSaving(true)
-    try { await updateCampaign.mutateAsync({ id: editCampaign.id, ...form }); setEditCampaign(null) }
-    catch (e) { console.error(e) }
+    try { await updateCampaign.mutateAsync({ id: editCampaign.id, ...form }); setEditCampaign(null) } catch (e) { }
     setSaving(false)
   }
 

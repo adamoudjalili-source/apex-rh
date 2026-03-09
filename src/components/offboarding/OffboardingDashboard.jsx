@@ -11,7 +11,7 @@ import {
 import {
   useOffboardingDashboard,
   useAutoCreateOffboarding,
-} from '../../hooks/useOffboardingS85'
+} from '../../hooks/useOffboarding'
 import { OFFBOARDING_STATUS_LABELS, EXIT_REASON_LABELS } from '../../hooks/useOffboarding'
 import { usePermission } from '../../hooks/usePermission'
 

@@ -15,7 +15,7 @@ import {
   useUpdateCompetency,
   useDeleteCompetency,
   COMPETENCY_LEVEL_LABELS,
-} from '../../hooks/useCompetencyS84'
+} from '../../hooks/useCompetencyFramework'
 
 // ─── Pill niveau ──────────────────────────────────────────────
 function LevelPill({ level }) {

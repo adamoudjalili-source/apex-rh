@@ -13,7 +13,7 @@ import {
   useMarkRead,
   useMarkAllRead,
   useArchiveNotification,
-} from '../hooks/useNotificationsS86'
+} from '../hooks/useNotifications'
 
 // ─── Couleurs et icônes par event_type ────────────────────────
 const EVENT_CONFIG = {

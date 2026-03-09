@@ -94,7 +94,6 @@ export function useTasks(filters = {}) {
             }
           }
         } catch (e) {
-          console.error('Erreur récupération tâches projets:', e)
         }
 
         result = result.filter(task => {
@@ -186,7 +185,6 @@ export function useTask(taskId) {
           }
         }
       } catch (e) {
-        console.error('Erreur récupération KR liés:', e)
       }
 
       // 3. Récupérer les projets liés via project_tasks (requête séparée)
@@ -212,7 +210,6 @@ export function useTask(taskId) {
           }
         }
       } catch (e) {
-        console.error('Erreur récupération projets liés:', e)
       }
 
       // 4. Attacher les données enrichies au résultat

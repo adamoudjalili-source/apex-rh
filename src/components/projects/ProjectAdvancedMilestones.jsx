@@ -115,7 +115,7 @@ export default function ProjectAdvancedMilestones({ projectId, canEdit = false, 
         await createMs.mutateAsync(payload)
       }
       resetForm()
-    } catch (err) { console.error(err) }
+    } catch (err) { }
   }
 
   const toggleReached = async (ms) => {
@@ -126,12 +126,12 @@ export default function ProjectAdvancedMilestones({ projectId, canEdit = false, 
         is_reached: !ms.is_reached,
         reached_at: !ms.is_reached ? new Date().toISOString() : null,
       })
-    } catch (err) { console.error(err) }
+    } catch (err) { }
   }
 
   const handleDelete = async (ms) => {
     if (!confirm(`Supprimer le jalon "${ms.title}" ?`)) return
-    try { await deleteMs.mutateAsync({ id: ms.id, projectId }) } catch (err) { console.error(err) }
+    try { await deleteMs.mutateAsync({ id: ms.id, projectId }) } catch (err) { }
   }
 
   const sorted = [...milestones].sort((a, b) => new Date(a.due_date) - new Date(b.due_date))

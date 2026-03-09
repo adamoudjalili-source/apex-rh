@@ -369,7 +369,7 @@ export default function AnnualReviewForm({ review, mode = 'self', onClose }) {
       }
       setSuccess('Brouillon sauvegardé')
       setTimeout(() => setSuccess(''), 2000)
-    } catch (e) { console.error(e) }
+    } catch (e) { }
     setSaving(false)
   }
 
@@ -391,7 +391,7 @@ export default function AnnualReviewForm({ review, mode = 'self', onClose }) {
         setSuccess('Entretien complété !')
       }
       setTimeout(() => onClose?.(), 1500)
-    } catch (e) { console.error(e) }
+    } catch (e) { }
     setSubmitting(false)
   }
 
@@ -401,7 +401,7 @@ export default function AnnualReviewForm({ review, mode = 'self', onClose }) {
       await signReview.mutateAsync({ review_id: review.id, employee_comment_on_review: signComment })
       setSuccess('Entretien signé électroniquement !')
       setTimeout(() => onClose?.(), 1500)
-    } catch (e) { console.error(e) }
+    } catch (e) { }
     setSubmitting(false)
   }
 
@@ -411,7 +411,7 @@ export default function AnnualReviewForm({ review, mode = 'self', onClose }) {
       await managerSign.mutateAsync({ review_id: review.id })
       setSuccess('Signature manager enregistrée !')
       setTimeout(() => onClose?.(), 1500)
-    } catch (e) { console.error(e) }
+    } catch (e) { }
     setSubmitting(false)
   }
 
@@ -423,7 +423,7 @@ export default function AnnualReviewForm({ review, mode = 'self', onClose }) {
       setShowMeetingForm(false)
       setSuccess('Réunion planifiée !')
       setTimeout(() => setSuccess(''), 2000)
-    } catch (e) { console.error(e) }
+    } catch (e) { }
     setSaving(false)
   }
 

@@ -4,7 +4,7 @@
 // ============================================================
 import { useState, useRef, useEffect } from 'react'
 import { Bell } from 'lucide-react'
-import { useUnreadCountS86 } from '../hooks/useNotificationsS86'
+import { useUnreadCountS86 } from '../hooks/useNotifications'
 import NotificationInbox from './NotificationInbox'
 
 export default function NotificationBell({ collapsed = false }) {

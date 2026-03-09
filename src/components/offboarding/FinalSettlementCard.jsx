@@ -12,7 +12,7 @@ import {
 import {
   useFinalSettlement,
   useApplySettlementToProcess,
-} from '../../hooks/useOffboardingS85'
+} from '../../hooks/useOffboarding'
 import { usePermission } from '../../hooks/usePermission'
 
 // ─── Ligne de détail ─────────────────────────────────────────

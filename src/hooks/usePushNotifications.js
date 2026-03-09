@@ -71,7 +71,6 @@ export function useServiceWorker() {
         setSwReady(true)
       })
       .catch((err) => {
-        console.warn('[APEX] Service Worker registration failed:', err)
       })
   }, [])
 
@@ -230,7 +229,6 @@ export function usePushNotifications() {
       setShowBanner(false)
       return true
     } catch (err) {
-      console.error('[APEX] Push subscribe error:', err)
       return false
     }
   }, [registration, requestPermission, subscribe])

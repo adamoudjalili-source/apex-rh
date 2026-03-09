@@ -118,7 +118,6 @@ function CollaborateurView() {
       const result = await generateMutation.mutateAsync({ periodDays: 7 })
       setSelectedAnalysis(null) // Afficher la nouvelle analyse
     } catch (err) {
-      console.error('[AICoach] Erreur génération:', err)
     }
   }
 
@@ -337,7 +336,6 @@ function ManagerView() {
     try {
       await generateIndividual.mutateAsync({ userId, periodDays: 7 })
     } catch (err) {
-      console.error('[AICoach] Erreur:', err)
     } finally {
       setGeneratingFor(null)
     }
@@ -348,7 +346,6 @@ function ManagerView() {
     try {
       await generateTeam.mutateAsync({ serviceId, periodDays: 7 })
     } catch (err) {
-      console.error('[AICoach] Erreur équipe:', err)
     }
   }
 

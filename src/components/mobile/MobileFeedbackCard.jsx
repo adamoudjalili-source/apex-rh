@@ -60,7 +60,6 @@ export default function MobileFeedbackCard({ request, onDone }) {
       setDone(true)
       setTimeout(() => onDone?.(), 1200)
     } catch(e) {
-      console.error(e)
     } finally {
       setLoading(false)
     }

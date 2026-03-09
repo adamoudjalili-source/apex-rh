@@ -7,12 +7,12 @@
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Book, Grid3x3, User, RefreshCw, ChevronDown } from 'lucide-react'
-import { useAuth } from '../../contexts/AuthContext'
 import CompetencyCatalog       from '../../components/competency/CompetencyCatalog'
 import CompetencyHeatmap       from '../../components/competency/CompetencyHeatmap'
 import UserCompetencyProfile   from '../../components/competency/UserCompetencyProfile'
 import { useUsersList }        from '../../hooks/useSettings'
-import { useRefreshCompetencyCoverage } from '../../hooks/useCompetencyS84'
+import { usePermission } from '../../hooks/usePermission'
+import { useRefreshCompetencyCoverage } from '../../hooks/useCompetencyFramework'
 
 const TABS = [
   { id: 'catalogue', label: 'Catalogue',        icon: Book,    color: '#4F46E5' },
@@ -53,7 +53,8 @@ function UserSelector({ value, onChange }) {
 
 // ─── COMPOSANT PRINCIPAL ─────────────────────────────────────
 export default function CompetencyFrameworkPage() {
-  const { canAdmin }  = useAuth()
+  const { can } = usePermission()
+  const canAdmin = can('developpement', 'competences', 'admin')
   const [activeTab, setActiveTab]   = useState('catalogue')
   const [selectedUser, setSelectedUser] = useState(null)
   const refresh = useRefreshCompetencyCoverage()

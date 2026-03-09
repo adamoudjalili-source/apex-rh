@@ -144,7 +144,7 @@ function ActionForm({ planId, competencyKey, editAction, onClose, reviewCycles=[
       if(isEdit) await updateAction.mutateAsync({ id:editAction.id, plan_id:planId, ...payload })
       else       await createAction.mutateAsync({ plan_id:planId, ...payload })
       onClose()
-    } catch(e){console.error(e)}
+    } catch (e) { }
     setSaving(false)
   }
 
@@ -553,7 +553,6 @@ function TabIACoach({ profile }) {
       await generatePDI.mutateAsync({ userId: profile?.id })
       setShowSuggestions(true)
     } catch (err) {
-      console.error('[TabIACoach] Erreur génération:', err)
     }
   }
 

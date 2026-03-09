@@ -16,7 +16,6 @@ export default function ExportButton({ onExport, label = 'Exporter', disabled = 
       setState('done')
       setTimeout(() => setState('idle'), 2000)
     } catch (err) {
-      console.error('Erreur export:', err)
       setState('idle')
     }
   }

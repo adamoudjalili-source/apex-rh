@@ -60,7 +60,6 @@ export default function MobileBriefForm({ onSuccess, onCancel }) {
       setDone(true)
       setTimeout(() => onSuccess?.(), 1200)
     } catch(e) {
-      console.error(e)
     } finally {
       setLoading(false)
     }

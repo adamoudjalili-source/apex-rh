@@ -32,7 +32,6 @@ export default function OkrPeriodSelector({ selectedPeriodId, onSelect }) {
       setShowForm(false)
       setForm({ name: '', start_date: '', end_date: '' })
     } catch (err) {
-      console.error('Erreur création période:', err)
     }
   }
 
@@ -43,7 +42,6 @@ export default function OkrPeriodSelector({ selectedPeriodId, onSelect }) {
       await deletePeriod.mutateAsync(id)
       if (selectedPeriodId === id) onSelect(null)
     } catch (err) {
-      console.error('Erreur suppression:', err)
     }
   }
 

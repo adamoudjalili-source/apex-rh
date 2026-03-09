@@ -59,7 +59,6 @@ export const AuthProvider = ({ children }) => {
       if (error) throw error
       setProfile(data)
     } catch (error) {
-      console.error('Erreur profil:', error)
     } finally {
       setLoading(false)
     }
@@ -155,7 +154,6 @@ export const AuthProvider = ({ children }) => {
           .eq('id', profile.id)
 
         if (dbError) {
-          console.error('Erreur mise à jour must_change_password:', dbError)
           return { error: { message: 'Erreur lors de l\'activation du compte. Réessayez.' } }
         }
 

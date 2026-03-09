@@ -36,7 +36,7 @@ export default function DeliverableList({ deliverables = [], milestones = [], me
         assignee_id: form.assignee_id || null,
       })
       resetForm()
-    } catch (err) { console.error(err) }
+    } catch (err) { }
   }
 
   const handleEdit = (d) => {
@@ -67,12 +67,12 @@ export default function DeliverableList({ deliverables = [], milestones = [], me
         projectId,
       })
       resetForm()
-    } catch (err) { console.error(err) }
+    } catch (err) { }
   }
 
   const handleDelete = async (d) => {
     if (!confirm(`Supprimer le livrable "${d.title}" ?`)) return
-    try { await deleteDel.mutateAsync({ id: d.id, projectId }) } catch (err) { console.error(err) }
+    try { await deleteDel.mutateAsync({ id: d.id, projectId }) } catch (err) { }
   }
 
   // Grouper par jalon

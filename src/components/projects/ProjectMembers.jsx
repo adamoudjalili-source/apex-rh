@@ -38,13 +38,13 @@ export default function ProjectMembers({ members = [], projectId, canManage }) {
       setSelectedUser('')
       setSelectedRole('membre')
       setShowAdd(false)
-    } catch (err) { console.error(err) }
+    } catch (err) { }
   }
 
   const handleRoleChange = async (member, newRole) => {
     try {
       await updateRole.mutateAsync({ id: member.id, role: newRole, projectId })
-    } catch (err) { console.error(err) }
+    } catch (err) { }
   }
 
   const handleRemove = async (member) => {
@@ -52,7 +52,7 @@ export default function ProjectMembers({ members = [], projectId, canManage }) {
     if (!confirm(`Retirer ${name} du projet ?`)) return
     try {
       await removeMember.mutateAsync({ id: member.id, projectId })
-    } catch (err) { console.error(err) }
+    } catch (err) { }
   }
 
   return (

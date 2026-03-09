@@ -88,7 +88,6 @@ export default function UsersPage() {
       .rpc('toggle_user_status', { target_user_id: user.id })
 
     if (error) {
-      console.error('Erreur toggle statut:', error.message)
       return
     }
 

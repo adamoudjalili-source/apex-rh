@@ -92,7 +92,6 @@ export default function ObjectiveForm({ isOpen, onClose, periodId, objective, pa
       }
       onClose()
     } catch (err) {
-      console.error('Erreur objectif:', err)
     }
   }
 

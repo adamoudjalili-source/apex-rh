@@ -6,7 +6,7 @@ import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Pin, MessageSquare, Eye, ChevronDown, ChevronUp, Trash2, Edit2, Send, AlertCircle, BarChart2 } from 'lucide-react'
 import { useToggleAnnonceReaction, useAnnonceComments, useAddComment, useDeleteAnnonce, useTogglePin } from '../../hooks/useAnnonces'
-import { useMarkAnnouncementRead } from '../../hooks/useCommunicationS87'
+import { useMarkAnnouncementRead } from '../../hooks/useCommunication'
 import MessageStats from './MessageStats'
 import { useAuth } from '../../contexts/AuthContext'
 

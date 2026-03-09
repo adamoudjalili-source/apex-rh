@@ -350,7 +350,6 @@ function GoogleCalendarSection() {
       setDone(true)
       setTimeout(() => setDone(false), 3000)
     } catch (e) {
-      console.error(e)
     }
     setDownloading(false)
   }

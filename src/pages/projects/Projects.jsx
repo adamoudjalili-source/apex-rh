@@ -66,7 +66,7 @@ export default function Projects() {
 
   const handleDelete = async (project) => {
     if (!confirm(`Supprimer le projet "${project.name}" et tout son contenu ?`)) return
-    try { await deleteProject.mutateAsync(project.id) } catch (err) { console.error(err) }
+    try { await deleteProject.mutateAsync(project.id) } catch (err) { }
   }
 
   return (

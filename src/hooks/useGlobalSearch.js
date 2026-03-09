@@ -131,7 +131,6 @@ export function useGlobalSearch() {
         setResults(formatted)
       }
     } catch (err) {
-      console.error('Erreur recherche globale:', err)
       if (!thisSearch.abort) setResults(null)
     } finally {
       if (!thisSearch.abort) setIsSearching(false)

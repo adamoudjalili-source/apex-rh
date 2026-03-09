@@ -5,7 +5,7 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { Eye, Users, Clock, ChevronRight } from 'lucide-react'
-import { useAnnouncementStats } from '../../hooks/useCommunicationS87'
+import { useAnnouncementStats } from '../../hooks/useCommunication'
 import { useAuth } from '../../contexts/AuthContext'
 import MessageReadReceipts from './MessageReadReceipts'
 

@@ -11,7 +11,7 @@ import {
   useNotificationRules,
   useUpsertRule,
   useDeleteRule,
-} from '../hooks/useNotificationsS86'
+} from '../hooks/useNotifications'
 import { usePermission } from '../hooks/usePermission'
 
 // ─── Options prédéfinies ──────────────────────────────────────

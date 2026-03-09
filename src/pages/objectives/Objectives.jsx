@@ -87,16 +87,16 @@ export default function Objectives() {
   const handleEditObj = (obj) => { setEditingObj(obj); setShowObjForm(true) }
   const handleDeleteObj = async (obj) => {
     if (!confirm('Supprimer cet objectif et tous ses Key Results ?')) return
-    try { await deleteObj.mutateAsync(obj.id) } catch (err) { console.error(err) }
+    try { await deleteObj.mutateAsync(obj.id) } catch (err) { }
   }
   const handleAddKr = (objId) => { setKrFormObjId(objId); setEditingKr(null); setShowKrForm(true) }
   const handleEditKr = (kr) => { setKrFormObjId(kr.objective_id); setEditingKr(kr); setShowKrForm(true) }
   const handleDeleteKr = async (kr) => {
     if (!confirm('Supprimer ce Key Result ?')) return
-    try { await deleteKr.mutateAsync({ id: kr.id, objectiveId: kr.objective_id }) } catch (err) { console.error(err) }
+    try { await deleteKr.mutateAsync({ id: kr.id, objectiveId: kr.objective_id }) } catch (err) { }
   }
   const handleUpdateKrValue = async (krId, newValue) => {
-    try { await updateKr.mutateAsync({ id: krId, updates: { current_value: newValue } }) } catch (err) { console.error(err) }
+    try { await updateKr.mutateAsync({ id: krId, updates: { current_value: newValue } }) } catch (err) { }
   }
 
   return (

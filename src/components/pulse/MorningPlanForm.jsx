@@ -68,7 +68,6 @@ export default function MorningPlanForm({ settings }) {
       await submitPlan.mutateAsync({ plannedTaskIds: selectedTaskIds, availableHours, note })
       setSubmitted(true)
     } catch (err) {
-      console.error('Erreur soumission brief:', err)
     }
   }
 
@@ -76,7 +75,6 @@ export default function MorningPlanForm({ settings }) {
     try {
       await saveDraft.mutateAsync({ plannedTaskIds: selectedTaskIds, availableHours, note })
     } catch (err) {
-      console.error('Erreur sauvegarde brouillon:', err)
     }
   }
 

@@ -214,7 +214,6 @@ function RbacJournal({ orgId }) {
       setLogs(data || [])
       setTotal(count || 0)
     } catch (e) {
-      console.error('Journal RBAC — erreur:', e)
       setError(e?.message || 'Erreur lors du chargement des logs')
       setLogs([])
       setTotal(0)

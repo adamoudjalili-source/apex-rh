@@ -39,7 +39,6 @@ export default function ObjectiveDetailPanel({ objectiveId, onClose, onEdit }) {
     try {
       await updateKr.mutateAsync({ id: krId, updates: { current_value: newValue } })
     } catch (err) {
-      console.error('Erreur mise à jour KR:', err)
     }
   }
 
@@ -48,7 +47,6 @@ export default function ObjectiveDetailPanel({ objectiveId, onClose, onEdit }) {
     try {
       await deleteKr.mutateAsync({ id: kr.id, objectiveId: kr.objective_id })
     } catch (err) {
-      console.error('Erreur suppression KR:', err)
     }
   }
 
@@ -58,7 +56,6 @@ export default function ObjectiveDetailPanel({ objectiveId, onClose, onEdit }) {
       await deleteObj.mutateAsync(objectiveId)
       onClose()
     } catch (err) {
-      console.error('Erreur suppression:', err)
     }
   }
 
@@ -69,7 +66,6 @@ export default function ObjectiveDetailPanel({ objectiveId, onClose, onEdit }) {
       await linkTask.mutateAsync({ taskId, keyResultId: linkingKrId, objectiveId })
       setLinkingKrId(null)
     } catch (err) {
-      console.error('Erreur liaison:', err)
     }
   }
 
@@ -78,7 +74,6 @@ export default function ObjectiveDetailPanel({ objectiveId, onClose, onEdit }) {
     try {
       await unlinkTask.mutateAsync({ taskId, keyResultId: krId, objectiveId })
     } catch (err) {
-      console.error('Erreur suppression liaison:', err)
     }
   }
 

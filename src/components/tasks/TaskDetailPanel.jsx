@@ -126,7 +126,6 @@ export default function TaskDetailPanel({ taskId, onClose }) {
       })
       onClose()
     } catch (err) {
-      console.error('Erreur approbation:', err.message)
     }
   }
 
@@ -144,7 +143,6 @@ export default function TaskDetailPanel({ taskId, onClose }) {
       setRejectReason('')
       onClose()
     } catch (err) {
-      console.error('Erreur refus:', err.message)
     }
   }
 

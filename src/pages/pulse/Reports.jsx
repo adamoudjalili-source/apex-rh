@@ -369,7 +369,6 @@ export default function Reports() {
       setLastGenerated({ format: 'Excel', fileName, date: new Date() })
 
     } catch (err) {
-      console.error('Erreur Excel:', err)
       alert('Erreur génération Excel : ' + err.message)
     } finally {
       setGenerating(null)

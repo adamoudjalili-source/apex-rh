@@ -320,7 +320,6 @@ export function useUploadAndParseCV() {
 
       if (fnErr) {
         // L'enregistrement existe — la fonction a été appelée même si erreur réseau
-        console.warn('[useCVParser] Edge function warning:', fnErr)
       }
 
       return record

@@ -6,7 +6,7 @@ import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { X, Pin, Send, Loader2, Image, CalendarClock, AlertCircle, Users, UserCheck, Globe } from 'lucide-react'
 import { useUpdateAnnonce } from '../../hooks/useAnnonces'
-import { useCreateTargetedAnnouncement, useUpdateTargetedAnnouncement } from '../../hooks/useCommunicationS87'
+import { useCreateTargetedAnnouncement, useUpdateTargetedAnnouncement } from '../../hooks/useCommunication'
 import { useUsersList } from '../../hooks/useSettings'
 import { useAuth } from '../../contexts/AuthContext'
 
