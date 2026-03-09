@@ -7,7 +7,7 @@ import { Clock, TrendingUp, AlertTriangle, Send, ChevronLeft, ChevronRight, Play
 
 import { useMyCurrentTimeSheet, useTimeEntries, useAddTimeEntry, useSubmitTimeSheet, useLastClockEvent, useClockIn, useClockOut, useTimeStats, formatHours, getWeekDates, getCurrentWeekStart, TIMESHEET_STATUS_COLORS, ENTRY_TYPE_LABELS } from '../../hooks/useTemps'
 import { GLASS_STYLE } from '../../utils/constants'
-import { KpiCard, SectionCard, ProgressBar, StatusBadge, SubmitBtn, NavBtn } from './SuiviTempsShared'
+import { KpiCard, SectionCard, ProgressBar, StatusBadge, SubmitBtn, NavBtn, formatDateFR } from './SuiviTempsShared'
 
 const OBJECTIF_SEMAINE = 37
 
@@ -45,7 +45,7 @@ export function OngletSaisie() {
 
       {/* Grille semaine */}
       <SectionCard
-        title={`Semaine — ${weekStart.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}`}
+        title={`Semaine — ${formatDateFR(weekStart, { day: 'numeric', month: 'long', year: 'numeric' })}`}
         action={
           <div style={{ display: 'flex', gap: 8 }}>
             <NavBtn onClick={() => setWeekOffset(w => w - 7)}>
@@ -69,7 +69,7 @@ export function OngletSaisie() {
               <div style={{ width: 24, height: 24, borderRadius: '50%', border: '2px solid #818CF8', borderTopColor: 'transparent', animation: 'spin 1s linear infinite', margin: '0 auto' }} />
             </div>
           ) : weekDates.map((d, i) => {
-            const key     = d.toISOString().slice(0, 10)
+            const key     = typeof d === 'string' ? d : d.toISOString().slice(0, 10)
             const entry   = dayMap[key]
             const h       = entry?.hours ?? 0
             const isToday = key === new Date().toISOString().slice(0, 10)
@@ -82,7 +82,7 @@ export function OngletSaisie() {
                 border: `1px solid ${isAbsent ? 'rgba(16,185,129,0.15)' : isToday ? 'rgba(129,140,248,0.2)' : 'rgba(255,255,255,0.05)'}`,
               }}>
                 <span style={{ fontSize: 12, fontWeight: 700, color: isAbsent ? '#10B981' : isToday ? '#818CF8' : 'rgba(255,255,255,0.5)' }}>
-                  {d.toLocaleDateString('fr-FR', { weekday: 'short', day: '2-digit' })}
+                  {formatDateFR(d, { weekday: 'short', day: '2-digit' })}
                 </span>
                 <span style={{ fontSize: 12, color: isAbsent ? '#10B981' : 'rgba(255,255,255,0.55)', fontStyle: isAbsent || isToday ? 'italic' : 'normal', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                   {isAbsent ? '🌿 Congé' : entry?.description || (isToday ? 'Saisie en cours…' : '—')}

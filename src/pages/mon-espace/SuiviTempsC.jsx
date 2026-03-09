@@ -7,7 +7,7 @@ import { Bell, ToggleLeft, ToggleRight } from 'lucide-react'
 
 import { useTimeStats, useOvertimeAlerts, formatHours } from '../../hooks/useTemps'
 import { GLASS_STYLE } from '../../utils/constants'
-import { KpiCard, SectionCard, ProgressBar, SubmitBtn } from './SuiviTempsShared'
+import { KpiCard, SectionCard, ProgressBar, SubmitBtn, formatDateFR } from './SuiviTempsShared'
 
 // ─── Onglet Charge ────────────────────────────────────────────
 export function OngletCharge() {
@@ -65,7 +65,7 @@ export function OngletCharge() {
               <span style={{ fontSize: 18 }}>⚠️</span>
               <div style={{ flex: 1 }}>
                 <div style={{ fontSize: 12, fontWeight: 700, color: 'rgba(255,255,255,.8)' }}>{a.message}</div>
-                <div style={{ fontSize: 10, color: 'rgba(255,255,255,.3)', marginTop: 2 }}>{a.created_at ? new Date(a.created_at).toLocaleDateString('fr-FR') : ''}</div>
+                <div style={{ fontSize: 10, color: 'rgba(255,255,255,.3)', marginTop: 2 }}>{a.created_at ? formatDateFR(a.created_at) : ''}</div>
               </div>
             </div>
           ))}

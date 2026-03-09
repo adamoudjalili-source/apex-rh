@@ -132,3 +132,11 @@ export function SubmitBtn({ children, color = 'linear-gradient(135deg,#6366F1,#4
     </button>
   )
 }
+
+// ─── formatDateFR — safe date formatter ───────────────────────
+export function formatDateFR(d, opts = {}) {
+  if (!d) return '—'
+  const date = d instanceof Date ? d : new Date(typeof d === 'string' && d.length === 10 ? d + 'T12:00:00' : d)
+  if (isNaN(date.getTime())) return '—'
+  return date.toLocaleDateString('fr-FR', opts)
+}

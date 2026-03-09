@@ -13,7 +13,7 @@ import {
   countWorkDays, LEAVE_STATUS_LABELS, LEAVE_STATUS_COLORS, LEAVE_STATUS_BG,
 } from '../../hooks/useConges'
 import { GLASS_STYLE } from '../../utils/constants'
-import { KpiCard, SectionCard, ProgressBar, PipelineSteps } from './SuiviTempsShared'
+import { KpiCard, SectionCard, ProgressBar, PipelineSteps, formatDateFR } from './SuiviTempsShared'
 
 const fadeIn = {
   hidden:  { opacity: 0, y: 8 },
@@ -205,8 +205,8 @@ export default function MesConges() {
               <div style={{ fontSize: 11, color: 'rgba(255,255,255,.3)', marginBottom: 3 }}>Prochain congé validé</div>
               <div style={{ fontSize: 14, fontWeight: 700 }}>
                 {types.find(t => t.id === nextApproved.leave_type_id)?.name ?? 'Congé'} —{' '}
-                {new Date(nextApproved.start_date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' })} au{' '}
-                {new Date(nextApproved.end_date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}
+                {formatDateFR(nextApproved.start_date, { day: 'numeric', month: 'long' })} au{' '}
+                {formatDateFR(nextApproved.end_date, { day: 'numeric', month: 'long', year: 'numeric' })}
               </div>
             </div>
             <span style={{ fontSize: 13, fontWeight: 800, color: '#34D399', whiteSpace: 'nowrap' }}>
@@ -242,7 +242,7 @@ export default function MesConges() {
                           {r.justification_file && <span style={{ marginLeft: 7, fontSize: 10, color: '#34D399', background: 'rgba(52,211,153,.1)', borderRadius: 6, padding: '1px 7px' }}>📎</span>}
                         </div>
                         <div style={{ fontSize: 11, color: 'rgba(255,255,255,.3)', marginTop: 3 }}>
-                          {new Date(r.start_date).toLocaleDateString('fr-FR')} → {new Date(r.end_date).toLocaleDateString('fr-FR')} · {r.working_days ?? '—'} j
+                          {formatDateFR(r.start_date)} → {formatDateFR(r.end_date)} · {r.working_days ?? '—'} j
                         </div>
                       </div>
                       <PipelineSteps status={r.status} />

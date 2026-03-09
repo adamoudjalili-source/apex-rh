@@ -7,7 +7,7 @@ import { ChevronLeft, ChevronRight } from 'lucide-react'
 
 import { useTimeSheets, useTimeStats, formatHours, getCurrentWeekStart, getWeekDates, TIMESHEET_STATUS_LABELS } from '../../hooks/useTemps'
 import { GLASS_STYLE } from '../../utils/constants'
-import { KpiCard, SectionCard, ProgressBar, StatusBadge, NavBtn } from './SuiviTempsShared'
+import { KpiCard, SectionCard, ProgressBar, StatusBadge, NavBtn, formatDateFR } from './SuiviTempsShared'
 
 const DAYS_SHORT = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven']
 const HOURS_SLOTS = ['08h', '09h', '10h', '11h', '13h', '14h', '15h', '16h', '17h']
@@ -49,7 +49,7 @@ export function OngletValidation() {
               marginBottom: 8,
             }}>
               <span style={{ fontSize: 13, fontWeight: 700, color: 'rgba(255,255,255,.8)' }}>
-                {new Date(s.week_start).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' })}
+                {formatDateFR(s.week_start, { day: '2-digit', month: 'short' })}
               </span>
               <span style={{ fontSize: 12, color: 'rgba(255,255,255,.5)' }}>{formatHours(totalH)}</span>
               <StatusBadge status={s.status} />
@@ -90,7 +90,7 @@ export function OngletPlanning() {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
       <SectionCard
-        title={`Planning — semaine du ${weekStart.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' })}`}
+        title={`Planning — semaine du ${formatDateFR(weekStart, { day: 'numeric', month: 'long' })}`}
         action={
           <div style={{ display: 'flex', gap: 8 }}>
             <NavBtn onClick={() => setWeekOffset(w => w - 7)}><ChevronLeft size={13} style={{ display: 'inline' }} /> Préc.</NavBtn>
