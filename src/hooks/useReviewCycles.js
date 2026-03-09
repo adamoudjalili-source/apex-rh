@@ -9,7 +9,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
 import { REVIEW_STATUS, ROLES, TASK_STATUS } from '../utils/constants'
-import { OVERALL_RATING_LABELS, OVERALL_RATING_COLORS } from './useAnnualReviews'
+export { OVERALL_RATING_LABELS, OVERALL_RATING_COLORS } from './useAnnualReviews'
 
 // ─── CONSTANTES ──────────────────────────────────────────────
 
