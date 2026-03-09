@@ -230,8 +230,6 @@ export function useSalaryMassStats(year = currentYear) {
         .from('compensation_reviews')
         .select('created_at, new_base_salary, old_base_salary')
         .order('created_at', { ascending: true })
-      // filter by org users
-      })
 
       return {
         totalMass,
