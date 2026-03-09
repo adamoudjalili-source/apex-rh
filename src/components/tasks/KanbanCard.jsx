@@ -1,13 +1,14 @@
 // APEX RH — KanbanCard.jsx
-// ✅ Session 9 — Corrigé : ajout `relative` pour barre priorité
-// ✅ Session 19 — Fix isOverdue(task.due_date, task.status)
-// ✅ Session 19 bis — Fix isDueSoon(task.due_date, 3, task.status)
+// ✅ S9   : `relative` pour barre priorité
+// ✅ S19  : Fix isOverdue + isDueSoon
+// ✅ S125 : tags + pièces jointes
+// ✅ S127 : tags colorés (task_tag_links) + badge SLA
 // ============================================================
 import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import {
   getPriorityInfo, formatDateShort, isOverdue, isDueSoon,
-  getChecklistProgress, getUserInitials
+  getChecklistProgress, getUserInitials, getSLAStatus
 } from '../../lib/taskHelpers'
 
 export default function KanbanCard({ task, onClick }) {
@@ -22,13 +23,15 @@ export default function KanbanCard({ task, onClick }) {
     opacity: isDragging ? 0.5 : 1,
   }
 
-  const priorityInfo = getPriorityInfo(task.priority)
-  const progress = getChecklistProgress(task.task_checklists)
-  const overdue = isOverdue(task.due_date, task.status)
-  const dueSoon = isDueSoon(task.due_date, 3, task.status)
-  const assignees = task.task_assignees || []
-  const commentCount = task.task_comments?.length || 0
-  const attachmentCount = task.task_attachments?.length || 0
+  const priorityInfo     = getPriorityInfo(task.priority)
+  const progress         = getChecklistProgress(task.task_checklists)
+  const overdue          = isOverdue(task.due_date, task.status)
+  const dueSoon          = isDueSoon(task.due_date, 3, task.status)
+  const sla              = getSLAStatus(task)
+  const assignees        = task.task_assignees || []
+  const commentCount     = task.task_comments?.length || 0
+  const attachmentCount  = task.task_attachments?.length || 0
+  const tags             = task.task_tag_links?.map(l => l.task_tags).filter(Boolean) || []
 
   return (
     <div
@@ -41,23 +44,55 @@ export default function KanbanCard({ task, onClick }) {
         isDragging ? 'shadow-2xl shadow-indigo-500/20 rotate-1 scale-105 z-50' : ''
       } ${
         task.priority === 'urgente' ? 'border-red-500/30' :
-        task.priority === 'haute' ? 'border-amber-500/20' :
+        task.priority === 'haute'   ? 'border-amber-500/20' :
         'border-white/8'
       }`}
     >
-      {/* ✅ FIX Bug 2 : le parent a maintenant `relative` pour que `absolute` fonctionne */}
+      {/* Barre priorité */}
       <div
         className="absolute left-0 top-3 bottom-3 w-0.5 rounded-full opacity-60"
         style={{ backgroundColor: priorityInfo.color }}
       />
+
+      {/* SLA breach — fine barre rouge en haut */}
+      {sla?.status === 'breach' && (
+        <div className="absolute top-0 left-0 right-0 h-0.5 bg-red-500 rounded-t-xl" />
+      )}
+      {sla?.status === 'warning' && (
+        <div className="absolute top-0 left-0 right-0 h-0.5 bg-amber-500 rounded-t-xl" />
+      )}
 
       {/* Titre */}
       <p className="text-sm font-medium text-gray-100 leading-snug mb-2 pr-1 pl-2 group-hover:text-white transition-colors">
         {task.title}
       </p>
 
-      {/* Tags */}
-      {task.services && (
+      {/* Tags colorés (task_tag_links → task_tags) */}
+      {tags.length > 0 && (
+        <div className="flex flex-wrap gap-1 mb-2 pl-2">
+          {tags.slice(0, 3).map(tag => (
+            <span
+              key={tag.id}
+              className="inline-flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded-full border font-medium"
+              style={{
+                backgroundColor: tag.color + '20',
+                borderColor:     tag.color + '50',
+                color:           tag.color,
+              }}
+            >
+              {tag.name}
+            </span>
+          ))}
+          {tags.length > 3 && (
+            <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-white/5 text-gray-500 border border-white/10">
+              +{tags.length - 3}
+            </span>
+          )}
+        </div>
+      )}
+
+      {/* Service (si pas de tags) */}
+      {tags.length === 0 && task.services && (
         <span className="inline-block text-[10px] px-1.5 py-0.5 bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 rounded mb-2 ml-2">
           {task.services.name}
         </span>
@@ -81,18 +116,26 @@ export default function KanbanCard({ task, onClick }) {
 
       {/* Footer */}
       <div className="flex items-center justify-between mt-2 pl-2">
-        {/* Date */}
-        {task.due_date ? (
-          <span className={`text-[10px] flex items-center gap-1 ${
-            overdue ? 'text-red-400' : dueSoon ? 'text-amber-400' : 'text-gray-500'
-          }`}>
-            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-            </svg>
-            {formatDateShort(task.due_date)}
-          </span>
-        ) : <span />}
+        {/* Date + SLA */}
+        <div className="flex items-center gap-2">
+          {task.due_date && (
+            <span className={`text-[10px] flex items-center gap-1 ${
+              overdue ? 'text-red-400' : dueSoon ? 'text-amber-400' : 'text-gray-500'
+            }`}>
+              <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+              {formatDateShort(task.due_date)}
+            </span>
+          )}
+          {sla && sla.status !== 'ok' && (
+            <span className={`text-[10px] font-medium ${sla.status === 'breach' ? 'text-red-400' : 'text-amber-400'}`}>
+              {sla.status === 'breach' ? '⚡SLA' : `⚡${sla.hoursLeft}h`}
+            </span>
+          )}
+        </div>
 
+        {/* Icônes + assignés */}
         <div className="flex items-center gap-2">
           {commentCount > 0 && (
             <span className="flex items-center gap-0.5 text-[10px] text-gray-500">

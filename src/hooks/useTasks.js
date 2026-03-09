@@ -1,6 +1,7 @@
 // ============================================================
 // APEX RH — useTasks.js  ·  S125-D (refactorisé < 300L)
 // CRUD principal + barrel re-exports depuis sous-hooks
+// ✅ S128 : re-export useTaskTemplates
 // Tous les 24 exports d'origine sont conservés
 // ============================================================
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
@@ -280,3 +281,6 @@ export function useDeleteTask() {
     },
   })
 }
+
+// ─── Templates (S128) ─────────────────────────────────────
+export { useTaskTemplates, useCreateTemplate, useUpdateTemplate, useDeleteTemplate, TEMPLATE_CATEGORIES, getCategoryInfo } from './useTaskTemplates'

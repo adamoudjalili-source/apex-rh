@@ -1,9 +1,10 @@
 // ============================================================
-// APEX RH — TaskDetailPanel.jsx  ·  S125-C (refactorisé < 250L)
-// Shell : header + tabs + routing vers sous-composants
-// Connexions S124 préservées : TimeTrackingPanel, PULSE, OKR, Projets
+// APEX RH — TaskDetailPanel.jsx  ·  S127
+// Shell : header + onglets primaires/secondaires
+// Primaires  (toujours visibles) : Détails · Commentaires · Temps
+// Secondaires (menu "···")       : Checklists · Fichiers · Activité · Dépendances · Récurrence
 // ============================================================
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { useAuth }              from '../../contexts/AuthContext'
 import { useTask, useUpdateTaskStatus, useDeleteTask } from '../../hooks/useTasks'
 import { useTaskDetailRealtime } from '../../hooks/useTaskRealtime'
@@ -20,7 +21,10 @@ import RecurrenceConfig         from './RecurrenceConfig'
 import TimeTrackingPanel        from './TimeTrackingPanel'
 import TaskAttachments          from './TaskAttachments'
 
-const TABS = ['Détails','Checklists','Commentaires','Fichiers','Activité','Dépendances','Récurrence','Temps']
+// Onglets primaires : toujours visibles dans la barre
+const PRIMARY_TABS = ['Détails', 'Commentaires', 'Temps']
+// Onglets secondaires : accessibles via le menu "···"
+const SECONDARY_TABS = ['Checklists', 'Fichiers', 'Activité', 'Dépendances', 'Récurrence']
 
 export default function TaskDetailPanel({ taskId, onClose }) {
   const { profile }               = useAuth()
@@ -29,28 +33,53 @@ export default function TaskDetailPanel({ taskId, onClose }) {
   const deleteTask                = useDeleteTask()
   useTaskDetailRealtime(taskId)
 
-  const [activeTab, setActiveTab]   = useState('Détails')
-  const [editing, setEditing]       = useState(false)
+  const [activeTab, setActiveTab]       = useState('Détails')
+  const [showMoreMenu, setShowMoreMenu] = useState(false)
+  const [editing, setEditing]           = useState(false)
   const [rejectReason, setRejectReason] = useState('')
-  const [showReject, setShowReject] = useState(false)
-  const [showDelete, setShowDelete] = useState(false)
+  const [showReject, setShowReject]     = useState(false)
+  const [showDelete, setShowDelete]     = useState(false)
+  const moreMenuRef                     = useRef(null)
+
+  // Fermer le menu "···" au clic extérieur
+  useEffect(() => {
+    function handler(e) {
+      if (moreMenuRef.current && !moreMenuRef.current.contains(e.target)) setShowMoreMenu(false)
+    }
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [])
 
   if (!taskId) return null
 
   const canEdit     = task && profile && canEditTask(task, profile)
   const canDelete   = task && profile && canDeleteTask(task, profile)
   const canValidate = task && profile && canValidateTask(task, profile)
+  const isSecondary = SECONDARY_TABS.includes(activeTab)
 
   async function handleApprove() {
-    await updateStatus.mutateAsync({ taskId: task.id, newStatus:'terminee', oldStatus: task.status })
+    await updateStatus.mutateAsync({ taskId: task.id, newStatus: 'terminee', oldStatus: task.status })
     onClose()
   }
   async function handleReject() {
     if (!rejectReason.trim()) return
-    await updateStatus.mutateAsync({ taskId: task.id, newStatus:'en_cours', oldStatus: task.status, rejectionReason: rejectReason })
+    await updateStatus.mutateAsync({ taskId: task.id, newStatus: 'en_cours', oldStatus: task.status, rejectionReason: rejectReason })
     setShowReject(false); setRejectReason(''); onClose()
   }
   async function handleDelete() { await deleteTask.mutateAsync(task.id); onClose() }
+
+  function selectTab(tab) {
+    setActiveTab(tab)
+    setShowMoreMenu(false)
+  }
+
+  // Badge count par onglet
+  function tabBadge(tab) {
+    if (!task) return null
+    if (tab === 'Commentaires' && task.task_comments?.length > 0)  return task.task_comments.length
+    if (tab === 'Fichiers'     && task.task_attachments?.length > 0) return task.task_attachments.length
+    return null
+  }
 
   return (
     <>
@@ -86,6 +115,7 @@ export default function TaskDetailPanel({ taskId, onClose }) {
           <div className="flex-1 overflow-y-auto px-6 py-4"><TaskForm task={task} onClose={() => setEditing(false)} /></div>
         ) : (
           <>
+            {/* Titre + description */}
             <div className="px-6 py-4 border-b border-white/5 shrink-0">
               <h2 className="text-lg font-semibold text-white mb-1">{task.title}</h2>
               {task.description && <p className="text-sm text-gray-400 leading-relaxed">{task.description}</p>}
@@ -97,10 +127,11 @@ export default function TaskDetailPanel({ taskId, onClose }) {
               )}
             </div>
 
+            {/* Workflow validation */}
             {(canValidate || canEdit) && (
               <div className="px-6 py-3 border-b border-white/5 shrink-0 flex flex-wrap items-center gap-2">
                 {canEdit && task.status === 'en_cours' && (
-                  <button onClick={() => updateStatus.mutate({ taskId: task.id, newStatus:'en_revue', oldStatus: task.status })}
+                  <button onClick={() => updateStatus.mutate({ taskId: task.id, newStatus: 'en_revue', oldStatus: task.status })}
                     className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-violet-600 hover:bg-violet-500 text-white rounded-lg transition-colors">Soumettre pour validation</button>
                 )}
                 {canValidate && task.status === 'en_revue' && (
@@ -123,31 +154,62 @@ export default function TaskDetailPanel({ taskId, onClose }) {
               </div>
             )}
 
-            <div className="flex border-b border-white/10 shrink-0 px-6 overflow-x-auto">
-              {TABS.map(tab => (
-                <button key={tab} onClick={() => setActiveTab(tab)}
-                  className={`px-3 py-2.5 text-xs font-medium border-b-2 whitespace-nowrap transition-colors ${activeTab===tab ? 'border-indigo-500 text-indigo-400' : 'border-transparent text-gray-500 hover:text-gray-300'}`}>
-                  {tab}
-                  {tab==='Commentaires' && task.task_comments?.length > 0 && <span className="ml-1.5 px-1.5 py-0.5 text-[10px] bg-white/10 rounded-full">{task.task_comments.length}</span>}
-                  {tab==='Fichiers' && task.task_attachments?.length > 0 && <span className="ml-1.5 px-1.5 py-0.5 text-[10px] bg-white/10 rounded-full">{task.task_attachments.length}</span>}
+            {/* Barre d'onglets : primaires + menu "···" */}
+            <div className="flex items-center border-b border-white/10 shrink-0 px-6 overflow-x-auto">
+              {PRIMARY_TABS.map(tab => {
+                const badge = tabBadge(tab)
+                return (
+                  <button key={tab} onClick={() => selectTab(tab)}
+                    className={`px-3 py-2.5 text-xs font-medium border-b-2 whitespace-nowrap transition-colors flex items-center gap-1 ${activeTab === tab ? 'border-indigo-500 text-indigo-400' : 'border-transparent text-gray-500 hover:text-gray-300'}`}>
+                    {tab}
+                    {badge && <span className="px-1.5 py-0.5 text-[10px] bg-white/10 rounded-full">{badge}</span>}
+                  </button>
+                )
+              })}
+
+              {/* Menu "···" onglets secondaires */}
+              <div className="relative ml-auto shrink-0" ref={moreMenuRef}>
+                <button onClick={() => setShowMoreMenu(v => !v)}
+                  className={`flex items-center gap-1 px-3 py-2.5 text-xs font-medium border-b-2 transition-colors ${isSecondary ? 'border-indigo-500 text-indigo-400' : 'border-transparent text-gray-500 hover:text-gray-300'}`}>
+                  {isSecondary ? activeTab : '···'}
+                  {isSecondary && tabBadge(activeTab) && (
+                    <span className="px-1.5 py-0.5 text-[10px] bg-white/10 rounded-full">{tabBadge(activeTab)}</span>
+                  )}
+                  <svg className={`w-3 h-3 transition-transform ${showMoreMenu ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
                 </button>
-              ))}
+                {showMoreMenu && (
+                  <div className="absolute right-0 top-full mt-1 bg-[#1a1a35] border border-white/10 rounded-xl shadow-xl z-10 min-w-[160px] py-1">
+                    {SECONDARY_TABS.map(tab => {
+                      const badge = tabBadge(tab)
+                      return (
+                        <button key={tab} onClick={() => selectTab(tab)}
+                          className={`w-full text-left flex items-center justify-between px-4 py-2 text-xs transition-colors hover:bg-white/5 ${activeTab === tab ? 'text-indigo-400' : 'text-gray-400'}`}>
+                          {tab}
+                          {badge && <span className="px-1.5 py-0.5 text-[10px] bg-white/10 rounded-full">{badge}</span>}
+                        </button>
+                      )
+                    })}
+                  </div>
+                )}
+              </div>
             </div>
 
+            {/* Contenu onglet actif */}
             <div className="flex-1 overflow-y-auto px-6 py-4">
-              {activeTab==='Détails'     && <TaskDetailTabDetails task={task} profile={profile} canEdit={canEdit} />}
-              {activeTab==='Checklists'  && <TaskChecklist task={task} />}
-              {activeTab==='Commentaires'&& <TaskDetailTabComments taskId={task.id} />}
-              {activeTab==='Fichiers'    && <TaskAttachments taskId={task.id} canUpload={canEdit} />}
-              {activeTab==='Activité'    && <TaskActivityLog taskId={task.id} />}
-              {activeTab==='Dépendances' && <TaskDependencyGraph taskId={task.id} task={task} />}
-              {activeTab==='Récurrence'  && <RecurrenceConfig taskId={task.id} />}
-              {activeTab==='Temps'       && <TimeTrackingPanel taskId={task.id} estimatedMinutes={task.estimated_minutes} />}
+              {activeTab === 'Détails'      && <TaskDetailTabDetails task={task} profile={profile} canEdit={canEdit} />}
+              {activeTab === 'Commentaires' && <TaskDetailTabComments taskId={task.id} />}
+              {activeTab === 'Temps'        && <TimeTrackingPanel taskId={task.id} estimatedMinutes={task.estimated_minutes} />}
+              {activeTab === 'Checklists'   && <TaskChecklist task={task} />}
+              {activeTab === 'Fichiers'     && <TaskAttachments taskId={task.id} canUpload={canEdit} />}
+              {activeTab === 'Activité'     && <TaskActivityLog taskId={task.id} />}
+              {activeTab === 'Dépendances'  && <TaskDependencyGraph taskId={task.id} task={task} />}
+              {activeTab === 'Récurrence'   && <RecurrenceConfig taskId={task.id} />}
             </div>
           </>
         )}
       </div>
 
+      {/* Modale refus */}
       {showReject && (
         <div className="fixed inset-0 z-[60] flex items-center justify-center">
           <div className="bg-[#1a1a35] border border-white/10 rounded-xl p-6 w-full max-w-md shadow-2xl mx-4">
@@ -163,6 +225,7 @@ export default function TaskDetailPanel({ taskId, onClose }) {
         </div>
       )}
 
+      {/* Modale suppression */}
       {showDelete && (
         <div className="fixed inset-0 z-[60] flex items-center justify-center">
           <div className="bg-[#1a1a35] border border-white/10 rounded-xl p-6 w-full max-w-sm shadow-2xl mx-4">
