@@ -1,110 +1,92 @@
 // ============================================================
 // APEX RH — MonTravail.jsx · S134
-// Tabs Aurora jade/violet/or — fond transparent
+// Conteneur transparent — chaque onglet a son propre fond
 // ============================================================
 import { useSearchParams } from 'react-router-dom'
 import { motion }          from 'framer-motion'
 import { CheckSquare, FolderKanban, Target } from 'lucide-react'
-
 import Tasks          from '../tasks/Tasks'
 import ProjectsPage   from '../projects/Projects'
 import ObjectivesPage from '../objectives/Objectives'
 
 const TABS = [
-  { id: 'taches',    label: 'Tâches',  Icon: CheckSquare,  accent: '#6EE7B7', rgb: '16,185,129'  },
-  { id: 'projets',   label: 'Projets', Icon: FolderKanban, accent: '#C4B5FD', rgb: '139,92,246'  },
-  { id: 'objectifs', label: 'OKR',     Icon: Target,       accent: '#FDE68A', rgb: '245,158,11'  },
+  { id:'taches',    label:'Tâches',  Icon:CheckSquare,  accent:'#6EE7B7', rgb:'16,185,129'  },
+  { id:'projets',   label:'Projets', Icon:FolderKanban, accent:'#38BDF8', rgb:'56,189,248'  },
+  { id:'objectifs', label:'OKR',     Icon:Target,       accent:'#FDE68A', rgb:'245,158,11'  },
 ]
-const DEFAULT_TAB = 'taches'
-
-function TabBar({ activeTab, onTabClick }) {
-  return (
-    <div
-      className="flex-shrink-0 px-6"
-      style={{
-        borderBottom: '1px solid rgba(255,255,255,.08)',
-        background: 'rgba(3,8,15,.35)',
-        backdropFilter: 'blur(40px) saturate(180%)',
-        WebkitBackdropFilter: 'blur(40px) saturate(180%)',
-      }}
-    >
-      <div className="flex gap-1 pt-1">
-        {TABS.map(tab => {
-          const isActive = tab.id === activeTab
-          return (
-            <button
-              key={tab.id}
-              onClick={() => onTabClick(tab.id)}
-              className="relative flex items-center gap-2 px-5 py-2.5 text-sm font-semibold transition-all duration-200"
-              style={{
-                borderRadius: '10px 10px 0 0',
-                border: 'none', cursor: 'pointer',
-                background: isActive ? `rgba(${tab.rgb},.12)` : 'transparent',
-                color: isActive ? tab.accent : 'rgba(255,255,255,.30)',
-                textShadow: isActive ? `0 0 12px rgba(${tab.rgb},.6)` : 'none',
-              }}
-            >
-              {isActive && (
-                <motion.div
-                  layoutId="aurora-tab-indicator"
-                  className="absolute bottom-0 left-0 right-0 h-[2px] rounded-t"
-                  style={{
-                    background: `linear-gradient(90deg, transparent, ${tab.accent}, transparent)`,
-                    boxShadow: `0 0 14px ${tab.accent}, 0 0 28px rgba(${tab.rgb},.4)`,
-                  }}
-                  transition={{ type: 'spring', stiffness: 500, damping: 35 }}
-                />
-              )}
-              <tab.Icon
-                size={14}
-                style={isActive ? {
-                  color: tab.accent,
-                  filter: `drop-shadow(0 0 6px rgba(${tab.rgb},.7))`,
-                } : undefined}
-              />
-              <span>{tab.label}</span>
-            </button>
-          )
-        })}
-      </div>
-    </div>
-  )
-}
 
 export default function MonTravail() {
   const [searchParams, setSearchParams] = useSearchParams()
-  const activeTab = TABS.find(t => t.id === searchParams.get('tab'))?.id ?? DEFAULT_TAB
-
-  function handleTabClick(tabId) {
-    setSearchParams({ tab: tabId }, { replace: true })
-  }
+  const activeTab = TABS.find(t => t.id === searchParams.get('tab'))?.id ?? 'taches'
+  const tab = TABS.find(t => t.id === activeTab)
 
   return (
-    <div className="flex flex-col h-full" style={{ background: 'transparent' }}>
+    // Fond transparent : la page enfant (Tasks/Projects) applique son propre fond
+    <div className="flex flex-col" style={{ minHeight:'100%', background:'transparent' }}>
 
-      {/* En-tête — transparent */}
-      <div
-        className="flex-shrink-0 px-6 pt-6 pb-3"
-        style={{ background: 'transparent' }}
-      >
-        <h1 className="text-2xl font-bold text-white" style={{ letterSpacing: '-0.5px' }}>
+      {/* En-tête — glass neutre */}
+      <div style={{
+        padding:'24px 24px 0',
+        background:'rgba(3,8,15,.45)',
+        backdropFilter:'blur(40px)',
+        flexShrink:0,
+      }}>
+        <h1 className="text-2xl font-bold text-white" style={{ letterSpacing:'-0.5px' }}>
           Mon Travail
         </h1>
-        <p className="text-sm mt-1" style={{ color: 'rgba(255,255,255,.35)' }}>
+        <p className="text-sm mt-1" style={{ color:'rgba(255,255,255,.35)' }}>
           Tâches, projets et objectifs OKR qui me sont assignés.
         </p>
+
+        {/* TabBar */}
+        <div className="flex gap-1 mt-4"
+          style={{ borderBottom:'1px solid rgba(255,255,255,.07)' }}>
+          {TABS.map(t => {
+            const isActive = t.id === activeTab
+            return (
+              <button key={t.id}
+                onClick={() => setSearchParams({ tab:t.id }, { replace:true })}
+                style={{
+                  position:'relative',
+                  display:'flex', alignItems:'center', gap:7,
+                  padding:'10px 20px',
+                  borderRadius:'10px 10px 0 0',
+                  border:'none', cursor:'pointer',
+                  fontSize:13, fontWeight:isActive ? 700 : 500,
+                  background: isActive ? `rgba(${t.rgb},.12)` : 'transparent',
+                  color: isActive ? t.accent : 'rgba(255,255,255,.32)',
+                  textShadow: isActive ? `0 0 14px rgba(${t.rgb},.65)` : 'none',
+                  transition:'all .2s',
+                }}>
+                {isActive && (
+                  <motion.div layoutId="tab-line"
+                    style={{
+                      position:'absolute', bottom:0, left:0, right:0, height:2,
+                      borderRadius:'2px 2px 0 0',
+                      background:`linear-gradient(90deg,transparent,${t.accent},transparent)`,
+                      boxShadow:`0 0 16px ${t.accent}, 0 0 32px rgba(${t.rgb},.40)`,
+                    }}
+                    transition={{ type:'spring', stiffness:500, damping:35 }} />
+                )}
+                <t.Icon size={14}
+                  style={isActive ? {
+                    color:t.accent,
+                    filter:`drop-shadow(0 0 7px rgba(${t.rgb},.80))`,
+                  } : undefined}
+                />
+                {t.label}
+              </button>
+            )
+          })}
+        </div>
       </div>
 
-      {/* Onglets */}
-      <TabBar activeTab={activeTab} onTabClick={handleTabClick} />
-
-      {/* Contenu */}
-      <div className="flex-1 overflow-auto" style={{ background: 'transparent' }}>
-        {activeTab === 'taches'    && <Tasks />}
-        {activeTab === 'projets'   && <ProjectsPage />}
-        {activeTab === 'objectifs' && <ObjectivesPage />}
+      {/* Contenu — transparent, la page child gère son fond */}
+      <div style={{ flex:1, position:'relative', background:'transparent' }}>
+        {activeTab==='taches'    && <Tasks />}
+        {activeTab==='projets'   && <ProjectsPage />}
+        {activeTab==='objectifs' && <ObjectivesPage />}
       </div>
-
     </div>
   )
 }
