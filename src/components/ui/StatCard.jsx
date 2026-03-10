@@ -75,8 +75,11 @@ export default function StatCard({
       {/* Valeur principale */}
       <div>
         <p className="text-2xl font-black leading-none"
-           style={{ fontFamily:"'Syne',sans-serif", color }}>
-          {value ?? '—'}
+           style={{
+             fontFamily:"'Syne',sans-serif",
+             color: (value === 0) ? (isLight ? 'rgba(26,31,54,0.30)' : 'rgba(255,255,255,0.30)') : color,
+           }}>
+          {value === null || value === undefined ? '—' : value}
           {unit
             ? <span className="text-sm font-normal ml-1"
                     style={{ color: isLight ? 'rgba(26,31,54,0.40)' : 'rgba(255,255,255,0.50)' }}>
