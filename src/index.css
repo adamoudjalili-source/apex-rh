@@ -23,7 +23,9 @@
   }
 
   body {
-    background-color: #03080F;
+    background-color: #060B18;
+    background-image: radial-gradient(ellipse at 50% 0%, #0A1628 0%, #060B18 50%, #030912 100%);
+    background-attachment: fixed;
     color: #ffffff;
   }
 

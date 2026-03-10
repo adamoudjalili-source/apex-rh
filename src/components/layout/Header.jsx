@@ -89,7 +89,7 @@ export default function Header() {
         className="h-16 flex items-center justify-between px-6 flex-shrink-0"
         style={{
           // Glacé — bleu nuit glass, harmonisé avec la sidebar
-          background:'rgba(1,12,22,.70)',
+          background:'rgba(6,11,24,.75)',
           backdropFilter:'blur(40px) saturate(140%)',
           WebkitBackdropFilter:'blur(40px) saturate(140%)',
           borderBottom:'1px solid rgba(56,189,248,.09)',

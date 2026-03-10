@@ -150,7 +150,7 @@ export default function Sidebar() {
       className="relative flex flex-col h-screen overflow-hidden flex-shrink-0"
       style={{
         // Fond Glacé — bleu nuit iceberg, légèrement plus chaud que les pages
-        background:'linear-gradient(180deg, #010D1A 0%, #010B16 50%, #010912 100%)',
+        background:'linear-gradient(180deg, #0A1628 0%, #070E1E 50%, #050C18 100%)',
         borderRight:'1px solid rgba(56,189,248,.10)',
       }}>
 
