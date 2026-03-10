@@ -66,6 +66,7 @@ const SettingsPage  = lazy(() => import('./pages/admin/Settings'))
 const SuperAdmin    = lazy(() => import('./pages/admin/SuperAdmin'))
 const ApiManager    = lazy(() => import('./pages/admin/ApiManager'))
 const Notifications = lazy(() => import('./pages/admin/Notifications'))
+const AgentIAHub    = lazy(() => import('./pages/admin/AgentIAHub'))
 
 function PageLoader() {
   return (
@@ -139,6 +140,7 @@ export default function App() {
           <Route path="/admin/super-admin"    element={<S><SuperAdmin /></S>} />
           <Route path="/admin/api-manager"    element={<S><ApiManager /></S>} />
           <Route path="/admin/notifications"  element={<S><Notifications /></S>} />
+          <Route path="/admin/agents-ia"      element={<S><AgentIAHub /></S>} />
 
           {/* ── Rétrocompatibilité URLs legacy ── */}
           <Route path="/tasks"               element={<Navigate to="/travail/taches"              replace />} />

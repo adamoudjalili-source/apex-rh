@@ -15,7 +15,7 @@ import {
   Globe, UserSquare2, GraduationCap, RefreshCw,
   Briefcase, CalendarDays, Wallet, Trophy,
   Activity, Building2, Bell, Zap,
-  CheckSquare, UserCircle2, Gauge, Target,
+  CheckSquare, UserCircle2, Gauge, Target, Bot,
 } from 'lucide-react'
 import { useAuth }        from '../../contexts/AuthContext'
 import { useAppSettings } from '../../hooks/useSettings'
@@ -212,6 +212,7 @@ export default function Sidebar() {
           <NavItem icon={Settings}       label="Paramètres"            path="/admin/settings"       collapsed={collapsed}/>
           <NavItem icon={Bell}           label="Notifications"         path="/admin/notifications"  collapsed={collapsed}/>
           <NavItem icon={Zap}            label="API & Intégrations"    path="/admin/api-manager"    collapsed={collapsed}/>
+          <NavItem icon={Bot}            label="Agents IA"             path="/admin/agents-ia"      collapsed={collapsed}/>
           <Section label="Multi-Tenant" collapsed={collapsed}/>
           <NavItem icon={Globe}          label="Organisations"         path="/super-admin"          collapsed={collapsed}/>
           <Section label="Communication" collapsed={collapsed}/>
@@ -238,6 +239,7 @@ export default function Sidebar() {
           <NavItem icon={Settings}       label="Paramètres"            path="/admin/settings"       collapsed={collapsed}/>
           <NavItem icon={Bell}           label="Notifications"         path="/admin/notifications"  collapsed={collapsed}/>
           <NavItem icon={Zap}            label="API & Intégrations"    path="/admin/api-manager"    collapsed={collapsed}/>
+          <NavItem icon={Bot}            label="Agents IA"             path="/admin/agents-ia"      collapsed={collapsed}/>
           <Section label="Communication" collapsed={collapsed}/>
           <NavItem icon={MessageCircle}  label="Communication"         path="/communication"        badge={unreadCount||null} collapsed={collapsed}/>
         </>)}
