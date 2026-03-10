@@ -1,8 +1,6 @@
 // ============================================================
 // APEX RH — MonTravail.jsx · S134
-// Hub Mon Espace — Tâches · Projets · OKR
-// Aurora Design #9 — tabs glass jade/violet/or
-// Stats header supprimé · Max 400 lignes
+// Tabs Aurora jade/violet/or — fond transparent
 // ============================================================
 import { useSearchParams } from 'react-router-dom'
 import { motion }          from 'framer-motion'
@@ -24,10 +22,10 @@ function TabBar({ activeTab, onTabClick }) {
     <div
       className="flex-shrink-0 px-6"
       style={{
-        borderBottom: '1px solid rgba(255,255,255,.06)',
-        background: 'rgba(3,8,15,.25)',
-        backdropFilter: 'blur(20px)',
-        WebkitBackdropFilter: 'blur(20px)',
+        borderBottom: '1px solid rgba(255,255,255,.08)',
+        background: 'rgba(3,8,15,.35)',
+        backdropFilter: 'blur(40px) saturate(180%)',
+        WebkitBackdropFilter: 'blur(40px) saturate(180%)',
       }}
     >
       <div className="flex gap-1 pt-1">
@@ -37,14 +35,13 @@ function TabBar({ activeTab, onTabClick }) {
             <button
               key={tab.id}
               onClick={() => onTabClick(tab.id)}
-              className="relative flex items-center gap-2 px-5 py-2.5 text-sm font-medium transition-all duration-200"
+              className="relative flex items-center gap-2 px-5 py-2.5 text-sm font-semibold transition-all duration-200"
               style={{
                 borderRadius: '10px 10px 0 0',
-                border: 'none',
-                cursor: 'pointer',
-                background: isActive ? `rgba(${tab.rgb},.08)` : 'transparent',
-                color: isActive ? tab.accent : 'rgba(255,255,255,.35)',
-                backdropFilter: isActive ? 'blur(20px)' : undefined,
+                border: 'none', cursor: 'pointer',
+                background: isActive ? `rgba(${tab.rgb},.12)` : 'transparent',
+                color: isActive ? tab.accent : 'rgba(255,255,255,.30)',
+                textShadow: isActive ? `0 0 12px rgba(${tab.rgb},.6)` : 'none',
               }}
             >
               {isActive && (
@@ -53,14 +50,17 @@ function TabBar({ activeTab, onTabClick }) {
                   className="absolute bottom-0 left-0 right-0 h-[2px] rounded-t"
                   style={{
                     background: `linear-gradient(90deg, transparent, ${tab.accent}, transparent)`,
-                    boxShadow: `0 0 10px ${tab.accent}80`,
+                    boxShadow: `0 0 14px ${tab.accent}, 0 0 28px rgba(${tab.rgb},.4)`,
                   }}
                   transition={{ type: 'spring', stiffness: 500, damping: 35 }}
                 />
               )}
               <tab.Icon
                 size={14}
-                style={isActive ? { color: tab.accent, filter: `drop-shadow(0 0 4px ${tab.accent}80)` } : undefined}
+                style={isActive ? {
+                  color: tab.accent,
+                  filter: `drop-shadow(0 0 6px rgba(${tab.rgb},.7))`,
+                } : undefined}
               />
               <span>{tab.label}</span>
             </button>
@@ -80,12 +80,12 @@ export default function MonTravail() {
   }
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full" style={{ background: 'transparent' }}>
 
-      {/* En-tête */}
+      {/* En-tête — transparent */}
       <div
         className="flex-shrink-0 px-6 pt-6 pb-3"
-        style={{ background: 'rgba(3,8,15,.15)', backdropFilter: 'blur(10px)' }}
+        style={{ background: 'transparent' }}
       >
         <h1 className="text-2xl font-bold text-white" style={{ letterSpacing: '-0.5px' }}>
           Mon Travail
@@ -98,8 +98,8 @@ export default function MonTravail() {
       {/* Onglets */}
       <TabBar activeTab={activeTab} onTabClick={handleTabClick} />
 
-      {/* Contenu onglet actif */}
-      <div className="flex-1 overflow-auto">
+      {/* Contenu */}
+      <div className="flex-1 overflow-auto" style={{ background: 'transparent' }}>
         {activeTab === 'taches'    && <Tasks />}
         {activeTab === 'projets'   && <ProjectsPage />}
         {activeTab === 'objectifs' && <ObjectivesPage />}

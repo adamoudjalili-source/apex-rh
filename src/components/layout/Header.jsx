@@ -70,8 +70,9 @@ export default function Header() {
       <header
         className="h-16 flex items-center justify-between px-6 border-b border-white/5 flex-shrink-0"
         style={{
-          background: 'rgba(8, 8, 24, 0.8)',
-          backdropFilter: 'blur(20px)',
+          background: 'rgba(3,8,15,.30)',
+          backdropFilter: 'blur(40px) saturate(180%)',
+          WebkitBackdropFilter: 'blur(40px) saturate(180%)',
         }}
       >
         {/* Gauche — titre de page */}
