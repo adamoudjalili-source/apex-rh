@@ -91,3 +91,60 @@
 [data-theme="light"] ::-webkit-scrollbar-track { background: #E6EBF1; }
 [data-theme="light"] ::-webkit-scrollbar-thumb { background: #C4CDD6; }
 [data-theme="light"] ::-webkit-scrollbar-thumb:hover { background: #8898AA; }
+
+/* ── Textes blancs → textes sombres ── */
+/* Cible toutes les variantes text-white/* de Tailwind */
+[data-theme="light"] .text-white {
+  color: #1A1F36 !important;
+}
+[data-theme="light"] [class*="text-white"] {
+  color: rgba(26, 31, 54, 0.85) !important;
+}
+/* Restaure full opacity pour text-white pur */
+[data-theme="light"] .text-white:not([class*="text-white/"]) {
+  color: #1A1F36 !important;
+}
+
+/* ── Backgrounds semi-transparents → cards légères ── */
+[data-theme="light"] [class*="bg-white/"] {
+  background-color: rgba(249, 250, 254, 0.9) !important;
+}
+[data-theme="light"] .bg-white\/5,
+[data-theme="light"] .bg-white\/\[0\.05\] {
+  background-color: #F8F9FE !important;
+}
+[data-theme="light"] .bg-white\/10,
+[data-theme="light"] .bg-white\/\[0\.08\] {
+  background-color: #F0F2FA !important;
+}
+[data-theme="light"] .bg-white\/20 {
+  background-color: #E8ECF5 !important;
+}
+
+/* ── Borders → couleur light ── */
+[data-theme="light"] [class*="border-white"] {
+  border-color: rgba(99, 102, 241, 0.15) !important;
+}
+
+/* ── Placeholders ── */
+[data-theme="light"] ::placeholder {
+  color: #9CA3AF !important;
+}
+
+/* ── Inputs mode clair ── */
+[data-theme="light"] .input {
+  background: #F8F9FE !important;
+  border-color: #D1D5DB !important;
+  color: #1A1F36 !important;
+}
+
+/* ── Composant .card mode clair ── */
+[data-theme="light"] .card {
+  background: #FFFFFF !important;
+  border-color: #E5E7EB !important;
+}
+
+/* ── Hover states ── */
+[data-theme="light"] [class*="hover:bg-white"] {
+  --tw-bg-opacity: 1;
+}

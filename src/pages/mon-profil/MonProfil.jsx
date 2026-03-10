@@ -1,5 +1,5 @@
 // ============================================================
-// APEX RH — MonProfil.jsx · S114
+// APEX RH — MonProfil.jsx · S114 + fix light mode S135
 // Hub Mon Espace — Profil personnel enrichi
 // Onglets via useSearchParams(?tab=infos|competences|formations|carriere)
 // StatCard KPIs · GLASS_STYLE · Max 400 lignes
@@ -19,14 +19,15 @@ import {
 import StatCard     from '../../components/ui/StatCard'
 import EmptyState   from '../../components/ui/EmptyState'
 
-import { useAuth }               from '../../contexts/AuthContext'
-import { usePermission }         from '../../hooks/usePermission'
+import { useTheme }                from '../../contexts/ThemeContext'
+import { useAuth }                 from '../../contexts/AuthContext'
+import { usePermission }           from '../../hooks/usePermission'
 import {
   useEmployee,
   useUpdateEmployee,
   useCareerEvents,
-}                                from '../../hooks/useEmployeeManagement'
-import { useUserJobFamily }      from '../../hooks/useCompetencyFramework'
+}                                  from '../../hooks/useEmployeeManagement'
+import { useUserJobFamily }        from '../../hooks/useCompetencyFramework'
 import {
   useMyEnrollments,
   useMyCertifications,
@@ -34,8 +35,8 @@ import {
   ENROLLMENT_STATUS_COLORS,
   TRAINING_TYPE_LABELS,
   LEVEL_LABELS,
-}                                from '../../hooks/useFormations'
-import { FRAMEWORK_LEVEL_LABELS } from '../../hooks/useCompetencyFramework'
+}                                  from '../../hooks/useFormations'
+import { FRAMEWORK_LEVEL_LABELS }  from '../../hooks/useCompetencyFramework'
 
 // ─── ONGLETS ─────────────────────────────────────────────────
 const TABS = [
@@ -45,6 +46,26 @@ const TABS = [
   { id: 'carriere',     label: 'Carrière',     icon: TrendingUp, color: '#10B981' },
 ]
 const DEFAULT_TAB = 'infos'
+
+// ─── HELPERS THÈME ───────────────────────────────────────────
+const glassCard = (isLight) => isLight
+  ? { background: '#FFFFFF', border: '1px solid #E8ECF2', boxShadow: '0 1px 6px rgba(0,0,0,0.06)' }
+  : GLASS_STYLE
+
+const glassCardStrong = (isLight) => isLight
+  ? { background: '#F8F9FE', border: '1px solid #E0E6F0', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }
+  : GLASS_STYLE_STRONG
+
+const glassCardSubtle = (isLight) => isLight
+  ? { background: '#F4F6FB', border: '1px solid #E8ECF2' }
+  : GLASS_STYLE_SUBTLE
+
+const txt = (isLight, opacity = 1) =>
+  isLight ? `rgba(26,31,54,${opacity})` : `rgba(255,255,255,${opacity})`
+
+const inputStyle = (isLight) => isLight
+  ? { background: '#F4F6FB', border: '1px solid #D1D5DB', color: '#1A1F36' }
+  : { background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff' }
 
 // ─── HELPER ANCIENNETÉ ────────────────────────────────────────
 function computeSeniority(createdAt) {
@@ -56,7 +77,7 @@ function computeSeniority(createdAt) {
 }
 
 // ─── PANEL INFOS ─────────────────────────────────────────────
-function InfosPanel({ employee, onSave, canEdit }) {
+function InfosPanel({ employee, onSave, canEdit, isLight }) {
   const [editing, setEditing] = useState(false)
   const [form, setForm]       = useState({})
 
@@ -76,7 +97,7 @@ function InfosPanel({ employee, onSave, canEdit }) {
   return (
     <div className="space-y-4">
       {/* Avatar + identité */}
-      <div className="rounded-2xl p-6 flex items-center gap-5" style={GLASS_STYLE_STRONG}>
+      <div className="rounded-2xl p-6 flex items-center gap-5" style={glassCardStrong(isLight)}>
         <div
           className="w-16 h-16 rounded-2xl flex items-center justify-center flex-shrink-0 text-2xl font-black text-white"
           style={{ background: 'linear-gradient(135deg,#6366F1,#8B5CF6)' }}
@@ -84,8 +105,8 @@ function InfosPanel({ employee, onSave, canEdit }) {
           {f?.first_name?.charAt(0)}{f?.last_name?.charAt(0)}
         </div>
         <div className="flex-1 min-w-0">
-          <p className="text-lg font-bold text-white truncate">{f?.first_name} {f?.last_name}</p>
-          <p className="text-sm text-white/50">{f?.poste || '—'}</p>
+          <p className="text-lg font-bold truncate" style={{ color: txt(isLight) }}>{f?.first_name} {f?.last_name}</p>
+          <p className="text-sm" style={{ color: txt(isLight, 0.5) }}>{f?.poste || '—'}</p>
           <span
             className="inline-block mt-1 text-[10px] font-semibold px-2 py-0.5 rounded-full"
             style={{ background: 'rgba(99,102,241,0.15)', color: '#A5B4FC' }}
@@ -96,8 +117,11 @@ function InfosPanel({ employee, onSave, canEdit }) {
         {canEdit && !editing && (
           <button
             onClick={startEdit}
-            className="p-2 rounded-xl transition-colors hover:bg-white/[0.06]"
-            style={{ color: '#6366F1' }}
+            className="p-2 rounded-xl transition-colors"
+            style={{
+              color: '#6366F1',
+              background: isLight ? 'rgba(99,102,241,0.06)' : 'transparent',
+            }}
           >
             <Edit3 size={16} />
           </button>
@@ -105,8 +129,8 @@ function InfosPanel({ employee, onSave, canEdit }) {
       </div>
 
       {/* Formulaire édition / lecture */}
-      <div className="rounded-2xl p-5 space-y-4" style={GLASS_STYLE}>
-        <p className="text-xs font-semibold text-white/30 uppercase tracking-wider">Coordonnées</p>
+      <div className="rounded-2xl p-5 space-y-4" style={glassCard(isLight)}>
+        <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: txt(isLight, 0.30) }}>Coordonnées</p>
 
         {editing ? (
           <div className="space-y-3">
@@ -117,10 +141,10 @@ function InfosPanel({ employee, onSave, canEdit }) {
               { key: 'phone',      label: 'Téléphone' },
             ].map(({ key, label }) => (
               <div key={key}>
-                <p className="text-[11px] text-white/40 mb-1">{label}</p>
+                <p className="text-[11px] mb-1" style={{ color: txt(isLight, 0.40) }}>{label}</p>
                 <input
-                  className="w-full rounded-xl px-3 py-2 text-sm text-white outline-none"
-                  style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)' }}
+                  className="w-full rounded-xl px-3 py-2 text-sm outline-none"
+                  style={inputStyle(isLight)}
                   value={form[key]}
                   onChange={e => setForm(p => ({ ...p, [key]: e.target.value }))}
                 />
@@ -128,25 +152,25 @@ function InfosPanel({ employee, onSave, canEdit }) {
             ))}
             <div className="flex gap-2 pt-1">
               <button onClick={save}   className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold" style={{ background: 'rgba(99,102,241,0.2)', color: '#818CF8' }}><Check size={12}/>Enregistrer</button>
-              <button onClick={cancel} className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold" style={{ background: 'rgba(255,255,255,0.05)', color: '#9CA3AF' }}><X size={12}/>Annuler</button>
+              <button onClick={cancel} className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold" style={{ background: isLight ? '#F0F2FA' : 'rgba(255,255,255,0.05)', color: isLight ? '#6B7280' : '#9CA3AF' }}><X size={12}/>Annuler</button>
             </div>
           </div>
         ) : (
           <div className="space-y-3">
             {[
-              { icon: Mail,     label: 'Email',     value: f?.email },
-              { icon: Phone,    label: 'Téléphone', value: f?.phone || '—' },
-              { icon: Briefcase,label: 'Poste',     value: f?.poste || '—' },
-              { icon: Shield,   label: 'Service',   value: f?.services?.name || f?.divisions?.name || f?.directions?.name || '—' },
-              { icon: Calendar, label: 'Depuis le', value: f?.created_at ? new Date(f.created_at).toLocaleDateString('fr-FR') : '—' },
+              { icon: Mail,      label: 'Email',     value: f?.email },
+              { icon: Phone,     label: 'Téléphone', value: f?.phone || '—' },
+              { icon: Briefcase, label: 'Poste',     value: f?.poste || '—' },
+              { icon: Shield,    label: 'Service',   value: f?.services?.name || f?.divisions?.name || f?.directions?.name || '—' },
+              { icon: Calendar,  label: 'Depuis le', value: f?.created_at ? new Date(f.created_at).toLocaleDateString('fr-FR') : '—' },
             ].map(({ icon: Icon, label, value }) => (
               <div key={label} className="flex items-center gap-3">
                 <div className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: 'rgba(99,102,241,0.1)' }}>
                   <Icon size={13} className="text-indigo-400" />
                 </div>
                 <div>
-                  <p className="text-[10px] text-white/30">{label}</p>
-                  <p className="text-sm text-white/80">{value}</p>
+                  <p className="text-[10px]" style={{ color: txt(isLight, 0.30) }}>{label}</p>
+                  <p className="text-sm" style={{ color: txt(isLight, 0.80) }}>{value}</p>
                 </div>
               </div>
             ))}
@@ -158,22 +182,22 @@ function InfosPanel({ employee, onSave, canEdit }) {
 }
 
 // ─── PANEL COMPÉTENCES ────────────────────────────────────────
-function CompetencesPanel({ userId }) {
+function CompetencesPanel({ userId, isLight }) {
   const { data: jobFamily, isLoading } = useUserJobFamily(userId)
 
-  if (isLoading) return <div className="h-32 animate-pulse rounded-2xl" style={GLASS_STYLE} />
+  if (isLoading) return <div className="h-32 animate-pulse rounded-2xl" style={glassCard(isLight)} />
   if (!jobFamily) return <EmptyState icon={Star} title="Aucun référentiel" description="Aucune famille de métiers assignée." />
 
   const competencies = jobFamily.competency_frameworks || []
   return (
     <div className="space-y-3">
-      <div className="rounded-2xl p-4 flex items-center gap-3" style={GLASS_STYLE_STRONG}>
+      <div className="rounded-2xl p-4 flex items-center gap-3" style={glassCardStrong(isLight)}>
         <div className="w-8 h-8 rounded-xl flex items-center justify-center text-lg" style={{ background: `${jobFamily.color || '#6366F1'}18` }}>
           {jobFamily.icon || '⭐'}
         </div>
         <div>
-          <p className="text-sm font-semibold text-white">{jobFamily.name}</p>
-          <p className="text-[11px] text-white/40">{jobFamily.code} · {competencies.length} compétence{competencies.length > 1 ? 's' : ''}</p>
+          <p className="text-sm font-semibold" style={{ color: txt(isLight) }}>{jobFamily.name}</p>
+          <p className="text-[11px]" style={{ color: txt(isLight, 0.40) }}>{jobFamily.code} · {competencies.length} compétence{competencies.length > 1 ? 's' : ''}</p>
         </div>
       </div>
 
@@ -182,15 +206,15 @@ function CompetencesPanel({ userId }) {
         : competencies.map(c => {
             const lvl = FRAMEWORK_LEVEL_LABELS[c.level] || FRAMEWORK_LEVEL_LABELS[3]
             return (
-              <div key={c.id} className="rounded-2xl p-4" style={GLASS_STYLE}>
+              <div key={c.id} className="rounded-2xl p-4" style={glassCard(isLight)}>
                 <div className="flex items-center justify-between mb-2">
-                  <p className="text-sm text-white/80 font-medium">{c.name}</p>
+                  <p className="text-sm font-medium" style={{ color: txt(isLight, 0.80) }}>{c.name}</p>
                   <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full" style={{ background: lvl.bg, color: lvl.color }}>
                     {lvl.label}
                   </span>
                 </div>
-                {c.description && <p className="text-[11px] text-white/35">{c.description}</p>}
-                <div className="mt-2 h-1 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.05)' }}>
+                {c.description && <p className="text-[11px]" style={{ color: txt(isLight, 0.35) }}>{c.description}</p>}
+                <div className="mt-2 h-1 rounded-full overflow-hidden" style={{ background: isLight ? '#E8ECF2' : 'rgba(255,255,255,0.05)' }}>
                   <div className="h-full rounded-full transition-all duration-500" style={{ width: `${(c.level / 5) * 100}%`, background: lvl.color }} />
                 </div>
               </div>
@@ -202,27 +226,27 @@ function CompetencesPanel({ userId }) {
 }
 
 // ─── PANEL FORMATIONS ─────────────────────────────────────────
-function FormationsPanel() {
-  const { data: enrollments  = [], isLoading: loadingE } = useMyEnrollments()
+function FormationsPanel({ isLight }) {
+  const { data: enrollments    = [], isLoading: loadingE } = useMyEnrollments()
   const { data: certifications = [], isLoading: loadingC } = useMyCertifications()
 
-  if (loadingE || loadingC) return <div className="h-32 animate-pulse rounded-2xl" style={GLASS_STYLE} />
+  if (loadingE || loadingC) return <div className="h-32 animate-pulse rounded-2xl" style={glassCard(isLight)} />
 
   return (
     <div className="space-y-5">
       {/* Certifications */}
       <div>
-        <p className="text-xs font-semibold text-white/30 uppercase tracking-wider mb-3">Certifications ({certifications.length})</p>
+        <p className="text-xs font-semibold uppercase tracking-wider mb-3" style={{ color: txt(isLight, 0.30) }}>Certifications ({certifications.length})</p>
         {certifications.length === 0
           ? <EmptyState icon={Award} title="Aucune certification" description="Vos certifications obtenues apparaîtront ici." />
           : certifications.map(cert => (
-              <div key={cert.id} className="rounded-2xl p-4 mb-2 flex items-center gap-3" style={GLASS_STYLE}>
+              <div key={cert.id} className="rounded-2xl p-4 mb-2 flex items-center gap-3" style={glassCard(isLight)}>
                 <div className="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: 'rgba(16,185,129,0.12)' }}>
                   <Award size={14} style={{ color: '#10B981' }} />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm text-white/80 font-medium truncate">{cert.training_catalog?.title || cert.name}</p>
-                  <p className="text-[10px] text-white/35">
+                  <p className="text-sm font-medium truncate" style={{ color: txt(isLight, 0.80) }}>{cert.training_catalog?.title || cert.name}</p>
+                  <p className="text-[10px]" style={{ color: txt(isLight, 0.35) }}>
                     Obtenu le {new Date(cert.obtained_at).toLocaleDateString('fr-FR')}
                     {cert.expires_at && ` · Expire ${new Date(cert.expires_at).toLocaleDateString('fr-FR')}`}
                   </p>
@@ -234,20 +258,20 @@ function FormationsPanel() {
 
       {/* Inscriptions / formations */}
       <div>
-        <p className="text-xs font-semibold text-white/30 uppercase tracking-wider mb-3">Formations ({enrollments.length})</p>
+        <p className="text-xs font-semibold uppercase tracking-wider mb-3" style={{ color: txt(isLight, 0.30) }}>Formations ({enrollments.length})</p>
         {enrollments.length === 0
           ? <EmptyState icon={BookOpen} title="Aucune formation" description="Votre historique de formation apparaîtra ici." />
           : enrollments.map(enr => {
               const statusColor = ENROLLMENT_STATUS_COLORS[enr.status] || '#6B7280'
               return (
-                <div key={enr.id} className="rounded-2xl p-4 mb-2" style={GLASS_STYLE}>
+                <div key={enr.id} className="rounded-2xl p-4 mb-2" style={glassCard(isLight)}>
                   <div className="flex items-start justify-between gap-2 mb-1">
-                    <p className="text-sm text-white/80 font-medium leading-snug">{enr.training_catalog?.title}</p>
+                    <p className="text-sm font-medium leading-snug" style={{ color: txt(isLight, 0.80) }}>{enr.training_catalog?.title}</p>
                     <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full flex-shrink-0" style={{ background: `${statusColor}18`, color: statusColor }}>
                       {ENROLLMENT_STATUS_LABELS[enr.status] || enr.status}
                     </span>
                   </div>
-                  <p className="text-[10px] text-white/35">
+                  <p className="text-[10px]" style={{ color: txt(isLight, 0.35) }}>
                     {TRAINING_TYPE_LABELS[enr.training_catalog?.type] || ''}{enr.training_catalog?.level ? ` · ${LEVEL_LABELS[enr.training_catalog.level] || ''}` : ''}
                     {enr.training_catalog?.duration_hours ? ` · ${enr.training_catalog.duration_hours}h` : ''}
                   </p>
@@ -262,19 +286,19 @@ function FormationsPanel() {
 
 // ─── PANEL CARRIÈRE ───────────────────────────────────────────
 const CAREER_EVENT_LABELS = {
-  promotion:      { label: 'Promotion',        icon: '🚀', color: '#6366F1' },
-  role_change:    { label: 'Changement rôle',  icon: '🔄', color: '#3B82F6' },
-  transfer:       { label: 'Mobilité',         icon: '📍', color: '#8B5CF6' },
+  promotion:      { label: 'Promotion',           icon: '🚀', color: '#6366F1' },
+  role_change:    { label: 'Changement rôle',     icon: '🔄', color: '#3B82F6' },
+  transfer:       { label: 'Mobilité',            icon: '📍', color: '#8B5CF6' },
   salary_change:  { label: 'Évolution salariale', icon: '💰', color: '#10B981' },
-  onboarding:     { label: 'Arrivée',          icon: '🎉', color: '#F59E0B' },
-  offboarding:    { label: 'Départ',           icon: '👋', color: '#EF4444' },
-  other:          { label: 'Autre',            icon: '📌', color: '#6B7280' },
+  onboarding:     { label: 'Arrivée',             icon: '🎉', color: '#F59E0B' },
+  offboarding:    { label: 'Départ',              icon: '👋', color: '#EF4444' },
+  other:          { label: 'Autre',               icon: '📌', color: '#6B7280' },
 }
 
-function CarrierePanel({ userId }) {
+function CarrierePanel({ userId, isLight }) {
   const { data: events = [], isLoading } = useCareerEvents(userId)
 
-  if (isLoading) return <div className="h-32 animate-pulse rounded-2xl" style={GLASS_STYLE} />
+  if (isLoading) return <div className="h-32 animate-pulse rounded-2xl" style={glassCard(isLight)} />
   if (events.length === 0) return <EmptyState icon={TrendingUp} title="Aucun événement" description="Votre historique de carrière apparaîtra ici." />
 
   return (
@@ -288,7 +312,7 @@ function CarrierePanel({ userId }) {
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: idx * 0.04 }}
             className="rounded-2xl p-4 flex items-start gap-3"
-            style={GLASS_STYLE}
+            style={glassCard(isLight)}
           >
             <div
               className="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0 text-sm"
@@ -298,16 +322,16 @@ function CarrierePanel({ userId }) {
             </div>
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 mb-0.5">
-                <p className="text-sm font-semibold text-white/80">{meta.label}</p>
-                <span className="text-[10px] text-white/30">{ev.effective_date ? new Date(ev.effective_date).toLocaleDateString('fr-FR') : '—'}</span>
+                <p className="text-sm font-semibold" style={{ color: txt(isLight, 0.80) }}>{meta.label}</p>
+                <span className="text-[10px]" style={{ color: txt(isLight, 0.30) }}>{ev.effective_date ? new Date(ev.effective_date).toLocaleDateString('fr-FR') : '—'}</span>
               </div>
               {(ev.old_value || ev.new_value) && (
-                <p className="text-[11px] text-white/40">
+                <p className="text-[11px]" style={{ color: txt(isLight, 0.40) }}>
                   {ev.old_value && <span className="line-through mr-1">{ev.old_value}</span>}
                   {ev.new_value && <span style={{ color: meta.color }}>{ev.new_value}</span>}
                 </p>
               )}
-              {ev.note && <p className="text-[11px] text-white/30 mt-0.5">{ev.note}</p>}
+              {ev.note && <p className="text-[11px] mt-0.5" style={{ color: txt(isLight, 0.30) }}>{ev.note}</p>}
             </div>
           </motion.div>
         )
@@ -318,6 +342,9 @@ function CarrierePanel({ userId }) {
 
 // ─── PAGE PRINCIPALE ──────────────────────────────────────────
 export default function MonProfil() {
+  const { resolvedTheme } = useTheme()
+  const isLight = resolvedTheme === 'light'
+
   const [searchParams, setSearchParams] = useSearchParams()
   const activeTab = TABS.find(t => t.id === searchParams.get('tab'))?.id ?? DEFAULT_TAB
 
@@ -330,9 +357,9 @@ export default function MonProfil() {
   // Stats KPIs
   const { data: allEnrollments  = [] } = useMyEnrollments()
   const { data: certifications  = [] } = useMyCertifications()
-  const done     = allEnrollments.filter(e => e.status === 'termine').length
+  const done        = allEnrollments.filter(e => e.status === 'termine').length
   const activeCerts = certifications.filter(c => !c.expires_at || new Date(c.expires_at) > new Date()).length
-  const seniority = computeSeniority(employee?.created_at)
+  const seniority   = computeSeniority(employee?.created_at)
 
   const canEdit = can('users', 'update') || profile?.id === employee?.id
 
@@ -345,19 +372,26 @@ export default function MonProfil() {
     <div className="min-h-screen p-4 md:p-6 space-y-5">
       {/* Titre */}
       <div>
-        <h1 className="text-2xl font-black text-white" style={{ fontFamily: "'Syne', sans-serif" }}>Mon Profil</h1>
-        <p className="text-sm text-white/40">Informations personnelles, compétences et parcours</p>
+        <h1
+          className="text-2xl font-black"
+          style={{ fontFamily: "'Syne', sans-serif", color: txt(isLight) }}
+        >
+          Mon Profil
+        </h1>
+        <p className="text-sm" style={{ color: txt(isLight, 0.40) }}>
+          Informations personnelles, compétences et parcours
+        </p>
       </div>
 
       {/* Stats header */}
       <div className="grid grid-cols-3 gap-3">
-        <StatCard icon={Calendar} label="Ancienneté"             value={seniority}    color="#6366F1" loading={isLoading} />
-        <StatCard icon={BookOpen} label="Formations terminées"   value={done}         color="#3B82F6" loading={isLoading} />
-        <StatCard icon={Award}    label="Certifications actives" value={activeCerts}  color="#10B981" loading={isLoading} />
+        <StatCard icon={Calendar} label="Ancienneté"             value={seniority}   color="#6366F1" loading={isLoading} />
+        <StatCard icon={BookOpen} label="Formations terminées"   value={done}        color="#3B82F6" loading={isLoading} />
+        <StatCard icon={Award}    label="Certifications actives" value={activeCerts} color="#10B981" loading={isLoading} />
       </div>
 
       {/* TabBar */}
-      <div className="flex gap-1 p-1 rounded-2xl" style={GLASS_STYLE_SUBTLE}>
+      <div className="flex gap-1 p-1 rounded-2xl" style={glassCardSubtle(isLight)}>
         {TABS.map(tab => {
           const active = tab.id === activeTab
           const Icon   = tab.icon
@@ -368,7 +402,7 @@ export default function MonProfil() {
               className="flex-1 flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl text-xs font-semibold transition-all duration-200"
               style={active
                 ? { background: `${tab.color}20`, color: tab.color, border: `1px solid ${tab.color}30` }
-                : { color: 'rgba(255,255,255,0.35)', border: '1px solid transparent' }
+                : { color: txt(isLight, 0.40), border: '1px solid transparent' }
               }
             >
               <Icon size={13} />
@@ -380,10 +414,10 @@ export default function MonProfil() {
 
       {/* Contenu */}
       <motion.div key={activeTab} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.25 }}>
-        {activeTab === 'infos'       && <InfosPanel       employee={employee} onSave={handleSave} canEdit={canEdit} />}
-        {activeTab === 'competences' && <CompetencesPanel userId={profile?.id} />}
-        {activeTab === 'formations'  && <FormationsPanel />}
-        {activeTab === 'carriere'    && <CarrierePanel    userId={profile?.id} />}
+        {activeTab === 'infos'       && <InfosPanel       employee={employee} onSave={handleSave} canEdit={canEdit} isLight={isLight} />}
+        {activeTab === 'competences' && <CompetencesPanel userId={profile?.id} isLight={isLight} />}
+        {activeTab === 'formations'  && <FormationsPanel  isLight={isLight} />}
+        {activeTab === 'carriere'    && <CarrierePanel    userId={profile?.id} isLight={isLight} />}
       </motion.div>
     </div>
   )
