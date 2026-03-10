@@ -57,7 +57,7 @@ export default function ThemeToggle({ collapsed }) {
           style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flex: 1 }}
         >
           <span style={{ fontSize: 13, color: 'rgba(255,255,255,.55)', fontWeight: 400 }}>
-            {isLight ? 'Mode sombre' : 'Mode clair'}
+            {isLight ? 'Mode clair' : 'Mode sombre'}
           </span>
           {/* Pill indicateur */}
           <div style={{
