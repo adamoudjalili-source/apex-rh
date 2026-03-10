@@ -3,6 +3,7 @@
 // Conteneur transparent — chaque onglet a son propre fond
 // ============================================================
 import { useSearchParams } from 'react-router-dom'
+import { useTheme } from '../../contexts/ThemeContext'
 import { motion }          from 'framer-motion'
 import { CheckSquare, FolderKanban, Target } from 'lucide-react'
 import Tasks          from '../tasks/Tasks'
@@ -16,6 +17,8 @@ const TABS = [
 ]
 
 export default function MonTravail() {
+  const { resolvedTheme } = useTheme()
+  const isLight = resolvedTheme === 'light'
   const [searchParams, setSearchParams] = useSearchParams()
   const activeTab = TABS.find(t => t.id === searchParams.get('tab'))?.id ?? 'taches'
   const tab = TABS.find(t => t.id === activeTab)

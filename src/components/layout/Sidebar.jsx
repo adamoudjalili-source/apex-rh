@@ -6,6 +6,7 @@
 import { useState } from 'react'
 import { NavLink, useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
+import ThemeToggle from '../ui/ThemeToggle'
 import {
   LayoutDashboard, Users, BarChart3, TrendingUp,
   ChevronLeft, ChevronRight, LogOut,
@@ -355,6 +356,8 @@ export default function Sidebar() {
             )}
           </AnimatePresence>
         </div>
+
+        <ThemeToggle collapsed={collapsed} />
 
         <button
           onClick={async () => { await signOut(); navigate('/login') }}

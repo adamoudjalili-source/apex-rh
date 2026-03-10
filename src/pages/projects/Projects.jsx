@@ -2,6 +2,7 @@
 // APEX RH — Projects.jsx · S134  Glacé #7 — AUTONOME
 // Iceberg bleu nuit pur — sans pollution de l'Aurora
 // ============================================================
+import { useTheme } from '../../contexts/ThemeContext'
 import { useState, useMemo } from 'react'
 import {
   FolderKanban, Plus, LayoutList, Columns3, BarChart3,
@@ -172,6 +173,8 @@ function KpiCard({ def, value }) {
 }
 
 export default function Projects() {
+  const { resolvedTheme } = useTheme()
+  const isLight = resolvedTheme === 'light'
   const { profile } = useAuth()
   const [view, setView]       = useState('list')
   const [filters, setFilters] = useState({ search:'', status:'', priority:'' })
@@ -223,9 +226,9 @@ export default function Projects() {
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div className="flex items-center gap-3">
             <div style={{ width:46, height:46, borderRadius:14,
-              background:'rgba(14,165,233,.28)',
+              background: isLight ? 'transparent' : 'rgba(14,165,233,28)',
               backdropFilter:'blur(40px)',
-              border:'1px solid rgba(56,189,248,.45)',
+              border: isLight ? '1px solid #E6EBF1' : '1px solid rgba(56,189,248,45)',
               display:'flex', alignItems:'center', justifyContent:'center',
               boxShadow:'0 4px 22px rgba(14,165,233,.25)' }}>
               <FolderKanban size={20} style={{ color:'#38BDF8' }} />
@@ -243,7 +246,7 @@ export default function Projects() {
               padding:'9px 16px', borderRadius:11, cursor:'pointer',
               fontSize:12, fontWeight:500,
               background:'rgba(255,255,255,.08)', backdropFilter:'blur(20px)',
-              border:'1px solid rgba(255,255,255,.14)', color:'rgba(255,255,255,.52)' }}>
+              border: isLight ? '1px solid #E6EBF1' : '1px solid rgba(255,255,255,14)', color:'rgba(255,255,255,.52)' }}>
               Excel
             </button>
             {/* Bouton Glacé signature — bleu pâle solide Vision Pro */}
@@ -252,7 +255,7 @@ export default function Projects() {
               padding:'9px 22px', borderRadius:11,
               background:'rgba(186,230,253,.90)',
               backdropFilter:'blur(20px)',
-              border:'1px solid rgba(255,255,255,.65)',
+              border: isLight ? '1px solid #E6EBF1' : '1px solid rgba(255,255,255,65)',
               color:'#0A1E30', fontSize:12, fontWeight:800, cursor:'pointer',
               boxShadow:'0 4px 26px rgba(14,165,233,.40), inset 0 1px 0 rgba(255,255,255,.70)',
             }}>
@@ -272,7 +275,7 @@ export default function Projects() {
         <div className="flex flex-col sm:flex-row sm:items-center gap-3">
           <div style={{ display:'flex', gap:3, padding:4, borderRadius:14,
             background:'rgba(255,255,255,.07)', backdropFilter:'blur(30px)',
-            border:'1px solid rgba(56,189,248,.18)' }}>
+            border: isLight ? '1px solid #E6EBF1' : '1px solid rgba(56,189,248,18)' }}>
             {VIEWS_LIST.map(v => (
               <button key={v.id} onClick={() => setView(v.id)} style={{
                 display:'flex', alignItems:'center', gap:6,
@@ -301,7 +304,7 @@ export default function Projects() {
           </div>
         )}
         {error && <div style={{ padding:'12px 16px', borderRadius:12,
-          background:'rgba(248,113,113,.08)', border:'1px solid rgba(248,113,113,.2)',
+          background:'rgba(248,113,113,.08)', border: isLight ? '1px solid #E6EBF1' : '1px solid rgba(248,113,113,2)',
           color:'#FCA5A5', fontSize:13 }}>Erreur : {error.message}</div>}
 
         {!isLoading && view==='list' && (
@@ -338,8 +341,8 @@ function EmptyState({ onNew }) {
     <div style={{ display:'flex', flexDirection:'column', alignItems:'center',
       justifyContent:'center', padding:'64px 0', textAlign:'center' }}>
       <div style={{ width:64, height:64, borderRadius:20, marginBottom:16,
-        background:'rgba(14,165,233,.18)', backdropFilter:'blur(40px)',
-        border:'1px solid rgba(56,189,248,.28)',
+        background: isLight ? 'transparent' : 'rgba(14,165,233,18)', backdropFilter:'blur(40px)',
+        border: isLight ? '1px solid #E6EBF1' : '1px solid rgba(56,189,248,28)',
         display:'flex', alignItems:'center', justifyContent:'center' }}>
         <FolderKanban size={26} style={{ color:'rgba(56,189,248,.50)' }} />
       </div>
@@ -350,7 +353,7 @@ function EmptyState({ onNew }) {
       <button onClick={onNew} style={{
         display:'flex', alignItems:'center', gap:6, padding:'9px 22px', borderRadius:11,
         background:'rgba(186,230,253,.88)', backdropFilter:'blur(20px)',
-        border:'1px solid rgba(255,255,255,.60)', color:'#0A1E30',
+        border: isLight ? '1px solid #E6EBF1' : '1px solid rgba(255,255,255,60)', color:'#0A1E30',
         fontSize:12, fontWeight:800, cursor:'pointer',
         boxShadow:'0 4px 22px rgba(14,165,233,.32)' }}>
         <Plus size={13} /> Créer un projet

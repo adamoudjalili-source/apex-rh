@@ -12,6 +12,7 @@ import {
   MessageCircle, Gauge, Activity, Trophy,
 } from 'lucide-react'
 import { useAuth }    from '../../contexts/AuthContext'
+import { useTheme }   from '../../contexts/ThemeContext'
 import CommandPalette from '../ui/CommandPalette'
 import NotificationCenter from '../ui/NotificationCenter'
 
@@ -57,6 +58,8 @@ const ROLE_LABELS = {
 }
 
 export default function Header() {
+  const { resolvedTheme } = useTheme()
+  const isLight = resolvedTheme === 'light'
   const location = useLocation()
   const { profile, role } = useAuth()
   const [searchOpen, setSearchOpen] = useState(false)
@@ -89,7 +92,7 @@ export default function Header() {
         className="h-16 flex items-center justify-between px-6 flex-shrink-0"
         style={{
           // Glacé — bleu nuit glass, harmonisé avec la sidebar
-          background:'rgba(15,23,42,.80)',
+          background: isLight ? 'rgba(255,255,255,.95)' : 'rgba(15,23,42,.80)',
           backdropFilter:'blur(40px) saturate(140%)',
           WebkitBackdropFilter:'blur(40px) saturate(140%)',
           borderBottom:'1px solid rgba(56,189,248,.09)',
@@ -100,13 +103,13 @@ export default function Header() {
         <div className="flex items-center gap-3">
           <div style={{
             width:34, height:34, borderRadius:10,
-            background:'rgba(14,165,233,.15)',
+            background: isLight ? '#EEF2FF' : 'rgba(14,165,233,.15)',
             backdropFilter:'blur(20px)',
             border:'1px solid rgba(56,189,248,.25)',
             display:'flex', alignItems:'center', justifyContent:'center',
             boxShadow:'0 0 12px rgba(14,165,233,.15)',
           }}>
-            <Icon size={15} style={{ color:'#7DD3FC', filter:'drop-shadow(0 0 5px rgba(56,189,248,.55))' }}/>
+            <Icon size={15} style={{ color: isLight ? '#635BFF' : '#7DD3FC', filter: isLight ? 'none' : 'drop-shadow(0 0 5px rgba(56,189,248,.55))' }}/>
           </div>
           <div>
             <h1 style={{
@@ -174,7 +177,7 @@ export default function Header() {
 
             {/* Nom + rôle */}
             <div className="hidden md:block">
-              <p style={{ fontSize:12, fontWeight:700, color:'#E0F2FE',
+              <p style={{ fontSize:12, fontWeight:700, color: isLight ? '#1A1F36' : '#E0F2FE',
                 lineHeight:1.2, whiteSpace:'nowrap' }}>{fullName}</p>
               <p style={{ fontSize:10, fontWeight:500, color:roleColor,
                 lineHeight:1, whiteSpace:'nowrap' }}>

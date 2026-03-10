@@ -6,15 +6,18 @@
 import { Outlet } from 'react-router-dom'
 import Sidebar from './Sidebar'
 import Header  from './Header'
+import { useTheme } from '../../contexts/ThemeContext'
 import NotificationToast    from '../notifications/NotificationToast'
 import PushPermissionBanner from '../notifications/PushPermissionBanner'
 import OnboardingWizardV2, { OnboardingChecklist } from '../onboarding/OnboardingWizardV2'
 
 export default function AppLayout() {
+  const { resolvedTheme } = useTheme()
+  const isLight = resolvedTheme === 'light'
   return (
     <div
       className="flex h-screen overflow-hidden"
-      style={{ background: '#0F172A' }}
+      style={{ background: isLight ? '#F6F9FC' : '#0F172A' }}
     >
       {/* Sidebar INCHANGÉE */}
       <Sidebar />

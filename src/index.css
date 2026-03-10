@@ -77,36 +77,17 @@
 
 
 /* ═══════════════════════════════════════════════════════════
-   THÈME CLAIR — Inversion globale + hue-rotate
-   Le fond sombre (#0F0F23) → clair (#F0F0DC)
-   Les textes blancs → sombres
-   Les couleurs accent (indigo, vert, etc.) restent correctes
+   THÈME CLAIR — Style Stripe Premium
+   Appliqué via data-theme="light" sur <html>
    ═══════════════════════════════════════════════════════════ */
 
-[data-theme="light"] {
-  filter: invert(0.92) hue-rotate(180deg);
+[data-theme="light"] body {
+  background-color: #F6F9FC !important;
+  background-image: none !important;
+  color: #1A1F36 !important;
 }
 
-/* Ré-inverser les images et vidéos pour qu'elles restent normales */
-[data-theme="light"] img,
-[data-theme="light"] video,
-[data-theme="light"] svg image,
-[data-theme="light"] canvas {
-  filter: invert(1.087) hue-rotate(180deg);
-}
-
-/* Ré-inverser les avatars/badges qui contiennent des couleurs spécifiques */
-[data-theme="light"] .recharts-wrapper {
-  filter: invert(1.087) hue-rotate(180deg);
-}
-
-/* Scrollbar en mode clair */
-[data-theme="light"] ::-webkit-scrollbar-track {
-  background: #e5e7eb;
-}
-
-/* Légère ombre sur les cartes pour la profondeur */
-[data-theme="light"] [class*="rounded-2xl"],
-[data-theme="light"] [class*="rounded-xl"] {
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
-}
+/* Scrollbar mode clair */
+[data-theme="light"] ::-webkit-scrollbar-track { background: #E6EBF1; }
+[data-theme="light"] ::-webkit-scrollbar-thumb { background: #C4CDD6; }
+[data-theme="light"] ::-webkit-scrollbar-thumb:hover { background: #8898AA; }

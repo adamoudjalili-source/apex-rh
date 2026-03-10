@@ -3,6 +3,7 @@
 // Design Glacé #7 — unifié avec Projects + Tasks
 // Accent violet/or pour l'onglet OKR
 // ============================================================
+import { useTheme } from '../../contexts/ThemeContext'
 import { useState, useMemo } from 'react'
 import { motion } from 'framer-motion'
 import {
@@ -95,7 +96,7 @@ function KpiCard({ def, value }) {
     <div style={{
       borderRadius:20, padding:'20px 22px 16px',
       position:'relative', overflow:'hidden',
-      background:'linear-gradient(135deg, rgba(20,30,50,.90) 0%, rgba(15,23,42,.86) 100%)',
+      background: isLight ? 'white' : 'linear-gradient(135deg, rgba(20,30,50,.90) 0%, rgba(15,23,42,.86) 100%)',
       backdropFilter:'blur(40px)',
       WebkitBackdropFilter:'blur(40px)',
       border:`1px solid ${def.border}`,
@@ -137,7 +138,7 @@ function KpiCard({ def, value }) {
 const glacePanel = {
   background:'rgba(255,255,255,.07)',
   backdropFilter:'blur(30px)',
-  border:'1px solid rgba(139,92,246,.18)',
+  border: isLight ? '1px solid #E6EBF1' : '1px solid rgba(139,92,246,18)',
 }
 
 const VIEWS_OKR = [
@@ -150,6 +151,8 @@ const VIEWS_OKR = [
 ]
 
 export default function Objectives() {
+  const { resolvedTheme } = useTheme()
+  const isLight = resolvedTheme === 'light'
   const { profile } = useAuth()
 
   const [selectedPeriodId, setSelectedPeriodId] = useState(null)
@@ -223,8 +226,8 @@ export default function Objectives() {
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div className="flex items-center gap-3">
             <div style={{ width:46, height:46, borderRadius:14,
-              background:'rgba(139,92,246,.22)', backdropFilter:'blur(40px)',
-              border:'1px solid rgba(167,139,250,.40)',
+              background: isLight ? 'transparent' : 'rgba(139,92,246,22)', backdropFilter:'blur(40px)',
+              border: isLight ? '1px solid #E6EBF1' : '1px solid rgba(167,139,250,40)',
               display:'flex', alignItems:'center', justifyContent:'center',
               boxShadow:'0 4px 22px rgba(139,92,246,.22)' }}>
               <Target size={20} style={{ color:'#C4B5FD' }} />
@@ -244,7 +247,7 @@ export default function Objectives() {
               padding:'9px 16px', borderRadius:11, cursor:'pointer',
               fontSize:12, fontWeight:500,
               background:'rgba(255,255,255,.08)', backdropFilter:'blur(20px)',
-              border:'1px solid rgba(255,255,255,.14)', color:'rgba(255,255,255,.52)' }}>
+              border: isLight ? '1px solid #E6EBF1' : '1px solid rgba(255,255,255,14)', color:'rgba(255,255,255,.52)' }}>
               <FileSpreadsheet size={13} /> Excel
             </button>
             {canCreateObjective(profile?.role) && selectedPeriodId && (
@@ -253,7 +256,7 @@ export default function Objectives() {
                 padding:'9px 22px', borderRadius:11,
                 background:'rgba(221,214,254,.88)',
                 backdropFilter:'blur(20px)',
-                border:'1px solid rgba(255,255,255,.65)',
+                border: isLight ? '1px solid #E6EBF1' : '1px solid rgba(255,255,255,65)',
                 color:'#2E1065', fontSize:12, fontWeight:800, cursor:'pointer',
                 boxShadow:'0 4px 26px rgba(139,92,246,.40), inset 0 1px 0 rgba(255,255,255,.70)' }}>
                 <Plus size={14} /> Nouvel objectif
@@ -270,7 +273,7 @@ export default function Objectives() {
             justifyContent:'center', padding:'64px 0', textAlign:'center' }}>
             <div style={{ width:64, height:64, borderRadius:20, marginBottom:16,
               background:'rgba(139,92,246,.15)', backdropFilter:'blur(40px)',
-              border:'1px solid rgba(167,139,250,.25)',
+              border: isLight ? '1px solid #E6EBF1' : '1px solid rgba(167,139,250,25)',
               display:'flex', alignItems:'center', justifyContent:'center' }}>
               <Target size={26} style={{ color:'rgba(196,181,253,.45)' }} />
             </div>
@@ -320,7 +323,7 @@ export default function Objectives() {
             )}
             {error && (
               <div style={{ padding:'12px 16px', borderRadius:12,
-                background:'rgba(248,113,113,.08)', border:'1px solid rgba(248,113,113,.2)',
+                background:'rgba(248,113,113,.08)', border: isLight ? '1px solid #E6EBF1' : '1px solid rgba(248,113,113,2)',
                 color:'#FCA5A5', fontSize:13 }}>
                 Erreur : {error.message}
               </div>
@@ -384,7 +387,7 @@ function StatsView({ objectives, stats }) {
     <div className="space-y-6">
       <div style={{ padding:20, borderRadius:16,
         background:'rgba(2,14,26,.75)', backdropFilter:'blur(40px)',
-        border:'1px solid rgba(167,139,250,.18)' }}>
+        border: isLight ? '1px solid #E6EBF1' : '1px solid rgba(167,139,250,18)' }}>
         <h3 style={{ fontSize:13, fontWeight:600, color:'#C4B5FD', marginBottom:16 }}>
           Score moyen par niveau
         </h3>
@@ -429,7 +432,7 @@ function StatsView({ objectives, stats }) {
         ].map(({ title, color, data }) => (
           <div key={title} style={{ padding:20, borderRadius:16,
             background:'rgba(2,14,26,.75)', backdropFilter:'blur(40px)',
-            border:'1px solid rgba(186,230,253,.10)' }}>
+            border: isLight ? '1px solid #E6EBF1' : '1px solid rgba(186,230,253,10)' }}>
             <h3 style={{ fontSize:13, fontWeight:600, color, marginBottom:12 }}>{title}</h3>
             <div className="space-y-2">
               {data.map(o => (

@@ -3,6 +3,7 @@
 // Design Glacé #7 — unifié avec Projects
 // Accent jade/vert pour l'onglet Tâches
 // ============================================================
+import { useTheme } from '../../contexts/ThemeContext'
 import { useState }           from 'react'
 import { useTasks }           from '../../hooks/useTasks'
 import { useTaskFilters }     from '../../hooks/useTaskFilters'
@@ -109,7 +110,7 @@ function KpiCard({ cfg, value, total }) {
     <div style={{
       borderRadius:20, padding:'20px 22px 16px',
       position:'relative', overflow:'hidden',
-      background:'linear-gradient(135deg, rgba(20,30,50,.90) 0%, rgba(15,23,42,.86) 100%)',
+      background: isLight ? 'white' : 'linear-gradient(135deg, rgba(20,30,50,.90) 0%, rgba(15,23,42,.86) 100%)',
       backdropFilter:'blur(40px)',
       WebkitBackdropFilter:'blur(40px)',
       border:`1px solid ${cfg.border}`,
@@ -144,16 +145,18 @@ function KpiCard({ cfg, value, total }) {
 const glacePanel = {
   background:'rgba(255,255,255,.07)',
   backdropFilter:'blur(30px)',
-  border:'1px solid rgba(56,189,248,.18)',
+  border: isLight ? '1px solid #E6EBF1' : '1px solid rgba(56,189,248,18)',
 }
 const glaceActive = {
   background:'linear-gradient(135deg,rgba(14,165,233,.38),rgba(2,132,199,.24))',
-  border:'1px solid rgba(56,189,248,.45)',
+  border: isLight ? '1px solid #E6EBF1' : '1px solid rgba(56,189,248,45)',
   color:'#38BDF8',
   boxShadow:'0 2px 14px rgba(14,165,233,.24)',
 }
 
 export default function Tasks() {
+  const { resolvedTheme } = useTheme()
+  const isLight = resolvedTheme === 'light'
   const { profile }  = useAuth()
   const { can }      = usePermission()
   const { filters, activeFilters, activeView, setActiveView,
@@ -192,8 +195,8 @@ export default function Tasks() {
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-3">
             <div style={{ width:46, height:46, borderRadius:14,
-              background:'rgba(16,185,129,.22)', backdropFilter:'blur(40px)',
-              border:'1px solid rgba(52,211,153,.40)',
+              background: isLight ? 'transparent' : 'rgba(16,185,129,22)', backdropFilter:'blur(40px)',
+              border: isLight ? '1px solid #E6EBF1' : '1px solid rgba(52,211,153,40)',
               display:'flex', alignItems:'center', justifyContent:'center',
               boxShadow:'0 4px 22px rgba(16,185,129,.20)' }}>
               <CheckSquare size={20} style={{ color:'#6EE7B7' }} />
@@ -212,7 +215,7 @@ export default function Tasks() {
                 padding:'9px 16px', borderRadius:11, cursor:'pointer',
                 fontSize:12, fontWeight:500,
                 background:'rgba(255,255,255,.08)', backdropFilter:'blur(20px)',
-                border:'1px solid rgba(255,255,255,.14)', color:'rgba(255,255,255,.52)' }}>
+                border: isLight ? '1px solid #E6EBF1' : '1px solid rgba(255,255,255,14)', color:'rgba(255,255,255,.52)' }}>
                 <FileSpreadsheet size={13} /> Excel
               </button>
               {/* Bouton Glacé jade — même pattern que "Nouveau projet" */}
@@ -221,7 +224,7 @@ export default function Tasks() {
                 padding:'9px 22px', borderRadius:11,
                 background:'rgba(167,243,208,.88)',
                 backdropFilter:'blur(20px)',
-                border:'1px solid rgba(255,255,255,.65)',
+                border: isLight ? '1px solid #E6EBF1' : '1px solid rgba(255,255,255,65)',
                 color:'#052E16', fontSize:12, fontWeight:800, cursor:'pointer',
                 boxShadow:'0 4px 26px rgba(16,185,129,.40), inset 0 1px 0 rgba(255,255,255,.70)' }}>
                 <Plus size={14} /> Nouvelle tâche
@@ -260,7 +263,7 @@ export default function Tasks() {
               padding:'7px 16px', borderRadius:11, cursor:'pointer',
               fontSize:12, fontWeight:500, transition:'all .2s',
               ...(showFilters || hasActiveFilters
-                ? { background:'rgba(14,165,233,.18)', border:'1px solid rgba(56,189,248,.40)', color:'#38BDF8' }
+                ? { background: isLight ? 'transparent' : 'rgba(14,165,233,18)', border: isLight ? '1px solid #E6EBF1' : '1px solid rgba(56,189,248,40)', color:'#38BDF8' }
                 : { ...glacePanel, color:'rgba(255,255,255,.45)' }
               ),
             }}>
