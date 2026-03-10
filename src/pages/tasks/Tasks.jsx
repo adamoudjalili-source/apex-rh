@@ -1,6 +1,7 @@
 // ============================================================
-// APEX RH — Tasks.jsx · S134  Aurora #9 — AUTONOME
-// Rideaux verticaux jade/violet/or propres à la page Tâches
+// APEX RH — Tasks.jsx · S134
+// Design Glacé #7 — unifié avec Projects
+// Accent jade/vert pour l'onglet Tâches
 // ============================================================
 import { useState }           from 'react'
 import { useTasks }           from '../../hooks/useTasks'
@@ -24,165 +25,132 @@ import WorkloadChart          from '../../components/tasks/WorkloadChart'
 import GanttMini              from '../../components/tasks/GanttMini'
 import TaskDashboardView      from '../../components/tasks/TaskDashboardView'
 import { TASK_STATUS, ROLES } from '../../utils/constants'
+import {
+  CheckSquare, LayoutGrid, List, Calendar, Sun,
+  BarChart2, Scale, PieChart, SlidersHorizontal, Plus, FileSpreadsheet
+} from 'lucide-react'
 
 const MANAGER_ROLES = [ROLES.MANAGER, ROLES.CHEF_SERVICE, ROLES.CHEF_DIVISION, ROLES.DIRECTEUR, ROLES.RH, ROLES.ADMINISTRATEUR]
 
 const VIEWS = [
-  { id: 'kanban',    label: 'Kanban',     icon: '▦' },
-  { id: 'list',      label: 'Liste',      icon: '☰' },
-  { id: 'calendar',  label: 'Calendrier', icon: '📅' },
-  { id: 'myday',     label: 'Ma Journée', icon: '☀' },
-  { id: 'gantt',     label: 'Gantt',      icon: '📊' },
-  { id: 'charge',    label: 'Charge',     icon: '⚖' },
-  { id: 'dashboard', label: 'Dashboard',  icon: '📈', managerOnly: true },
+  { id:'kanban',    label:'Kanban',     Icon:LayoutGrid   },
+  { id:'list',      label:'Liste',      Icon:List         },
+  { id:'calendar',  label:'Calendrier', Icon:Calendar     },
+  { id:'myday',     label:'Ma Journée', Icon:Sun          },
+  { id:'gantt',     label:'Gantt',      Icon:BarChart2    },
+  { id:'charge',    label:'Charge',     Icon:Scale        },
+  { id:'dashboard', label:'Dashboard',  Icon:PieChart, managerOnly:true },
 ]
 
-// ─── Fond Aurora Boréale — AUTONOME ──────────────────────────
-// position:absolute dans le wrapper de la page
-function AuroraBackground() {
+// ─── Fond Glacé — identique à Projects ───────────────────────
+function GlaceBackground() {
   return (
     <div style={{
-      position: 'absolute', inset: 0, zIndex: 0, pointerEvents: 'none',
-      overflow: 'hidden',
-      background: 'linear-gradient(160deg, #020C10 0%, #030A14 40%, #050812 100%)',
+      position:'absolute', inset:0, zIndex:0, pointerEvents:'none',
+      overflow:'hidden',
+      background:'linear-gradient(160deg, #010A14 0%, #020E1C 35%, #010C18 65%, #020810 100%)',
     }}>
-      {/* Rideau jade — gauche vertical */}
-      <div style={{
-        position: 'absolute',
-        top: '-10%', left: '-5%',
-        width: '38%', height: '120%',
-        background: 'linear-gradient(180deg, transparent 0%, rgba(16,185,129,.60) 20%, rgba(52,211,153,.45) 45%, rgba(16,185,129,.35) 65%, rgba(5,150,105,.20) 85%, transparent 100%)',
-        filter: 'blur(45px)',
-        transform: 'skewX(-6deg)',
-      }} />
-
-      {/* Rideau violet — centre légèrement décalé */}
-      <div style={{
-        position: 'absolute',
-        top: '-15%', left: '28%',
-        width: '34%', height: '130%',
-        background: 'linear-gradient(180deg, transparent 0%, rgba(139,92,246,.55) 18%, rgba(167,139,250,.40) 42%, rgba(124,58,237,.30) 68%, rgba(109,40,217,.15) 85%, transparent 100%)',
-        filter: 'blur(50px)',
-        transform: 'skewX(5deg)',
-      }} />
-
-      {/* Rideau or — droite */}
-      <div style={{
-        position: 'absolute',
-        top: '-5%', right: '-8%',
-        width: '36%', height: '110%',
-        background: 'linear-gradient(180deg, transparent 0%, rgba(245,158,11,.38) 22%, rgba(251,191,36,.28) 48%, rgba(245,158,11,.18) 70%, transparent 100%)',
-        filter: 'blur(48px)',
-        transform: 'skewX(-9deg)',
-      }} />
-
-      {/* Lueur basse — fusion des couleurs */}
-      <div style={{
-        position: 'absolute',
-        bottom: '-5%', left: '15%',
-        width: '70%', height: '35%',
-        background: 'radial-gradient(ellipse, rgba(16,185,129,.18) 0%, rgba(139,92,246,.12) 45%, rgba(245,158,11,.08) 70%, transparent 100%)',
-        filter: 'blur(60px)',
-      }} />
-
-      {/* Halo central discret */}
-      <div style={{
-        position: 'absolute',
-        top: '5%', left: '38%',
-        width: '28%', height: '55%',
-        background: 'radial-gradient(ellipse, rgba(167,139,250,.15) 0%, transparent 70%)',
-        filter: 'blur(50px)',
-      }} />
-
-      {/* Étoiles */}
+      <div style={{ position:'absolute', top:'-20%', left:'-20%', width:'75%', height:'90%',
+        background:'radial-gradient(ellipse at 40% 40%, rgba(14,165,233,.45) 0%, rgba(2,132,199,.28) 30%, rgba(7,89,133,.15) 55%, transparent 75%)',
+        filter:'blur(55px)' }} />
+      <div style={{ position:'absolute', top:'-10%', left:'30%', width:'50%', height:'65%',
+        background:'radial-gradient(ellipse, rgba(56,189,248,.30) 0%, rgba(14,165,233,.16) 40%, transparent 70%)',
+        filter:'blur(60px)' }} />
+      <div style={{ position:'absolute', top:'0%', right:'-10%', width:'45%', height:'80%',
+        background:'linear-gradient(145deg, rgba(186,230,253,.12) 0%, rgba(125,211,252,.07) 35%, rgba(56,189,248,.04) 60%, transparent 100%)',
+        filter:'blur(25px)', transform:'skewX(-18deg)' }} />
+      <div style={{ position:'absolute', top:'10%', left:'18%', width:'3%', height:'70%',
+        background:'linear-gradient(180deg, transparent, rgba(186,230,253,.25), rgba(125,211,252,.18), transparent)',
+        filter:'blur(8px)' }} />
+      <div style={{ position:'absolute', top:'5%', left:'48%', width:'2%', height:'55%',
+        background:'linear-gradient(180deg, transparent, rgba(186,230,253,.20), rgba(56,189,248,.14), transparent)',
+        filter:'blur(6px)' }} />
+      <div style={{ position:'absolute', bottom:'-10%', left:'5%', width:'90%', height:'40%',
+        background:'radial-gradient(ellipse, rgba(14,165,233,.18) 0%, rgba(2,132,199,.08) 50%, transparent 75%)',
+        filter:'blur(55px)' }} />
       {[
-        [6,5,1],[15,12,0],[27,8,0],[42,4,1],[58,10,0],[69,6,0],[82,3,1],[93,9,0],
-        [4,20,0],[20,25,1],[35,18,0],[50,22,0],[65,16,1],[78,21,0],[90,26,0],
-        [11,35,0],[31,31,1],[47,37,0],[61,30,0],[74,34,0],[87,38,1],
-        [8,45,1],[25,47,0],[43,43,0],[58,46,1],[72,42,0],[89,48,0],
-        [3,58,0],[19,55,1],[38,60,0],[55,57,0],[70,53,0],[85,61,1],
+        [7,6,1],[18,13,0],[30,8,0],[44,4,1],[59,11,0],[70,7,0],[83,3,1],[94,9,0],
+        [5,22,0],[21,26,1],[37,19,0],[52,23,0],[66,17,1],[80,22,0],[92,27,0],
+        [13,36,0],[32,33,1],[49,38,0],[63,31,0],[76,35,0],[89,39,1],
+        [9,47,1],[28,49,0],[45,44,0],[60,48,1],[74,43,0],[91,50,0],
       ].map(([l,t,big],i) => (
         <div key={i} style={{
-          position: 'absolute',
-          width: big ? 2 : 1, height: big ? 2 : 1,
-          borderRadius: '50%',
-          background: `rgba(255,255,255,${big ? 0.55 : 0.18 + (i%4)*0.08})`,
-          left: `${l}%`, top: `${t}%`,
-          boxShadow: big ? '0 0 5px rgba(255,255,255,.5)' : 'none',
+          position:'absolute', width:big?2:1, height:big?2:1, borderRadius:'50%',
+          background:big ? 'rgba(186,230,253,.75)' : `rgba(${i%3===0?'186,230,253':'255,255,255'},${0.15+(i%5)*0.07})`,
+          left:`${l}%`, top:`${t}%`,
+          boxShadow:big ? '0 0 5px rgba(186,230,253,.60)' : 'none',
         }} />
       ))}
-
-      {/* Vignette bords doux */}
-      <div style={{
-        position: 'absolute', inset: 0,
-        background: 'radial-gradient(ellipse at 50% 0%, transparent 40%, rgba(2,8,15,.50) 100%)',
-      }} />
+      <div style={{ position:'absolute', inset:0,
+        background:'radial-gradient(ellipse at 80% 50%, transparent 30%, rgba(1,8,16,.55) 80%)' }} />
     </div>
   )
 }
 
-// ─── KPI cards Aurora vivantes ────────────────────────────────
+// ─── KPI Tâches — palette jade sur base Glacé ────────────────
 const KPI_CONFIG = [
   { label:'Total',    key:'total',
-    tint:'rgba(200,210,255,.18)',
-    border:'rgba(255,255,255,.30)', accent:'#FFFFFF', glow:'rgba(255,255,255,.12)', shimmer:'rgba(255,255,255,.40)' },
+    tint:'rgba(186,230,253,.16)', border:'rgba(186,230,253,.40)',
+    accent:'#BAE6FD', rgb:'186,230,253', glow:'rgba(186,230,253,.14)', shimmer:'rgba(186,230,253,.45)' },
   { label:'En cours', key:'en_cours',
-    tint:'rgba(16,185,129,.22)',
-    border:'rgba(52,211,153,.50)', accent:'#6EE7B7', glow:'rgba(16,185,129,.20)', shimmer:'rgba(52,211,153,.55)' },
+    tint:'rgba(16,185,129,.20)', border:'rgba(52,211,153,.50)',
+    accent:'#6EE7B7', rgb:'110,231,183', glow:'rgba(16,185,129,.20)', shimmer:'rgba(52,211,153,.55)' },
   { label:'En revue', key:'en_revue',
-    tint:'rgba(139,92,246,.20)',
-    border:'rgba(167,139,250,.50)', accent:'#C4B5FD', glow:'rgba(139,92,246,.20)', shimmer:'rgba(167,139,250,.55)' },
+    tint:'rgba(14,165,233,.22)', border:'rgba(56,189,248,.52)',
+    accent:'#38BDF8', rgb:'56,189,248', glow:'rgba(14,165,233,.20)', shimmer:'rgba(56,189,248,.55)' },
   { label:'Urgentes', key:'urgentes',
-    tint:'rgba(239,68,68,.18)',
-    border:'rgba(252,165,165,.48)', accent:'#FCA5A5', glow:'rgba(239,68,68,.18)', shimmer:'rgba(252,165,165,.52)' },
+    tint:'rgba(239,68,68,.16)', border:'rgba(252,165,165,.40)',
+    accent:'#FCA5A5', rgb:'252,165,165', glow:'rgba(239,68,68,.15)', shimmer:'rgba(252,165,165,.45)' },
 ]
 
 function KpiCard({ cfg, value, total }) {
-  const pct = cfg.key === 'total' ? 100 : (total > 0 ? Math.round((value/total)*100) : 0)
+  const pct = cfg.key==='total' ? 100 : (total>0 ? Math.round((value/total)*100) : 0)
   return (
     <div style={{
-      borderRadius: 20, padding: '22px 24px 18px',
-      position: 'relative', overflow: 'hidden',
-      // Base sombre neutre + légère teinte colorée par-dessus
-      // La base neutralise le saturate de l'aurora en dessous
-      background: `linear-gradient(135deg, rgba(4,10,20,.80) 0%, rgba(6,12,24,.75) 100%)`,
-      backdropFilter: 'blur(40px)',
-      WebkitBackdropFilter: 'blur(40px)',
-      border: `1px solid ${cfg.border}`,
-      boxShadow: `0 4px 24px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.12)`,
+      borderRadius:20, padding:'20px 22px 16px',
+      position:'relative', overflow:'hidden',
+      background:'linear-gradient(135deg, rgba(2,14,26,.85) 0%, rgba(3,12,22,.80) 100%)',
+      backdropFilter:'blur(40px)',
+      WebkitBackdropFilter:'blur(40px)',
+      border:`1px solid ${cfg.border}`,
+      boxShadow:`0 4px 24px rgba(0,0,0,.40), inset 0 1px 0 rgba(255,255,255,.12)`,
     }}>
-      {/* Teinte colorée légère par-dessus la base sombre */}
-      <div style={{
-        position:'absolute', inset:0, borderRadius:20,
-        background: cfg.tint,
-        pointerEvents:'none',
-      }} />
-      {/* Shimmer ligne haut */}
+      <div style={{ position:'absolute', inset:0, borderRadius:20, background:cfg.tint, pointerEvents:'none' }} />
       <div style={{ position:'absolute', top:0, left:0, right:0, height:1, zIndex:1,
         background:`linear-gradient(90deg,transparent,${cfg.shimmer},transparent)` }} />
-      {/* Reflet glass */}
       <div style={{ position:'absolute', top:0, left:0, right:0, height:'45%', zIndex:1,
-        background:'linear-gradient(180deg,rgba(255,255,255,.07),transparent)',
+        background:'linear-gradient(180deg,rgba(255,255,255,.08),transparent)',
         borderRadius:'20px 20px 0 0' }} />
-
-      {/* Contenu au-dessus des overlays */}
       <div style={{ position:'relative', zIndex:2 }}>
         <div style={{ fontSize:10, fontWeight:700, letterSpacing:'0.10em',
           textTransform:'uppercase', marginBottom:10, color:'rgba(255,255,255,.60)' }}>
           {cfg.label}
         </div>
-        <div style={{ fontSize:48, fontWeight:900, lineHeight:1, letterSpacing:'-3px',
+        <div style={{ fontSize:42, fontWeight:900, lineHeight:1, letterSpacing:'-2.5px',
           color:cfg.accent, textShadow:`0 0 20px ${cfg.glow}` }}>
           {value}
         </div>
-        <div style={{ marginTop:18, height:3, borderRadius:3, background:'rgba(255,255,255,.08)' }}>
+        <div style={{ marginTop:16, height:3, borderRadius:3, background:'rgba(255,255,255,.08)' }}>
           <div style={{ height:'100%', width:`${pct}%`, borderRadius:3,
-            background:cfg.accent, boxShadow:`0 0 10px ${cfg.accent}`,
-            transition:'width 1s ease' }} />
+            background:cfg.accent, opacity:.80,
+            boxShadow:`0 0 10px ${cfg.accent}`, transition:'width 1s ease' }} />
         </div>
       </div>
     </div>
   )
+}
+
+// ─── Style partagé Glacé ────────────────────────────────────
+const glacePanel = {
+  background:'rgba(255,255,255,.07)',
+  backdropFilter:'blur(30px)',
+  border:'1px solid rgba(56,189,248,.18)',
+}
+const glaceActive = {
+  background:'linear-gradient(135deg,rgba(14,165,233,.38),rgba(2,132,199,.24))',
+  border:'1px solid rgba(56,189,248,.45)',
+  color:'#38BDF8',
+  boxShadow:'0 2px 14px rgba(14,165,233,.24)',
 }
 
 export default function Tasks() {
@@ -215,42 +183,49 @@ export default function Tasks() {
   const visibleViews = VIEWS.filter(v => !v.managerOnly || isManager)
 
   return (
-    /* Wrapper relatif → Aurora en position:absolute dedans */
     <div style={{ position:'relative', minHeight:'100%', isolation:'isolate' }}>
-      <AuroraBackground />
+      <GlaceBackground />
 
-      {/* Contenu au-dessus de l'aurora */}
-      <div className="flex flex-col gap-5 px-6 py-5" style={{ position:'relative', zIndex:1 }}>
+      <div className="px-6 py-5 space-y-5" style={{ position:'relative', zIndex:1 }}>
 
         {/* HEADER */}
         <div className="flex items-start justify-between">
-          <div>
-            <h2 className="text-xl font-bold text-white" style={{ letterSpacing:'-0.4px' }}>Tâches</h2>
-            <p className="text-xs mt-0.5" style={{ color:'rgba(255,255,255,.40)' }}>
-              Gérez et suivez toutes vos tâches
-            </p>
+          <div className="flex items-center gap-3">
+            <div style={{ width:46, height:46, borderRadius:14,
+              background:'rgba(16,185,129,.22)', backdropFilter:'blur(40px)',
+              border:'1px solid rgba(52,211,153,.40)',
+              display:'flex', alignItems:'center', justifyContent:'center',
+              boxShadow:'0 4px 22px rgba(16,185,129,.20)' }}>
+              <CheckSquare size={20} style={{ color:'#6EE7B7' }} />
+            </div>
+            <div>
+              <h2 className="text-2xl font-black text-white" style={{ letterSpacing:'-0.5px' }}>Tâches</h2>
+              <p style={{ fontSize:12, color:'rgba(255,255,255,.38)', marginTop:2 }}>
+                Gérez et suivez toutes vos tâches
+              </p>
+            </div>
           </div>
           {isTaskView && (
             <div className="flex items-center gap-2">
-              <button onClick={() => exportTasks(tasks)} disabled={tasks.length === 0} style={{
+              <button onClick={() => exportTasks(tasks)} disabled={tasks.length===0} style={{
                 display:'flex', alignItems:'center', gap:6,
-                padding:'8px 16px', borderRadius:10, cursor:'pointer',
+                padding:'9px 16px', borderRadius:11, cursor:'pointer',
                 fontSize:12, fontWeight:500,
-                background:'rgba(255,255,255,.08)',
-                backdropFilter:'blur(20px)',
-                border:'1px solid rgba(255,255,255,.14)',
-                color:'rgba(255,255,255,.55)',
-              }}>Excel</button>
+                background:'rgba(255,255,255,.08)', backdropFilter:'blur(20px)',
+                border:'1px solid rgba(255,255,255,.14)', color:'rgba(255,255,255,.52)' }}>
+                <FileSpreadsheet size={13} /> Excel
+              </button>
+              {/* Bouton Glacé jade — même pattern que "Nouveau projet" */}
               <button onClick={() => setShowCreateModal(true)} style={{
-                display:'flex', alignItems:'center', gap:6,
-                padding:'8px 22px', borderRadius:10,
-                background:'linear-gradient(135deg,rgba(16,185,129,.60),rgba(5,150,105,.42))',
+                display:'flex', alignItems:'center', gap:7,
+                padding:'9px 22px', borderRadius:11,
+                background:'rgba(167,243,208,.88)',
                 backdropFilter:'blur(20px)',
-                border:'1px solid rgba(52,211,153,.60)',
-                color:'#A7F3D0', fontSize:12, fontWeight:700, cursor:'pointer',
-                boxShadow:'0 4px 22px rgba(16,185,129,.35), inset 0 1px 0 rgba(255,255,255,.28)',
-                textShadow:'0 0 10px rgba(52,211,153,.6)',
-              }}>+ Nouvelle tâche</button>
+                border:'1px solid rgba(255,255,255,.65)',
+                color:'#052E16', fontSize:12, fontWeight:800, cursor:'pointer',
+                boxShadow:'0 4px 26px rgba(16,185,129,.40), inset 0 1px 0 rgba(255,255,255,.70)' }}>
+                <Plus size={14} /> Nouvelle tâche
+              </button>
             </div>
           )}
         </div>
@@ -266,25 +241,16 @@ export default function Tasks() {
 
         {/* SWITCH VUES + FILTRES */}
         <div className="flex items-center justify-between gap-3 flex-wrap">
-          <div style={{
-            display:'flex', gap:3, padding:4, borderRadius:14,
-            background:'rgba(255,255,255,.07)',
-            backdropFilter:'blur(30px)',
-            border:'1px solid rgba(255,255,255,.12)',
-          }}>
+          <div style={{ display:'flex', gap:3, padding:4, borderRadius:14, ...glacePanel }}>
             {visibleViews.map(v => (
               <button key={v.id} onClick={() => setActiveView(v.id)} style={{
                 display:'flex', alignItems:'center', gap:6,
-                padding:'7px 13px', borderRadius:10,
-                border:activeView===v.id ? '1px solid rgba(52,211,153,.40)' : '1px solid transparent',
+                padding:'7px 14px', borderRadius:10,
+                border: activeView===v.id ? '1px solid rgba(56,189,248,.45)' : '1px solid transparent',
                 cursor:'pointer', fontSize:12, fontWeight:500, transition:'all .15s',
-                background: activeView===v.id
-                  ? 'linear-gradient(135deg,rgba(16,185,129,.38),rgba(5,150,105,.24))'
-                  : 'transparent',
-                color: activeView===v.id ? '#6EE7B7' : 'rgba(255,255,255,.38)',
-                boxShadow: activeView===v.id ? '0 2px 12px rgba(16,185,129,.22)' : 'none',
+                ...(activeView===v.id ? glaceActive : { background:'transparent', color:'rgba(255,255,255,.38)' }),
               }}>
-                <span>{v.icon}</span><span>{v.label}</span>
+                <v.Icon size={13} />{v.label}
               </button>
             ))}
           </div>
@@ -294,40 +260,39 @@ export default function Tasks() {
               padding:'7px 16px', borderRadius:11, cursor:'pointer',
               fontSize:12, fontWeight:500, transition:'all .2s',
               ...(showFilters || hasActiveFilters
-                ? { background:'rgba(16,185,129,.18)', border:'1px solid rgba(52,211,153,.40)', color:'#6EE7B7' }
-                : { background:'rgba(255,255,255,.07)', backdropFilter:'blur(20px)', border:'1px solid rgba(255,255,255,.12)', color:'rgba(255,255,255,.45)' }
+                ? { background:'rgba(14,165,233,.18)', border:'1px solid rgba(56,189,248,.40)', color:'#38BDF8' }
+                : { ...glacePanel, color:'rgba(255,255,255,.45)' }
               ),
             }}>
-              ⚙ Filtres
+              <SlidersHorizontal size={13} /> Filtres
               {hasActiveFilters && <span style={{ width:6, height:6, borderRadius:'50%',
-                background:'#34D399', boxShadow:'0 0 6px #34D399' }} />}
+                background:'#38BDF8', boxShadow:'0 0 6px #38BDF8' }} />}
             </button>
           )}
         </div>
 
         {isTaskView && showFilters && (
-          <div style={{ background:'rgba(255,255,255,.07)', backdropFilter:'blur(30px)',
-            border:'1px solid rgba(255,255,255,.12)', borderRadius:14, padding:'12px 16px' }}>
+          <div style={{ ...glacePanel, borderRadius:14, padding:'12px 16px' }}>
             <TaskFilters filters={filters} updateFilter={updateFilter}
               resetFilters={resetFilters} hasActiveFilters={hasActiveFilters} />
           </div>
         )}
 
         {/* VUES */}
-        {isDashboard && <div className="flex-1 min-h-0 overflow-y-auto"><TaskDashboardView onTaskClick={setSelectedTaskId} /></div>}
-        {isJournal   && <div className="flex-1 min-h-0 overflow-y-auto"><JournalPage /></div>}
-        {activeView==='myday'  && !pulseOn && !isDashboard && <div className="flex-1 min-h-0 overflow-y-auto"><MyDayView tasks={tasks} onTaskClick={setSelectedTaskId} /></div>}
-        {activeView==='gantt'  && <div className="flex-1 min-h-0 overflow-y-auto"><GanttMini /></div>}
-        {activeView==='charge' && <div className="flex-1 min-h-0 overflow-y-auto"><WorkloadChart /></div>}
+        {isDashboard && <div className="min-h-0 overflow-y-auto"><TaskDashboardView onTaskClick={setSelectedTaskId} /></div>}
+        {isJournal   && <div className="min-h-0 overflow-y-auto"><JournalPage /></div>}
+        {activeView==='myday'  && !pulseOn && !isDashboard && <div className="min-h-0 overflow-y-auto"><MyDayView tasks={tasks} onTaskClick={setSelectedTaskId} /></div>}
+        {activeView==='gantt'  && <div className="min-h-0 overflow-y-auto"><GanttMini /></div>}
+        {activeView==='charge' && <div className="min-h-0 overflow-y-auto"><WorkloadChart /></div>}
 
         {isTaskView && (
           isLoading ? (
-            <div className="flex-1 flex items-center justify-center py-12">
-              <div style={{ width:28, height:28, border:'2px solid rgba(52,211,153,.35)',
-                borderTopColor:'#6EE7B7', borderRadius:'50%', animation:'spin 1s linear infinite' }} />
+            <div className="flex items-center justify-center py-12">
+              <div style={{ width:28, height:28, border:'2px solid rgba(56,189,248,.35)',
+                borderTopColor:'#38BDF8', borderRadius:'50%', animation:'spin 1s linear infinite' }} />
             </div>
           ) : error ? (
-            <p className="text-red-400 text-sm py-8 text-center">Erreur : {error.message}</p>
+            <p style={{ color:'#FCA5A5', fontSize:13, padding:'16px 0', textAlign:'center' }}>Erreur : {error.message}</p>
           ) : (
             <div style={{ minHeight:400 }}>
               {activeView==='kanban'   && <div style={{ overflowX:'auto' }}><KanbanView tasks={tasks} onTaskClick={setSelectedTaskId} /></div>}
