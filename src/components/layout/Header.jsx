@@ -53,7 +53,7 @@ export default function Header() {
           }}>
             {/* Partie 1 — blanc plein, fort */}
             <span style={{
-              color: isLight ? '#1A1F36' : '#FFFFFF',
+              background: isLight ? 'linear-gradient(90deg, #4F46E5, #818CF8)' : 'linear-gradient(90deg, #38BDF8, #7DD3FC, #BAE6FD)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text', filter: isLight ? 'none' : 'drop-shadow(0 0 12px rgba(56,189,248,.45))',
             }}>
               Plateforme de Gestion
             </span>
@@ -85,7 +85,7 @@ export default function Header() {
             <div style={{
               flex: 3,
               borderRadius: 2,
-              background: isLight ? '#1A1F36' : 'rgba(255,255,255,0.55)',
+              background: isLight ? 'linear-gradient(90deg, #4F46E5, #818CF8)' : 'linear-gradient(90deg, #38BDF8, #7DD3FC)',
             }}/>
             <div style={{
               flex: 2,
