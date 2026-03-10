@@ -1,6 +1,6 @@
 // ============================================================
 // APEX RH — Header.jsx · S135
-// Titre bicolore hiérarchie + search + notifs
+// Titre bicolore uniforme — gradient dark, solide light
 // ============================================================
 import { useState, useEffect, useCallback } from 'react'
 import { useTheme }       from '../../contexts/ThemeContext'
@@ -28,6 +28,22 @@ export default function Header() {
   const kbdBg         = isLight ? 'rgba(99,102,241,0.08)'  : 'rgba(56,189,248,.10)'
   const kbdColor      = isLight ? 'rgba(26,31,54,0.35)'    : 'rgba(186,230,253,.55)'
 
+  // Titre : gradient en dark, couleur solide en light (évite bug webkit)
+  const titleStyle = isLight ? {
+    color: '#4F46E5',
+    WebkitTextFillColor: '#4F46E5',
+  } : {
+    background: 'linear-gradient(90deg, #38BDF8, #7DD3FC, #BAE6FD)',
+    WebkitBackgroundClip: 'text',
+    WebkitTextFillColor: 'transparent',
+    backgroundClip: 'text',
+    filter: 'drop-shadow(0 0 12px rgba(56,189,248,.45))',
+  }
+
+  const lineColor = isLight
+    ? 'linear-gradient(90deg, #4F46E5, #818CF8, transparent)'
+    : 'linear-gradient(90deg, #38BDF8, #7DD3FC, transparent)'
+
   return (
     <>
       <header
@@ -40,61 +56,26 @@ export default function Header() {
           boxShadow:            isLight ? '0 1px 0 rgba(99,102,241,.06)' : '0 1px 0 rgba(56,189,248,.06)',
         }}>
 
-        {/* ── Titre bicolore ── */}
-        <div style={{ display:'flex', flexDirection:'column', gap:3 }}>
-          <div style={{
-            display:'flex', alignItems:'baseline', gap:8,
-            fontFamily:"'Syne', sans-serif",
-            fontWeight: 900,
-            fontSize: 15,
+        {/* ── Titre ── */}
+        <div style={{ display:'flex', flexDirection:'column', gap:4 }}>
+          <h1 style={{
+            fontFamily:    "'Syne', sans-serif",
+            fontWeight:    900,
+            fontSize:      15,
             letterSpacing: '0.10em',
             textTransform: 'uppercase',
-            lineHeight: 1,
+            lineHeight:    1,
+            ...titleStyle,
           }}>
-            {/* Partie 1 — blanc plein, fort */}
-            <span style={{
-              background: isLight ? 'linear-gradient(90deg, #4F46E5, #818CF8)' : 'linear-gradient(90deg, #38BDF8, #7DD3FC, #BAE6FD)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text', filter: isLight ? 'none' : 'drop-shadow(0 0 12px rgba(56,189,248,.45))',
-            }}>
-              Plateforme de Gestion
-            </span>
+            Plateforme de Gestion · de la Performance
+          </h1>
 
-            {/* Séparateur discret */}
-            <span style={{
-              color: isLight ? 'rgba(99,102,241,0.35)' : 'rgba(56,189,248,0.35)',
-              fontWeight: 300,
-              letterSpacing: 0,
-              fontSize: 18,
-            }}>·</span>
-
-            {/* Partie 2 — gradient bleu premium */}
-            <span style={{
-              background: isLight
-                ? 'linear-gradient(90deg, #4F46E5, #818CF8)'
-                : 'linear-gradient(90deg, #38BDF8, #7DD3FC, #BAE6FD)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              backgroundClip: 'text',
-              filter: isLight ? 'none' : 'drop-shadow(0 0 12px rgba(56,189,248,.45))',
-            }}>
-              de la Performance
-            </span>
-          </div>
-
-          {/* Ligne décorative bicolore */}
-          <div style={{ display:'flex', gap:3, height:2 }}>
-            <div style={{
-              flex: 3,
-              borderRadius: 2,
-              background: isLight ? 'linear-gradient(90deg, #4F46E5, #818CF8)' : 'linear-gradient(90deg, #38BDF8, #7DD3FC)',
-            }}/>
-            <div style={{
-              flex: 2,
-              borderRadius: 2,
-              background: isLight
-                ? 'linear-gradient(90deg, #4F46E5, transparent)'
-                : 'linear-gradient(90deg, #38BDF8, transparent)',
-            }}/>
-          </div>
+          {/* Ligne décorative */}
+          <div style={{
+            height: 2, borderRadius: 2,
+            background: lineColor,
+            width: '55%',
+          }}/>
         </div>
 
         {/* ── Droite — search + notifs ── */}
