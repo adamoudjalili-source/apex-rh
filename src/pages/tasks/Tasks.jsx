@@ -143,30 +143,43 @@ function KpiCard({ cfg, value, total }) {
     <div style={{
       borderRadius: 20, padding: '22px 24px 18px',
       position: 'relative', overflow: 'hidden',
-      background: cfg.bg,
-      backdropFilter: 'blur(40px) saturate(200%)',
-      WebkitBackdropFilter: 'blur(40px) saturate(200%)',
+      // Base sombre neutre + légère teinte colorée par-dessus
+      // La base neutralise le saturate de l'aurora en dessous
+      background: `linear-gradient(135deg, rgba(4,10,20,.80) 0%, rgba(6,12,24,.75) 100%)`,
+      backdropFilter: 'blur(40px)',
+      WebkitBackdropFilter: 'blur(40px)',
       border: `1px solid ${cfg.border}`,
-      boxShadow: `0 4px 24px ${cfg.glow}, inset 0 1px 0 rgba(255,255,255,.16)`,
+      boxShadow: `0 4px 24px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.12)`,
     }}>
-      <div style={{ position:'absolute', top:0, left:0, right:0, height:1,
+      {/* Teinte colorée légère par-dessus la base sombre */}
+      <div style={{
+        position:'absolute', inset:0, borderRadius:20,
+        background: cfg.bg,
+        pointerEvents:'none',
+      }} />
+      {/* Shimmer ligne haut */}
+      <div style={{ position:'absolute', top:0, left:0, right:0, height:1, zIndex:1,
         background:`linear-gradient(90deg,transparent,${cfg.shimmer},transparent)` }} />
-      <div style={{ position:'absolute', top:0, left:0, right:0, height:'45%',
-        background:'linear-gradient(180deg,rgba(255,255,255,.09),transparent)',
+      {/* Reflet glass */}
+      <div style={{ position:'absolute', top:0, left:0, right:0, height:'45%', zIndex:1,
+        background:'linear-gradient(180deg,rgba(255,255,255,.07),transparent)',
         borderRadius:'20px 20px 0 0' }} />
 
-      <div style={{ fontSize:10, fontWeight:700, letterSpacing:'0.10em',
-        textTransform:'uppercase', marginBottom:10, color:'rgba(255,255,255,.55)' }}>
-        {cfg.label}
-      </div>
-      <div style={{ fontSize:48, fontWeight:900, lineHeight:1, letterSpacing:'-3px',
-        color:cfg.accent, textShadow:`0 0 24px ${cfg.glow}` }}>
-        {value}
-      </div>
-      <div style={{ marginTop:18, height:3, borderRadius:3, background:'rgba(255,255,255,.08)' }}>
-        <div style={{ height:'100%', width:`${pct}%`, borderRadius:3,
-          background:cfg.accent, boxShadow:`0 0 12px ${cfg.accent}`,
-          transition:'width 1s ease' }} />
+      {/* Contenu au-dessus des overlays */}
+      <div style={{ position:'relative', zIndex:2 }}>
+        <div style={{ fontSize:10, fontWeight:700, letterSpacing:'0.10em',
+          textTransform:'uppercase', marginBottom:10, color:'rgba(255,255,255,.60)' }}>
+          {cfg.label}
+        </div>
+        <div style={{ fontSize:48, fontWeight:900, lineHeight:1, letterSpacing:'-3px',
+          color:cfg.accent, textShadow:`0 0 20px ${cfg.glow}` }}>
+          {value}
+        </div>
+        <div style={{ marginTop:18, height:3, borderRadius:3, background:'rgba(255,255,255,.08)' }}>
+          <div style={{ height:'100%', width:`${pct}%`, borderRadius:3,
+            background:cfg.accent, boxShadow:`0 0 10px ${cfg.accent}`,
+            transition:'width 1s ease' }} />
+        </div>
       </div>
     </div>
   )
