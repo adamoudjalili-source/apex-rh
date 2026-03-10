@@ -14,7 +14,7 @@ export default function AppLayout() {
   return (
     <div
       className="flex h-screen overflow-hidden"
-      style={{ background: '#060B18' }}
+      style={{ background: '#0F172A' }}
     >
       {/* Sidebar INCHANGÉE */}
       <Sidebar />

@@ -26,7 +26,7 @@ function GlaceBackground() {
       position:'absolute', inset:0, zIndex:0, pointerEvents:'none',
       overflow:'hidden',
       // Fond iceberg bleu nuit pur — complètement différent de l'Aurora
-      background:'linear-gradient(160deg, #070E1E 0%, #0A1628 25%, #070C1A 65%, #050A14 100%)',
+      background:'linear-gradient(160deg, #141E30 0%, #0F172A 30%, #0C1525 65%, #091020 100%)',
     }}>
       {/* Grande masse glaciaire gauche */}
       <div style={{

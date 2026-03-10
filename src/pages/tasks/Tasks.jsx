@@ -48,7 +48,7 @@ function GlaceBackground() {
     <div style={{
       position:'absolute', inset:0, zIndex:0, pointerEvents:'none',
       overflow:'hidden',
-      background:'linear-gradient(160deg, #070E1E 0%, #0A1628 25%, #070C1A 65%, #050A14 100%)',
+      background:'linear-gradient(160deg, #141E30 0%, #0F172A 30%, #0C1525 65%, #091020 100%)',
     }}>
       <div style={{ position:'absolute', top:'-20%', left:'-20%', width:'75%', height:'90%',
         background:'radial-gradient(ellipse at 40% 40%, rgba(14,165,233,.45) 0%, rgba(2,132,199,.28) 30%, rgba(7,89,133,.15) 55%, transparent 75%)',
@@ -109,7 +109,7 @@ function KpiCard({ cfg, value, total }) {
     <div style={{
       borderRadius:20, padding:'20px 22px 16px',
       position:'relative', overflow:'hidden',
-      background:'linear-gradient(135deg, rgba(8,16,32,.88) 0%, rgba(6,12,26,.84) 100%)',
+      background:'linear-gradient(135deg, rgba(20,30,50,.90) 0%, rgba(15,23,42,.86) 100%)',
       backdropFilter:'blur(40px)',
       WebkitBackdropFilter:'blur(40px)',
       border:`1px solid ${cfg.border}`,

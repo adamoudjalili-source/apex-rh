@@ -23,8 +23,8 @@
   }
 
   body {
-    background-color: #060B18;
-    background-image: radial-gradient(ellipse at 50% 0%, #0A1628 0%, #060B18 50%, #030912 100%);
+    background-color: #0F172A;
+    background-image: radial-gradient(ellipse at 50% 0%, #1E293B 0%, #0F172A 55%, #080E1C 100%);
     background-attachment: fixed;
     color: #ffffff;
   }
