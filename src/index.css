@@ -293,3 +293,21 @@
   border-color: var(--input-border) !important;
   color: var(--input-text)       !important;
 }
+
+/* ── Fix visibilité sidebar mode clair ────────────────────── */
+/* "inherit" ne suffit pas — on force les couleurs explicitement */
+[data-theme="light"] aside .text-white\/35,
+[data-theme="light"] aside .text-white\/30 { color: rgba(255,255,255,0.45) !important; }
+
+[data-theme="light"] aside .text-white\/70,
+[data-theme="light"] aside .text-white\/60,
+[data-theme="light"] aside .text-white\/50 { color: rgba(255,255,255,0.70) !important; }
+
+[data-theme="light"] aside .text-white { color: rgba(255,255,255,1.0) !important; }
+
+/* hover */
+[data-theme="light"] aside .hover\:text-white\/70:hover { color: rgba(255,255,255,0.75) !important; }
+
+/* Section labels MON ESPACE etc. */
+[data-theme="light"] aside [class*="text-white"] { color: rgba(255,255,255,0.45) !important; }
+[data-theme="light"] aside .text-white { color: rgba(255,255,255,1.0) !important; }
