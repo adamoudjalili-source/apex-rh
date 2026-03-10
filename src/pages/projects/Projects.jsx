@@ -21,7 +21,8 @@ import { exportProjects }   from '../../lib/exportExcel'
 import { TASK_STATUS }      from '../../utils/constants'
 
 // ─── Fond Glacé Iceberg — AUTONOME ───────────────────────────
-function GlaceBackground() {
+function GlaceBackground({ isLight = false }) {
+  if (isLight) return null
   return (
     <div style={{
       position:'absolute', inset:0, zIndex:0, pointerEvents:'none',
@@ -133,15 +134,15 @@ function KpiCard({ def, value }) {
     <div style={{
       borderRadius:20, padding:'20px 22px 16px',
       position:'relative', overflow:'hidden',
-      background:'linear-gradient(135deg, rgba(2,14,26,.82) 0%, rgba(3,12,22,.78) 100%)',
+      background: isLight ? 'white' : 'linear-gradient(135deg, rgba(2,14,26,.82) 0%, rgba(3,12,22,.78) 100%)',
       backdropFilter:'blur(40px)',
       WebkitBackdropFilter:'blur(40px)',
-      border:`1px solid ${def.border}`,
-      boxShadow:`0 4px 24px rgba(0,0,0,.40), inset 0 1px 0 rgba(255,255,255,.12)`,
+      border: isLight ? '1px solid #E6EBF1' : `1px solid ${def.border}`,
+      boxShadow: isLight ? '0 1px 3px rgba(50,50,93,.08), 0 1px 1px rgba(0,0,0,.04)' : '0 4px 24px rgba(0,0,0,.40), inset 0 1px 0 rgba(255,255,255,.12)',
     }}>
       {/* Teinte colorée glacée légère */}
       <div style={{ position:'absolute', inset:0, borderRadius:20,
-        background:def.tint, pointerEvents:'none' }} />
+        background: isLight ? 'transparent' : def.tint, pointerEvents:'none' }} />
       <div style={{ position:'absolute', top:0, left:0, right:0, height:1, zIndex:1,
         background:`linear-gradient(90deg,transparent,${def.shimmer},transparent)` }} />
       <div style={{ position:'absolute', top:0, left:0, right:0, height:'45%', zIndex:1,
@@ -150,21 +151,21 @@ function KpiCard({ def, value }) {
 
       <div style={{ position:'relative', zIndex:2 }}>
         <div style={{ width:32, height:32, borderRadius:10, marginBottom:12,
-          background:`rgba(${def.rgb},.18)`,
+          background: isLight ? `rgba(${def.rgb},.10)` : `rgba(${def.rgb},.18)`,
           border:`1px solid rgba(${def.rgb},.30)`,
           display:'flex', alignItems:'center', justifyContent:'center',
           boxShadow:`0 0 12px rgba(${def.rgb},.15)` }}>
           <def.Icon size={15} style={{ color:def.accent }} />
         </div>
         <div style={{ fontSize:10, fontWeight:700, letterSpacing:'0.10em',
-          textTransform:'uppercase', marginBottom:8, color:'rgba(255,255,255,.60)' }}>
+          textTransform:'uppercase', marginBottom:8, color: isLight ? '#8898AA' : 'rgba(255,255,255,.60)' }}>
           {def.label}
         </div>
         <div style={{ fontSize:30, fontWeight:900, lineHeight:1, letterSpacing:'-1.5px',
           color:def.accent, textShadow:`0 0 18px ${def.glow}` }}>
           {value}
         </div>
-        <div style={{ marginTop:14, height:3, borderRadius:3, background:'rgba(255,255,255,.08)' }}>
+        <div style={{ marginTop:14, height:3, borderRadius:3, background: isLight ? '#EEF2FF' : 'rgba(255,255,255,.08)' }}>
           <div style={{ height:'100%', width:'65%', borderRadius:3,
             background:def.accent, opacity:.80,
             boxShadow:`0 0 10px ${def.accent}` }} />
@@ -219,8 +220,8 @@ export default function Projects() {
   } : null
 
   return (
-    <div style={{ position:'relative', minHeight:'100%', isolation:'isolate' }}>
-      <GlaceBackground />
+    <div style={{ position:'relative', minHeight:'100%', isolation:'isolate', background: isLight ? '#F6F9FC' : 'transparent' }}>
+      <GlaceBackground isLight={isLight} />
 
       <div className="px-6 py-6 space-y-6 max-w-7xl mx-auto" style={{ position:'relative', zIndex:1 }}>
 
@@ -247,7 +248,7 @@ export default function Projects() {
               display:'flex', alignItems:'center', gap:6,
               padding:'9px 16px', borderRadius:11, cursor:'pointer',
               fontSize:12, fontWeight:500,
-              background:'rgba(255,255,255,.08)', backdropFilter:'blur(20px)',
+              background: isLight ? '#EEF2FF' : 'rgba(255,255,255,.08)', backdropFilter:'blur(20px)',
               border: isLight ? '1px solid #E6EBF1' : '1px solid rgba(255,255,255,14)', color:'rgba(255,255,255,.52)' }}>
               Excel
             </button>

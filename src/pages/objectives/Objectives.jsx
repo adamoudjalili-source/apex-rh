@@ -35,7 +35,8 @@ import OKRDashboard     from '../../components/okr/OKRDashboard'
 import EmptyState       from '../../components/ui/EmptyState'
 
 // ─── Fond Glacé — identique Projects/Tasks ───────────────────
-function GlaceBackground() {
+function GlaceBackground({ isLight = false }) {
+  if (isLight) return null
   return (
     <div style={{
       position:'absolute', inset:0, zIndex:0, pointerEvents:'none',
@@ -101,10 +102,10 @@ function KpiCard({ def, value }) {
       background: isLight ? 'white' : 'linear-gradient(135deg, rgba(20,30,50,.90) 0%, rgba(15,23,42,.86) 100%)',
       backdropFilter:'blur(40px)',
       WebkitBackdropFilter:'blur(40px)',
-      border:`1px solid ${def.border}`,
-      boxShadow:`0 4px 24px rgba(0,0,0,.40), inset 0 1px 0 rgba(255,255,255,.12)`,
+      border: isLight ? '1px solid #E6EBF1' : `1px solid ${def.border}`,
+      boxShadow: isLight ? '0 1px 3px rgba(50,50,93,.08), 0 1px 1px rgba(0,0,0,.04)' : '0 4px 24px rgba(0,0,0,.40), inset 0 1px 0 rgba(255,255,255,.12)',
     }}>
-      <div style={{ position:'absolute', inset:0, borderRadius:20, background:def.tint, pointerEvents:'none' }} />
+      <div style={{ position:'absolute', inset:0, borderRadius:20, background: isLight ? 'transparent' : def.tint, pointerEvents:'none' }} />
       <div style={{ position:'absolute', top:0, left:0, right:0, height:1, zIndex:1,
         background:`linear-gradient(90deg,transparent,${def.shimmer},transparent)` }} />
       <div style={{ position:'absolute', top:0, left:0, right:0, height:'45%', zIndex:1,
@@ -126,7 +127,7 @@ function KpiCard({ def, value }) {
           color:def.accent, textShadow:`0 0 18px ${def.glow}` }}>
           {value}
         </div>
-        <div style={{ marginTop:14, height:3, borderRadius:3, background:'rgba(255,255,255,.08)' }}>
+        <div style={{ marginTop:14, height:3, borderRadius:3, background: isLight ? '#EEF2FF' : 'rgba(255,255,255,.08)' }}>
           <div style={{ height:'100%', width:'65%', borderRadius:3,
             background:def.accent, opacity:.75,
             boxShadow:`0 0 10px ${def.accent}` }} />
@@ -220,8 +221,8 @@ export default function Objectives() {
   } : null
 
   return (
-    <div style={{ position:'relative', minHeight:'100%', isolation:'isolate' }}>
-      <GlaceBackground />
+    <div style={{ position:'relative', minHeight:'100%', isolation:'isolate', background: isLight ? '#F6F9FC' : 'transparent' }}>
+      <GlaceBackground isLight={isLight} />
 
       <div className="px-6 py-6 space-y-6 max-w-7xl mx-auto" style={{ position:'relative', zIndex:1 }}>
 
@@ -249,7 +250,7 @@ export default function Objectives() {
               display:'flex', alignItems:'center', gap:6,
               padding:'9px 16px', borderRadius:11, cursor:'pointer',
               fontSize:12, fontWeight:500,
-              background:'rgba(255,255,255,.08)', backdropFilter:'blur(20px)',
+              background: isLight ? '#EEF2FF' : 'rgba(255,255,255,.08)', backdropFilter:'blur(20px)',
               border: isLight ? '1px solid #E6EBF1' : '1px solid rgba(255,255,255,14)', color:'rgba(255,255,255,.52)' }}>
               <FileSpreadsheet size={13} /> Excel
             </button>

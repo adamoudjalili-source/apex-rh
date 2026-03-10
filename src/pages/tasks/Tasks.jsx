@@ -44,7 +44,8 @@ const VIEWS = [
 ]
 
 // ─── Fond Glacé — identique à Projects ───────────────────────
-function GlaceBackground() {
+function GlaceBackground({ isLight = false }) {
+  if (isLight) return null
   return (
     <div style={{
       position:'absolute', inset:0, zIndex:0, pointerEvents:'none',
@@ -115,10 +116,10 @@ function KpiCard({ cfg, value, total }) {
       background: isLight ? 'white' : 'linear-gradient(135deg, rgba(20,30,50,.90) 0%, rgba(15,23,42,.86) 100%)',
       backdropFilter:'blur(40px)',
       WebkitBackdropFilter:'blur(40px)',
-      border:`1px solid ${cfg.border}`,
-      boxShadow:`0 4px 24px rgba(0,0,0,.40), inset 0 1px 0 rgba(255,255,255,.12)`,
+      border: isLight ? '1px solid #E6EBF1' : `1px solid ${cfg.border}`,
+      boxShadow: isLight ? '0 1px 3px rgba(50,50,93,.08), 0 1px 1px rgba(0,0,0,.04)' : '0 4px 24px rgba(0,0,0,.40), inset 0 1px 0 rgba(255,255,255,.12)',
     }}>
-      <div style={{ position:'absolute', inset:0, borderRadius:20, background:cfg.tint, pointerEvents:'none' }} />
+      <div style={{ position:'absolute', inset:0, borderRadius:20, background: isLight ? 'transparent' : cfg.tint, pointerEvents:'none' }} />
       <div style={{ position:'absolute', top:0, left:0, right:0, height:1, zIndex:1,
         background:`linear-gradient(90deg,transparent,${cfg.shimmer},transparent)` }} />
       <div style={{ position:'absolute', top:0, left:0, right:0, height:'45%', zIndex:1,
@@ -126,14 +127,14 @@ function KpiCard({ cfg, value, total }) {
         borderRadius:'20px 20px 0 0' }} />
       <div style={{ position:'relative', zIndex:2 }}>
         <div style={{ fontSize:10, fontWeight:700, letterSpacing:'0.10em',
-          textTransform:'uppercase', marginBottom:10, color:'rgba(255,255,255,.60)' }}>
+          textTransform:'uppercase', marginBottom:10, color: isLight ? '#8898AA' : 'rgba(255,255,255,.60)' }}>
           {cfg.label}
         </div>
         <div style={{ fontSize:42, fontWeight:900, lineHeight:1, letterSpacing:'-2.5px',
           color:cfg.accent, textShadow:`0 0 20px ${cfg.glow}` }}>
           {value}
         </div>
-        <div style={{ marginTop:16, height:3, borderRadius:3, background:'rgba(255,255,255,.08)' }}>
+        <div style={{ marginTop:16, height:3, borderRadius:3, background: isLight ? '#EEF2FF' : 'rgba(255,255,255,.08)' }}>
           <div style={{ height:'100%', width:`${pct}%`, borderRadius:3,
             background:cfg.accent, opacity:.80,
             boxShadow:`0 0 10px ${cfg.accent}`, transition:'width 1s ease' }} />
@@ -190,8 +191,8 @@ export default function Tasks() {
   const visibleViews = VIEWS.filter(v => !v.managerOnly || isManager)
 
   return (
-    <div style={{ position:'relative', minHeight:'100%', isolation:'isolate' }}>
-      <GlaceBackground />
+    <div style={{ position:'relative', minHeight:'100%', isolation:'isolate', background: isLight ? '#F6F9FC' : 'transparent' }}>
+      <GlaceBackground isLight={isLight} />
 
       <div className="px-6 py-5 space-y-5" style={{ position:'relative', zIndex:1 }}>
 
@@ -218,7 +219,7 @@ export default function Tasks() {
                 display:'flex', alignItems:'center', gap:6,
                 padding:'9px 16px', borderRadius:11, cursor:'pointer',
                 fontSize:12, fontWeight:500,
-                background:'rgba(255,255,255,.08)', backdropFilter:'blur(20px)',
+                background: isLight ? '#EEF2FF' : 'rgba(255,255,255,.08)', backdropFilter:'blur(20px)',
                 border: isLight ? '1px solid #E6EBF1' : '1px solid rgba(255,255,255,14)', color:'rgba(255,255,255,.52)' }}>
                 <FileSpreadsheet size={13} /> Excel
               </button>
