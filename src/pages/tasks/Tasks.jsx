@@ -124,17 +124,17 @@ function AuroraBackground() {
 // ─── KPI cards Aurora vivantes ────────────────────────────────
 const KPI_CONFIG = [
   { label:'Total',    key:'total',
-    bg:'rgba(255,255,255,.07)',
-    border:'rgba(255,255,255,.18)', accent:'#FFFFFF', glow:'rgba(255,255,255,.06)', shimmer:'rgba(255,255,255,.28)' },
+    tint:'rgba(200,210,255,.18)',
+    border:'rgba(255,255,255,.30)', accent:'#FFFFFF', glow:'rgba(255,255,255,.12)', shimmer:'rgba(255,255,255,.40)' },
   { label:'En cours', key:'en_cours',
-    bg:'rgba(16,185,129,.10)',
-    border:'rgba(52,211,153,.30)', accent:'#6EE7B7', glow:'rgba(16,185,129,.12)', shimmer:'rgba(52,211,153,.35)' },
+    tint:'rgba(16,185,129,.22)',
+    border:'rgba(52,211,153,.50)', accent:'#6EE7B7', glow:'rgba(16,185,129,.20)', shimmer:'rgba(52,211,153,.55)' },
   { label:'En revue', key:'en_revue',
-    bg:'rgba(139,92,246,.10)',
-    border:'rgba(167,139,250,.30)', accent:'#C4B5FD', glow:'rgba(139,92,246,.12)', shimmer:'rgba(167,139,250,.35)' },
+    tint:'rgba(139,92,246,.20)',
+    border:'rgba(167,139,250,.50)', accent:'#C4B5FD', glow:'rgba(139,92,246,.20)', shimmer:'rgba(167,139,250,.55)' },
   { label:'Urgentes', key:'urgentes',
-    bg:'rgba(239,68,68,.09)',
-    border:'rgba(252,165,165,.28)', accent:'#FCA5A5', glow:'rgba(239,68,68,.10)', shimmer:'rgba(252,165,165,.32)' },
+    tint:'rgba(239,68,68,.18)',
+    border:'rgba(252,165,165,.48)', accent:'#FCA5A5', glow:'rgba(239,68,68,.18)', shimmer:'rgba(252,165,165,.52)' },
 ]
 
 function KpiCard({ cfg, value, total }) {
@@ -154,7 +154,7 @@ function KpiCard({ cfg, value, total }) {
       {/* Teinte colorée légère par-dessus la base sombre */}
       <div style={{
         position:'absolute', inset:0, borderRadius:20,
-        background: cfg.bg,
+        background: cfg.tint,
         pointerEvents:'none',
       }} />
       {/* Shimmer ligne haut */}

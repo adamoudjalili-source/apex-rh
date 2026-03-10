@@ -109,20 +109,20 @@ function GlaceBackground() {
 // ─── KPI Glacé ───────────────────────────────────────────────
 const KPI_DEFS = [
   { key:'total',       label:'Total',       Icon:FolderKanban,  accent:'#BAE6FD', rgb:'186,230,253',
-    bg:'rgba(186,230,253,.08)',
-    border:'rgba(186,230,253,.25)', glow:'rgba(186,230,253,.10)', shimmer:'rgba(186,230,253,.32)' },
+    tint:'rgba(186,230,253,.16)',
+    border:'rgba(186,230,253,.40)', glow:'rgba(186,230,253,.14)', shimmer:'rgba(186,230,253,.45)' },
   { key:'enCours',     label:'En cours',    Icon:BarChart3,      accent:'#38BDF8', rgb:'56,189,248',
-    bg:'rgba(14,165,233,.11)',
-    border:'rgba(56,189,248,.32)', glow:'rgba(14,165,233,.14)', shimmer:'rgba(56,189,248,.38)' },
+    tint:'rgba(14,165,233,.22)',
+    border:'rgba(56,189,248,.52)', glow:'rgba(14,165,233,.20)', shimmer:'rgba(56,189,248,.55)' },
   { key:'avgProg',     label:'Progression', Icon:TrendingUp,     accent:'#86EFAC', rgb:'134,239,172',
-    bg:'rgba(34,197,94,.10)',
-    border:'rgba(134,239,172,.28)', glow:'rgba(34,197,94,.12)', shimmer:'rgba(134,239,172,.34)' },
+    tint:'rgba(34,197,94,.20)',
+    border:'rgba(134,239,172,.45)', glow:'rgba(34,197,94,.18)', shimmer:'rgba(134,239,172,.50)' },
   { key:'totalBudget', label:'Budget',      Icon:DollarSign,     accent:'#FDE68A', rgb:'253,230,138',
-    bg:'rgba(245,158,11,.09)',
-    border:'rgba(253,230,138,.26)', glow:'rgba(245,158,11,.12)', shimmer:'rgba(253,230,138,.32)' },
+    tint:'rgba(245,158,11,.18)',
+    border:'rgba(253,230,138,.42)', glow:'rgba(245,158,11,.18)', shimmer:'rgba(253,230,138,.48)' },
   { key:'atRisk',      label:'Risques',     Icon:AlertTriangle,  accent:'#FCA5A5', rgb:'252,165,165',
-    bg:'rgba(239,68,68,.08)',
-    border:'rgba(252,165,165,.24)', glow:'rgba(239,68,68,.10)', shimmer:'rgba(252,165,165,.30)' },
+    tint:'rgba(239,68,68,.16)',
+    border:'rgba(252,165,165,.40)', glow:'rgba(239,68,68,.15)', shimmer:'rgba(252,165,165,.45)' },
 ]
 
 function KpiCard({ def, value }) {
@@ -138,7 +138,7 @@ function KpiCard({ def, value }) {
     }}>
       {/* Teinte colorée glacée légère */}
       <div style={{ position:'absolute', inset:0, borderRadius:20,
-        background:def.bg, pointerEvents:'none' }} />
+        background:def.tint, pointerEvents:'none' }} />
       <div style={{ position:'absolute', top:0, left:0, right:0, height:1, zIndex:1,
         background:`linear-gradient(90deg,transparent,${def.shimmer},transparent)` }} />
       <div style={{ position:'absolute', top:0, left:0, right:0, height:'45%', zIndex:1,
