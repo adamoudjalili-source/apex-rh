@@ -43,9 +43,9 @@ export default function Header() {
         {/* Titre premium — aligné gauche */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
           <h1 style={{
-            fontSize: 20,
+            fontSize: 15,
             fontWeight: 900,
-            letterSpacing: '0.18em',
+            letterSpacing: '0.12em',
             textTransform: 'uppercase',
             fontFamily: "'Syne', sans-serif",
             lineHeight: 1,
