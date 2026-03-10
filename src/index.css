@@ -630,3 +630,62 @@
 [data-theme="light"] [style*="background: rgba(99,102,241,0.3)"] {
   background: rgba(99,102,241,0.08) !important;
 }
+
+/* ═══════════════════════════════════════════════════════════════════
+   PASSE 2B — SIDEBAR DARK TOUJOURS PRIORITAIRE
+   Spécificité maximale pour écraser toutes les règles light ci-dessus
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* Réinjecter toutes les couleurs dark dans aside avec spécificité max */
+[data-theme="light"] aside,
+[data-theme="light"] aside * {
+  --tw-text-opacity: 1;
+}
+
+/* Items inactifs nav */
+[data-theme="light"] aside .text-white\/60,
+[data-theme="light"] aside [class*="text-white\/60"],
+[data-theme="light"] aside [class*="text-white\/35"],
+[data-theme="light"] aside [class*="text-white\/30"],
+[data-theme="light"] aside [class*="text-white\/45"],
+[data-theme="light"] aside [class*="text-white\/50"] { color: rgba(255,255,255,0.72) !important; }
+
+/* Item actif */
+[data-theme="light"] aside .text-white { color: rgba(255,255,255,1.0) !important; }
+[data-theme="light"] aside [class*="text-white"]:not([class*="text-white\/"]) { color: rgba(255,255,255,1.0) !important; }
+
+/* Inline styles rgba blanc dans aside */
+[data-theme="light"] aside [style*="color: rgba(255,255,255,0.6"],
+[data-theme="light"] aside [style*="color: rgba(255,255,255,.6"],
+[data-theme="light"] aside [style*="color: rgba(255,255,255,0.7"],
+[data-theme="light"] aside [style*="color: rgba(255,255,255,.7"] { color: rgba(255,255,255,0.80) !important; }
+
+[data-theme="light"] aside [style*="color: rgba(255,255,255,0.4"],
+[data-theme="light"] aside [style*="color: rgba(255,255,255,.4"],
+[data-theme="light"] aside [style*="color: rgba(255,255,255,0.3"],
+[data-theme="light"] aside [style*="color: rgba(255,255,255,.3"],
+[data-theme="light"] aside [style*="color: rgba(255,255,255,0.35"],
+[data-theme="light"] aside [style*="color: rgba(255,255,255,.35"] { color: rgba(255,255,255,0.72) !important; }
+
+[data-theme="light"] aside [style*="color: rgba(255,255,255,0.2"],
+[data-theme="light"] aside [style*="color: rgba(255,255,255,.2"],
+[data-theme="light"] aside [style*="color: rgba(255,255,255,0.25"],
+[data-theme="light"] aside [style*="color: rgba(255,255,255,.25"] { color: rgba(255,255,255,0.55) !important; }
+
+[data-theme="light"] aside [style*="color: #fff"],
+[data-theme="light"] aside [style*="color: #ffffff"],
+[data-theme="light"] aside [style*="color: #FFFFFF"],
+[data-theme="light"] aside [style*="color: white"] { color: rgba(255,255,255,1.0) !important; }
+
+/* Labels sections sidebar (MON ESPACE, COMMUNICATION…) */
+[data-theme="light"] aside [style*="rgba(186,230,253"],
+[data-theme="light"] aside [style*="rgba(186, 230, 253"] { color: rgba(186,230,253,0.70) !important; }
+
+/* Texte nom utilisateur et rôle */
+[data-theme="light"] aside [style*="color: #E0F2FE"] { color: #E0F2FE !important; }
+[data-theme="light"] aside [style*="color: #38BDF8"] { color: #38BDF8 !important; }
+[data-theme="light"] aside p { color: rgba(255,255,255,0.85) !important; }
+
+/* Déconnexion */
+[data-theme="light"] aside button { color: rgba(255,255,255,0.45) !important; }
+[data-theme="light"] aside button:hover { color: #FCA5A5 !important; }
