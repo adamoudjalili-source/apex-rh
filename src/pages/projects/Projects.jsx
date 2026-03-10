@@ -108,21 +108,21 @@ function GlaceBackground() {
 
 // ─── KPI Glacé ───────────────────────────────────────────────
 const KPI_DEFS = [
-  { key:'total',       label:'Total',       Icon:FolderKanban,  accent:'#E0F2FE', rgb:'224,242,254',
-    bg:'linear-gradient(135deg,rgba(186,230,253,.18),rgba(125,211,252,.09))',
-    border:'rgba(186,230,253,.45)', glow:'rgba(186,230,253,.18)', shimmer:'rgba(224,242,254,.50)' },
+  { key:'total',       label:'Total',       Icon:FolderKanban,  accent:'#BAE6FD', rgb:'186,230,253',
+    bg:'rgba(186,230,253,.08)',
+    border:'rgba(186,230,253,.25)', glow:'rgba(186,230,253,.10)', shimmer:'rgba(186,230,253,.32)' },
   { key:'enCours',     label:'En cours',    Icon:BarChart3,      accent:'#38BDF8', rgb:'56,189,248',
-    bg:'linear-gradient(135deg,rgba(14,165,233,.35),rgba(2,132,199,.20))',
-    border:'rgba(56,189,248,.60)', glow:'rgba(14,165,233,.32)', shimmer:'rgba(56,189,248,.65)' },
+    bg:'rgba(14,165,233,.11)',
+    border:'rgba(56,189,248,.32)', glow:'rgba(14,165,233,.14)', shimmer:'rgba(56,189,248,.38)' },
   { key:'avgProg',     label:'Progression', Icon:TrendingUp,     accent:'#86EFAC', rgb:'134,239,172',
-    bg:'linear-gradient(135deg,rgba(34,197,94,.28),rgba(21,128,61,.15))',
-    border:'rgba(134,239,172,.50)', glow:'rgba(34,197,94,.25)', shimmer:'rgba(134,239,172,.55)' },
+    bg:'rgba(34,197,94,.10)',
+    border:'rgba(134,239,172,.28)', glow:'rgba(34,197,94,.12)', shimmer:'rgba(134,239,172,.34)' },
   { key:'totalBudget', label:'Budget',      Icon:DollarSign,     accent:'#FDE68A', rgb:'253,230,138',
-    bg:'linear-gradient(135deg,rgba(245,158,11,.28),rgba(180,83,9,.15))',
-    border:'rgba(253,230,138,.48)', glow:'rgba(245,158,11,.24)', shimmer:'rgba(253,230,138,.55)' },
+    bg:'rgba(245,158,11,.09)',
+    border:'rgba(253,230,138,.26)', glow:'rgba(245,158,11,.12)', shimmer:'rgba(253,230,138,.32)' },
   { key:'atRisk',      label:'Risques',     Icon:AlertTriangle,  accent:'#FCA5A5', rgb:'252,165,165',
-    bg:'linear-gradient(135deg,rgba(239,68,68,.26),rgba(185,28,28,.14))',
-    border:'rgba(252,165,165,.48)', glow:'rgba(239,68,68,.22)', shimmer:'rgba(252,165,165,.55)' },
+    bg:'rgba(239,68,68,.08)',
+    border:'rgba(252,165,165,.24)', glow:'rgba(239,68,68,.10)', shimmer:'rgba(252,165,165,.30)' },
 ]
 
 function KpiCard({ def, value }) {

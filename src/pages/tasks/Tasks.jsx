@@ -124,17 +124,17 @@ function AuroraBackground() {
 // ─── KPI cards Aurora vivantes ────────────────────────────────
 const KPI_CONFIG = [
   { label:'Total',    key:'total',
-    bg:'linear-gradient(135deg,rgba(255,255,255,.13),rgba(255,255,255,.06))',
-    border:'rgba(255,255,255,.28)', accent:'#FFFFFF', glow:'rgba(255,255,255,.10)', shimmer:'rgba(255,255,255,.35)' },
+    bg:'rgba(255,255,255,.07)',
+    border:'rgba(255,255,255,.18)', accent:'#FFFFFF', glow:'rgba(255,255,255,.06)', shimmer:'rgba(255,255,255,.28)' },
   { label:'En cours', key:'en_cours',
-    bg:'linear-gradient(135deg,rgba(16,185,129,.30),rgba(5,150,105,.16))',
-    border:'rgba(52,211,153,.55)', accent:'#6EE7B7', glow:'rgba(16,185,129,.30)', shimmer:'rgba(52,211,153,.60)' },
+    bg:'rgba(16,185,129,.10)',
+    border:'rgba(52,211,153,.30)', accent:'#6EE7B7', glow:'rgba(16,185,129,.12)', shimmer:'rgba(52,211,153,.35)' },
   { label:'En revue', key:'en_revue',
-    bg:'linear-gradient(135deg,rgba(139,92,246,.28),rgba(109,40,217,.15))',
-    border:'rgba(167,139,250,.55)', accent:'#C4B5FD', glow:'rgba(139,92,246,.28)', shimmer:'rgba(167,139,250,.60)' },
+    bg:'rgba(139,92,246,.10)',
+    border:'rgba(167,139,250,.30)', accent:'#C4B5FD', glow:'rgba(139,92,246,.12)', shimmer:'rgba(167,139,250,.35)' },
   { label:'Urgentes', key:'urgentes',
-    bg:'linear-gradient(135deg,rgba(239,68,68,.26),rgba(185,28,28,.13))',
-    border:'rgba(252,165,165,.55)', accent:'#FCA5A5', glow:'rgba(239,68,68,.25)', shimmer:'rgba(252,165,165,.60)' },
+    bg:'rgba(239,68,68,.09)',
+    border:'rgba(252,165,165,.28)', accent:'#FCA5A5', glow:'rgba(239,68,68,.10)', shimmer:'rgba(252,165,165,.32)' },
 ]
 
 function KpiCard({ cfg, value, total }) {
@@ -147,7 +147,7 @@ function KpiCard({ cfg, value, total }) {
       backdropFilter: 'blur(40px) saturate(200%)',
       WebkitBackdropFilter: 'blur(40px) saturate(200%)',
       border: `1px solid ${cfg.border}`,
-      boxShadow: `0 8px 32px ${cfg.glow}, inset 0 1px 0 rgba(255,255,255,.22)`,
+      boxShadow: `0 4px 24px ${cfg.glow}, inset 0 1px 0 rgba(255,255,255,.16)`,
     }}>
       <div style={{ position:'absolute', top:0, left:0, right:0, height:1,
         background:`linear-gradient(90deg,transparent,${cfg.shimmer},transparent)` }} />
