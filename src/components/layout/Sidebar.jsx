@@ -170,7 +170,7 @@ export default function Sidebar() {
       }}/>
 
       {/* Logo NITA — INTACT */}
-      <div style={{ borderBottom:'1px solid rgba(56,189,248,.08)', flexShrink:0, overflow:'hidden' }}>
+      <div style={{ borderBottom:'1px solid rgba(56,189,248,.08)', flexShrink:0, overflow:'hidden', paddingTop:'10px' }}>
         <AnimatePresence mode="wait">
           {!collapsed ? (
             <motion.div key="full"
