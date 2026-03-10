@@ -105,6 +105,8 @@ const KPI_CONFIG = [
 ]
 
 function KpiCard({ cfg, value, total }) {
+  const { resolvedTheme } = useTheme()
+  const isLight = resolvedTheme === \'light\'
   const pct = cfg.key==='total' ? 100 : (total>0 ? Math.round((value/total)*100) : 0)
   return (
     <div style={{
@@ -142,21 +144,23 @@ function KpiCard({ cfg, value, total }) {
 }
 
 // ─── Style partagé Glacé ────────────────────────────────────
-const glacePanel = {
+// glacePanel moved inside component
+// glaceActive moved inside component
+
+export default function Tasks() {
+  const { resolvedTheme } = useTheme()
+  const isLight = resolvedTheme === 'light'
+  const glacePanel = {
   background:'rgba(255,255,255,.07)',
   backdropFilter:'blur(30px)',
   border: isLight ? '1px solid #E6EBF1' : '1px solid rgba(56,189,248,18)',
 }
-const glaceActive = {
+  const glaceActive = {
   background:'linear-gradient(135deg,rgba(14,165,233,.38),rgba(2,132,199,.24))',
   border: isLight ? '1px solid #E6EBF1' : '1px solid rgba(56,189,248,45)',
   color:'#38BDF8',
   boxShadow:'0 2px 14px rgba(14,165,233,.24)',
 }
-
-export default function Tasks() {
-  const { resolvedTheme } = useTheme()
-  const isLight = resolvedTheme === 'light'
   const { profile }  = useAuth()
   const { can }      = usePermission()
   const { filters, activeFilters, activeView, setActiveView,

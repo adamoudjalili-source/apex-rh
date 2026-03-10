@@ -92,6 +92,8 @@ const KPI_OKR = [
 ]
 
 function KpiCard({ def, value }) {
+  const { resolvedTheme } = useTheme()
+  const isLight = resolvedTheme === \'light\'
   return (
     <div style={{
       borderRadius:20, padding:'20px 22px 16px',
@@ -135,11 +137,7 @@ function KpiCard({ def, value }) {
 }
 
 // ─── Style partagé Glacé ────────────────────────────────────
-const glacePanel = {
-  background:'rgba(255,255,255,.07)',
-  backdropFilter:'blur(30px)',
-  border: isLight ? '1px solid #E6EBF1' : '1px solid rgba(139,92,246,18)',
-}
+// glacePanel moved inside component
 
 const VIEWS_OKR = [
   { id:'list',      Icon:LayoutList,    label:'Liste'       },
@@ -153,6 +151,11 @@ const VIEWS_OKR = [
 export default function Objectives() {
   const { resolvedTheme } = useTheme()
   const isLight = resolvedTheme === 'light'
+  const glacePanel = {
+  background:'rgba(255,255,255,.07)',
+  backdropFilter:'blur(30px)',
+  border: isLight ? '1px solid #E6EBF1' : '1px solid rgba(139,92,246,18)',
+}
   const { profile } = useAuth()
 
   const [selectedPeriodId, setSelectedPeriodId] = useState(null)
