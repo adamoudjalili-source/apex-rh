@@ -32,7 +32,7 @@ function NavItem({ icon: Icon, label, path, collapsed, color, badge, indent = fa
       className={({ isActive }) =>
         `flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 relative overflow-hidden group ${
           indent ? 'ml-3' : ''
-        } ${isActive ? 'text-white' : 'text-white/35 hover:text-white/70 hover:bg-white/[0.04]'}`
+        } ${isActive ? 'text-white' : 'text-white/60 hover:text-white/90 hover:bg-white/[0.04]'}`
       }>
       {({ isActive }) => (
         <>
@@ -94,13 +94,13 @@ function NavItem({ icon: Icon, label, path, collapsed, color, badge, indent = fa
 function Section({ label, collapsed }) {
   if (collapsed) return (
     <div style={{ height:1, margin:'8px 12px',
-      background:'linear-gradient(90deg, transparent, rgba(56,189,248,.18), transparent)' }}/>
+      background:'linear-gradient(90deg, transparent, rgba(56,189,248,.40), transparent)' }}/>
   )
   return (
     <p style={{
       fontSize:9, fontWeight:700, letterSpacing:'0.14em',
-      textTransform:'uppercase', padding:'10px 12px 4px',
-      color:'rgba(125,211,252,.35)',
+      textTransform:'uppercase', padding:'12px 12px 5px',
+      color:'rgba(186,230,253,.65)',
     }}>
       {label}
     </p>
