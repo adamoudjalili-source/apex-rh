@@ -398,3 +398,147 @@
 
 [data-theme="dark"] [style*="color: rgba(186, 230, 253, .40)"],
 [data-theme="dark"] [style*="color: rgba(186,230,253,.40)"]    { color: rgba(186,230,253,0.72) !important; }
+
+/* ═══════════════════════════════════════════════════════════════════
+   PASSE 1 — UNIFORMISATION GLOBALE PLATEFORME
+   Cible : 47 modules · tous onglets · toutes cards · tous tableaux
+   Principe : zero JSX modifié — 100% CSS override
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* ── 1. PAGE HEADERS — titres et sous-titres de chaque module ── */
+/* Pattern : grande div en haut avec h1/h2 + paragraphe description */
+[data-theme="light"] main > div > h1,
+[data-theme="light"] main > div > div > h1,
+[data-theme="light"] .page-header h1 {
+  color: #1A1F36 !important;
+}
+[data-theme="light"] main > div > p,
+[data-theme="light"] main > div > div > p {
+  color: rgba(26,31,54,0.55) !important;
+}
+
+/* ── 2. GLASS CARDS — backgrounds ultra-faibles → visibles light ─ */
+/* rgba(255,255,255,0.02-0.05) → blanc avec ombre en light          */
+[data-theme="light"] [style*="background: rgba(255, 255, 255, 0.02)"],
+[data-theme="light"] [style*="background: rgba(255,255,255,0.02)"],
+[data-theme="light"] [style*="background: rgba(255, 255, 255, 0.025)"],
+[data-theme="light"] [style*="background: rgba(255,255,255,0.025)"],
+[data-theme="light"] [style*="background: rgba(255, 255, 255, 0.03)"],
+[data-theme="light"] [style*="background: rgba(255,255,255,0.03)"],
+[data-theme="light"] [style*="background: rgba(255, 255, 255, 0.04)"],
+[data-theme="light"] [style*="background: rgba(255,255,255,0.04)"],
+[data-theme="light"] [style*="background: rgba(255, 255, 255, 0.05)"],
+[data-theme="light"] [style*="background: rgba(255,255,255,0.05)"],
+[data-theme="light"] [style*="background: rgba(255, 255, 255, 0.06)"],
+[data-theme="light"] [style*="background: rgba(255,255,255,0.06)"],
+[data-theme="light"] [style*="background: rgba(255, 255, 255, 0.07)"],
+[data-theme="light"] [style*="background: rgba(255,255,255,.04)"],
+[data-theme="light"] [style*="background: rgba(255, 255, 255, .04)"],
+[data-theme="light"] [style*="background: rgba(255,255,255,.05)"],
+[data-theme="light"] [style*="background: rgba(255,255,255,.06)"],
+[data-theme="light"] [style*="background: rgba(255,255,255,.07)"],
+[data-theme="light"] [style*="background: rgba(255,255,255,.03)"],
+[data-theme="light"] [style*="background: rgba(255,255,255,0.015)"] {
+  background: #FFFFFF !important;
+  box-shadow: 0 1px 4px rgba(26,31,54,0.07), 0 0 0 1px rgba(26,31,54,0.06) !important;
+}
+
+/* ── 3. TABS / ONGLETS — textes inactifs lisibles ──────────────── */
+/* Dark mode : inactifs remontés */
+[data-theme="dark"] [style*="color: rgba(255,255,255,0.35)"],
+[data-theme="dark"] [style*="color: rgba(255, 255, 255, 0.35)"],
+[data-theme="dark"] [style*="color: rgba(255,255,255,.35)"] { color: rgba(255,255,255,0.72) !important; }
+
+/* Light mode : tabs inactifs → gris ardoise lisible */
+[data-theme="light"] [style*="color: rgba(255,255,255,0.35)"],
+[data-theme="light"] [style*="color: rgba(255, 255, 255, 0.35)"],
+[data-theme="light"] [style*="color: rgba(255,255,255,.35)"],
+[data-theme="light"] [style*="color: rgba(255,255,255,0.45)"],
+[data-theme="light"] [style*="color: rgba(255, 255, 255, 0.45)"],
+[data-theme="light"] [style*="color: rgba(255,255,255,.45)"] { color: rgba(26,31,54,0.55) !important; }
+
+[data-theme="light"] [style*="color: rgba(255,255,255,0.3)"],
+[data-theme="light"] [style*="color: rgba(255, 255, 255, 0.3)"],
+[data-theme="light"] [style*="color: rgba(255,255,255,.3)"],
+[data-theme="light"] [style*="color: rgba(255,255,255,0.28)"],
+[data-theme="light"] [style*="color: rgba(255,255,255,.28)"],
+[data-theme="light"] [style*="color: rgba(255,255,255,0.25)"],
+[data-theme="light"] [style*="color: rgba(255, 255, 255, 0.25)"],
+[data-theme="light"] [style*="color: rgba(255,255,255,.25)"] { color: rgba(26,31,54,0.45) !important; }
+
+[data-theme="light"] [style*="color: rgba(255,255,255,0.6)"],
+[data-theme="light"] [style*="color: rgba(255, 255, 255, 0.6)"],
+[data-theme="light"] [style*="color: rgba(255,255,255,.6)"],
+[data-theme="light"] [style*="color: rgba(255,255,255,0.7)"],
+[data-theme="light"] [style*="color: rgba(255,255,255,.7)"],
+[data-theme="light"] [style*="color: rgba(255,255,255,0.8)"],
+[data-theme="light"] [style*="color: rgba(255,255,255,.8)"] { color: rgba(26,31,54,0.75) !important; }
+
+[data-theme="light"] [style*="color: rgba(255,255,255,0.9)"],
+[data-theme="light"] [style*="color: rgba(255,255,255,.9)"],
+[data-theme="light"] [style*="color: rgba(255,255,255,1)"],
+[data-theme="light"] [style*="color: #fff"],
+[data-theme="light"] [style*="color: #ffffff"],
+[data-theme="light"] [style*="color: #FFFFFF"] { color: #1A1F36 !important; }
+
+/* ── 4. BORDERS — lignes de séparation ────────────────────────── */
+[data-theme="light"] [style*="border: 1px solid rgba(255,255,255,0.05)"],
+[data-theme="light"] [style*="border: 1px solid rgba(255,255,255,0.06)"],
+[data-theme="light"] [style*="border: 1px solid rgba(255,255,255,0.08)"],
+[data-theme="light"] [style*="border: 1px solid rgba(255,255,255,0.1)"],
+[data-theme="light"] [style*="borderBottom: '1px solid rgba(255,255,255,0.05)"],
+[data-theme="light"] [style*="borderBottom: '1px solid rgba(255,255,255,0.06)"] {
+  border-color: rgba(26,31,54,0.08) !important;
+}
+[data-theme="light"] [style*="border-bottom: 1px solid rgba(255,255,255"],
+[data-theme="light"] [style*="borderBottom.*rgba(255,255,255"] {
+  border-bottom-color: rgba(26,31,54,0.08) !important;
+}
+
+/* ── 5. QUICK STATS BARS — petites stats en haut des modules ───── */
+[data-theme="light"] [style*="background: rgba(255,255,255,0.03)"][style*="rounded"],
+[data-theme="light"] .rounded-lg[style*="background: rgba(255,255,255,0.03)"],
+[data-theme="light"] .rounded-xl[style*="background: rgba(255,255,255,0.03)"] {
+  background: #F8FAFF !important;
+  border: 1px solid rgba(99,102,241,0.10) !important;
+}
+
+/* ── 6. LABELS UPPERCASE SMALL — sections internes ────────────── */
+[data-theme="light"] [style*="textTransform: 'uppercase'"][style*="rgba(255,255,255"],
+[data-theme="light"] [style*="text-transform: uppercase"][style*="rgba(255,255,255"] {
+  color: rgba(26,31,54,0.45) !important;
+}
+
+/* ── 7. TABLEAUX — lignes alternées et hover ───────────────────── */
+[data-theme="light"] tr:hover > td,
+[data-theme="light"] [role="row"]:hover { background: rgba(99,102,241,0.03) !important; }
+[data-theme="light"] thead th,
+[data-theme="light"] [role="columnheader"] {
+  color: rgba(26,31,54,0.55) !important;
+  border-bottom: 1px solid rgba(26,31,54,0.08) !important;
+}
+[data-theme="light"] tbody td,
+[data-theme="light"] [role="cell"] {
+  border-bottom: 1px solid rgba(26,31,54,0.05) !important;
+  color: #1A1F36 !important;
+}
+
+/* ── 8. BADGES / PILLS — statuts ──────────────────────────────── */
+/* Conserver les couleurs sémantiques, juste ajuster l'opacité */
+[data-theme="light"] [style*="background: rgba(16,185,129,0.15)"] { background: rgba(16,185,129,0.12) !important; }
+[data-theme="light"] [style*="background: rgba(239,68,68,0.15)"]  { background: rgba(239,68,68,0.10) !important; }
+[data-theme="light"] [style*="background: rgba(245,158,11,0.15)"] { background: rgba(245,158,11,0.10) !important; }
+[data-theme="light"] [style*="background: rgba(99,102,241,0.15)"] { background: rgba(99,102,241,0.10) !important; }
+[data-theme="light"] [style*="background: rgba(59,130,246,0.15)"] { background: rgba(59,130,246,0.10) !important; }
+
+/* ── 9. FOND PAGE PRINCIPALE ───────────────────────────────────── */
+[data-theme="light"] main,
+[data-theme="light"] .main-content,
+[data-theme="light"] > div[class*="flex-1"],
+[data-theme="light"] > main { background: #F6F9FC !important; }
+
+/* ── 10. SCROLLBARS ────────────────────────────────────────────── */
+[data-theme="light"] ::-webkit-scrollbar       { width: 6px; height: 6px; }
+[data-theme="light"] ::-webkit-scrollbar-track  { background: transparent; }
+[data-theme="light"] ::-webkit-scrollbar-thumb  { background: rgba(99,102,241,0.20); border-radius: 3px; }
+[data-theme="light"] ::-webkit-scrollbar-thumb:hover { background: rgba(99,102,241,0.35); }
