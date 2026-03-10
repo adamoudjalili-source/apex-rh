@@ -1,6 +1,6 @@
 // ============================================================
 // APEX RH — Header.jsx · S135
-// Titre aligné gauche + typographie premium + search + notifs
+// Titre bicolore hiérarchie + search + notifs
 // ============================================================
 import { useState, useEffect, useCallback } from 'react'
 import { useTheme }       from '../../contexts/ThemeContext'
@@ -40,42 +40,68 @@ export default function Header() {
           boxShadow:            isLight ? '0 1px 0 rgba(99,102,241,.06)' : '0 1px 0 rgba(56,189,248,.06)',
         }}>
 
-        {/* Titre premium — aligné gauche */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-          <h1 style={{
-            fontSize: 15,
-            fontWeight: 900,
-            letterSpacing: '0.12em',
-            textTransform: 'uppercase',
-            fontFamily: "'Syne', sans-serif",
-            lineHeight: 1,
-            background: isLight
-              ? 'linear-gradient(90deg, #1A1F36 0%, #4F46E5 60%, #818CF8 100%)'
-              : 'linear-gradient(90deg, #E0F2FE 0%, #38BDF8 45%, #7DD3FC 75%, #BAE6FD 100%)',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-            backgroundClip: 'text',
-            filter: isLight ? 'none' : 'drop-shadow(0 0 18px rgba(56,189,248,.35))',
-          }}>
-            Plateforme de Gestion de la Performance
-          </h1>
-          {/* Ligne décorative sous le titre */}
+        {/* ── Titre bicolore ── */}
+        <div style={{ display:'flex', flexDirection:'column', gap:3 }}>
           <div style={{
-            height: 2,
-            width: '60%',
-            borderRadius: 2,
-            background: isLight
-              ? 'linear-gradient(90deg, #4F46E5, #818CF8, transparent)'
-              : 'linear-gradient(90deg, #38BDF8, rgba(56,189,248,.3), transparent)',
-            marginTop: 4,
-          }}/>
+            display:'flex', alignItems:'baseline', gap:8,
+            fontFamily:"'Syne', sans-serif",
+            fontWeight: 900,
+            fontSize: 15,
+            letterSpacing: '0.10em',
+            textTransform: 'uppercase',
+            lineHeight: 1,
+          }}>
+            {/* Partie 1 — blanc plein, fort */}
+            <span style={{
+              color: isLight ? '#1A1F36' : '#FFFFFF',
+            }}>
+              Plateforme de Gestion
+            </span>
+
+            {/* Séparateur discret */}
+            <span style={{
+              color: isLight ? 'rgba(99,102,241,0.35)' : 'rgba(56,189,248,0.35)',
+              fontWeight: 300,
+              letterSpacing: 0,
+              fontSize: 18,
+            }}>·</span>
+
+            {/* Partie 2 — gradient bleu premium */}
+            <span style={{
+              background: isLight
+                ? 'linear-gradient(90deg, #4F46E5, #818CF8)'
+                : 'linear-gradient(90deg, #38BDF8, #7DD3FC, #BAE6FD)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              backgroundClip: 'text',
+              filter: isLight ? 'none' : 'drop-shadow(0 0 12px rgba(56,189,248,.45))',
+            }}>
+              de la Performance
+            </span>
+          </div>
+
+          {/* Ligne décorative bicolore */}
+          <div style={{ display:'flex', gap:3, height:2 }}>
+            <div style={{
+              flex: 3,
+              borderRadius: 2,
+              background: isLight ? '#1A1F36' : 'rgba(255,255,255,0.55)',
+            }}/>
+            <div style={{
+              flex: 2,
+              borderRadius: 2,
+              background: isLight
+                ? 'linear-gradient(90deg, #4F46E5, transparent)'
+                : 'linear-gradient(90deg, #38BDF8, transparent)',
+            }}/>
+          </div>
         </div>
 
-        {/* Droite — search + notifs */}
+        {/* ── Droite — search + notifs ── */}
         <div className="flex items-center gap-2.5">
           <button onClick={() => setSearchOpen(true)}
             className="hidden md:flex items-center gap-2.5 px-3 py-1.5 rounded-xl transition-all"
-            style={{ background: searchBg, border: `1px solid ${searchBorder}`, color: searchColor }}
+            style={{ background: searchBg, border:`1px solid ${searchBorder}`, color: searchColor }}
             onMouseEnter={e => { e.currentTarget.style.background=searchHoverBg; e.currentTarget.style.color=isLight?'rgba(26,31,54,0.80)':'rgba(125,211,252,.90)' }}
             onMouseLeave={e => { e.currentTarget.style.background=searchBg; e.currentTarget.style.color=searchColor }}>
             <Search size={13}/>
