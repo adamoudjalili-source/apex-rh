@@ -542,3 +542,91 @@
 [data-theme="light"] ::-webkit-scrollbar-track  { background: transparent; }
 [data-theme="light"] ::-webkit-scrollbar-thumb  { background: rgba(99,102,241,0.20); border-radius: 3px; }
 [data-theme="light"] ::-webkit-scrollbar-thumb:hover { background: rgba(99,102,241,0.35); }
+
+/* ═══════════════════════════════════════════════════════════════════
+   PASSE 2 — CORRECTIFS CIBLÉS MODE CLAIR
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* ── 1. TEXTES DANS CARDS BLANCHES — labels KPI, valeurs, sous-titres ─ */
+/* Problème : cards devenues blanches mais textes restent blancs */
+[data-theme="light"] .rounded-xl *,
+[data-theme="light"] .rounded-2xl *,
+[data-theme="light"] .rounded-lg * {
+  color: inherit;
+}
+
+/* Labels uppercase dans cards (TÂCHES ACTIVES, OKR EN COURS…) */
+[data-theme="light"] [style*="letterSpacing"][style*="uppercase"],
+[data-theme="light"] [style*="letter-spacing"][style*="uppercase"],
+[data-theme="light"] [class*="uppercase"][class*="text-"] {
+  color: rgba(26,31,54,0.50) !important;
+}
+[data-theme="light"] [style*="letterSpacing: '."][style*="uppercase"],
+[data-theme="light"] [style*="letterSpacing: \"0."][style*="uppercase"] {
+  color: rgba(26,31,54,0.50) !important;
+}
+
+/* Valeurs numériques dans cards — garder couleurs sémantiques */
+/* Sauf texte blanc pur → dark */
+[data-theme="light"] .rounded-xl [style*="color: #fff"],
+[data-theme="light"] .rounded-xl [style*="color: #ffffff"],
+[data-theme="light"] .rounded-xl [style*="color: #FFFFFF"],
+[data-theme="light"] .rounded-xl [style*="color: white"],
+[data-theme="light"] .rounded-2xl [style*="color: #fff"],
+[data-theme="light"] .rounded-2xl [style*="color: white"] { color: #1A1F36 !important; }
+
+/* Sous-titres / descriptions dans cards */
+[data-theme="light"] .rounded-xl [style*="rgba(255,255,255,0."],
+[data-theme="light"] .rounded-xl [style*="rgba(255, 255, 255, 0."],
+[data-theme="light"] .rounded-xl [style*="rgba(255,255,255,."],
+[data-theme="light"] .rounded-2xl [style*="rgba(255,255,255,0."],
+[data-theme="light"] .rounded-2xl [style*="rgba(255,255,255,."],
+[data-theme="light"] .rounded-lg [style*="rgba(255,255,255,0."],
+[data-theme="light"] .rounded-lg [style*="rgba(255,255,255,."] { color: rgba(26,31,54,0.55) !important; }
+
+/* ── 2. SOUS-TITRE PAGE (description sous le h1) ───────────────── */
+[data-theme="light"] [style*="rgba(255,255,255,0.5"],
+[data-theme="light"] [style*="rgba(255,255,255,.5"],
+[data-theme="light"] [style*="rgba(255,255,255,0.6"],
+[data-theme="light"] [style*="rgba(255,255,255,.6"],
+[data-theme="light"] [style*="rgba(255,255,255,0.55"],
+[data-theme="light"] [style*="rgba(255,255,255,.55"] { color: rgba(26,31,54,0.55) !important; }
+
+[data-theme="light"] [style*="rgba(255,255,255,0.4"],
+[data-theme="light"] [style*="rgba(255,255,255,.4"] { color: rgba(26,31,54,0.50) !important; }
+
+/* ── 3. NAV LATÉRALE INTERNE (Paramètres, sous-menus) ─────────── */
+/* Items liste nav : Sécurité, Notifications, Apparence etc. */
+[data-theme="light"] nav [class*="text-white"],
+[data-theme="light"] [role="navigation"] [class*="text-white"],
+[data-theme="light"] aside ~ * [class*="text-white\/"] { color: rgba(26,31,54,0.65) !important; }
+
+/* Couleur hover nav interne */
+[data-theme="light"] [style*="color: rgba(255,255,255,0.5"],
+[data-theme="light"] [style*="color: rgba(255,255,255,.5"] { color: rgba(26,31,54,0.55) !important; }
+
+/* ── 4. SECTION HEADERS DANS PAGES (labels type "PERSONNEL") ──── */
+[data-theme="light"] [style*="fontSize: 10"][style*="rgba(255,255,255"],
+[data-theme="light"] [style*="fontSize: 11"][style*="rgba(255,255,255"],
+[data-theme="light"] [style*="fontSize: 9"][style*="rgba(255,255,255"] { color: rgba(26,31,54,0.45) !important; }
+
+/* ── 5. TITRES H1/H2/H3 DANS LE CONTENU ───────────────────────── */
+[data-theme="light"] main h1,
+[data-theme="light"] main h2,
+[data-theme="light"] main h3 { color: #1A1F36 !important; }
+
+/* ── 6. GLOBAL TEXT-WHITE DANS LE CONTENU PRINCIPAL ───────────── */
+/* Exclure sidebar (déjà géré) — cibler seulement main */
+[data-theme="light"] main .text-white { color: #1A1F36 !important; }
+[data-theme="light"] main [class*="text-white\/"] { color: rgba(26,31,54,0.65) !important; }
+
+/* ── 7. BACKGROUNDS DARK RÉSIDUELS (cards avec fond bleu nuit) ─── */
+[data-theme="light"] [style*="background: rgba(14,165,233"],
+[data-theme="light"] [style*="background: rgba(14, 165, 233"] {
+  background: rgba(14,165,233,0.08) !important;
+}
+[data-theme="light"] [style*="background: rgba(79,70,229,0.2)"],
+[data-theme="light"] [style*="background: rgba(99,102,241,0.2)"],
+[data-theme="light"] [style*="background: rgba(99,102,241,0.3)"] {
+  background: rgba(99,102,241,0.08) !important;
+}
