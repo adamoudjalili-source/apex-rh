@@ -93,7 +93,7 @@ const KPI_OKR = [
 
 function KpiCard({ def, value }) {
   const { resolvedTheme } = useTheme()
-  const isLight = resolvedTheme === \'light\'
+  const isLight = resolvedTheme === 'light'
   return (
     <div style={{
       borderRadius:20, padding:'20px 22px 16px',

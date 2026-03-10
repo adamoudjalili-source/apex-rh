@@ -127,6 +127,8 @@ const KPI_DEFS = [
 ]
 
 function KpiCard({ def, value }) {
+  const { resolvedTheme } = useTheme()
+  const isLight = resolvedTheme === 'light'
   return (
     <div style={{
       borderRadius:20, padding:'20px 22px 16px',

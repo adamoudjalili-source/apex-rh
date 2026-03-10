@@ -106,7 +106,7 @@ const KPI_CONFIG = [
 
 function KpiCard({ cfg, value, total }) {
   const { resolvedTheme } = useTheme()
-  const isLight = resolvedTheme === \'light\'
+  const isLight = resolvedTheme === 'light'
   const pct = cfg.key==='total' ? 100 : (total>0 ? Math.round((value/total)*100) : 0)
   return (
     <div style={{
